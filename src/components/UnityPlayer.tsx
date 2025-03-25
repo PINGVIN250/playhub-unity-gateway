@@ -10,6 +10,7 @@ interface UnityPlayerProps {
 
 export function UnityPlayer({ game }: UnityPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -81,6 +82,15 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     };
   };
 
+  const handleIframeLoad = () => {
+    setIsLoading(false);
+  };
+
+  const handleIframeError = () => {
+    setError("Failed to load game content. Please try again.");
+    setIsLoading(false);
+  };
+
   return (
     <div className="w-full">
       <div
@@ -119,10 +129,14 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
         ) : (
           <>
             <iframe
+              ref={iframeRef}
               src={game.gameUrl}
               className="absolute inset-0 w-full h-full border-0"
               title={game.title}
               allow="autoplay; fullscreen; microphone; gamepad; accelerometer; gyroscope; camera"
+              onLoad={handleIframeLoad}
+              onError={handleIframeError}
+              sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
             />
             
             <div className="absolute bottom-4 right-4 flex gap-2">
