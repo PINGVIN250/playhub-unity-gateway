@@ -44,7 +44,7 @@ export function UploadGameForm() {
       description: "",
       width: 960,
       height: 600,
-      tags: ""
+      tags: [] // Fixed: Changed from string to string[] to match the expected type
     }
   });
 
