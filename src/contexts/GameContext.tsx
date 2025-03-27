@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Game } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -14,7 +13,14 @@ interface GameContextType {
     gameUrl: string,
     width?: number,
     height?: number,
-    tags?: string[]
+    tags?: string[],
+    gameFiles?: {
+      wasm: File | null;
+      data: File | null;
+      framework: File | null;
+      loader: File | null;
+      index: File | null;
+    }
   ) => Promise<Game>;
   getUserGames: () => Game[];
   getFeaturedGames: () => Game[];
@@ -61,10 +67,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Simulate loading games from API
     const loadGames = async () => {
       try {
-        // Simulating API request
         await new Promise(resolve => setTimeout(resolve, 1000));
         setGames(mockGames);
       } catch (error) {
@@ -85,19 +89,40 @@ export function GameProvider({ children }: { children: ReactNode }) {
     gameUrl: string,
     width: number = 960,
     height: number = 600,
-    tags: string[] = []
+    tags: string[] = [],
+    gameFiles?: {
+      wasm: File | null;
+      data: File | null;
+      framework: File | null;
+      loader: File | null;
+      index: File | null;
+    }
   ): Promise<Game> => {
     setIsLoading(true);
     try {
-      // Simulate API request
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       if (!user) {
         throw new Error("You must be logged in to add a game");
       }
 
-      // Create a URL for the uploaded cover image (in a real app, this would be uploaded to cloud storage)
       const coverImageUrl = URL.createObjectURL(coverImage);
+      
+      let gameFilePaths = undefined;
+      
+      if (gameFiles && (gameFiles.wasm || gameFiles.data || gameFiles.framework || gameFiles.loader || gameFiles.index)) {
+        gameFilePaths = {
+          wasmPath: gameFiles.wasm ? URL.createObjectURL(gameFiles.wasm) : undefined,
+          dataPath: gameFiles.data ? URL.createObjectURL(gameFiles.data) : undefined,
+          frameworkPath: gameFiles.framework ? URL.createObjectURL(gameFiles.framework) : undefined,
+          loaderPath: gameFiles.loader ? URL.createObjectURL(gameFiles.loader) : undefined,
+          indexPath: gameFiles.index ? URL.createObjectURL(gameFiles.index) : undefined,
+        };
+
+        if (gameFiles.index) {
+          gameUrl = gameFilePaths.indexPath || gameUrl;
+        }
+      }
 
       const newGame: Game = {
         id: String(games.length + 1),
@@ -105,6 +130,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         description,
         coverImage: coverImageUrl,
         gameUrl,
+        gameFiles: gameFilePaths,
         authorId: user.id,
         width,
         height,

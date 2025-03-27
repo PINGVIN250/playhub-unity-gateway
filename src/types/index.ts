@@ -13,6 +13,13 @@ export interface Game {
   description: string;
   coverImage: string;
   gameUrl: string;
+  gameFiles?: {
+    wasmPath?: string;
+    dataPath?: string;
+    frameworkPath?: string;
+    loaderPath?: string;
+    indexPath?: string;
+  };
   authorId: string;
   author?: User;
   width?: number;
@@ -43,4 +50,11 @@ export type GameFormData = {
   width: number;
   height: number;
   tags: string[];
+  gameFiles?: {
+    wasm: File | null;
+    data: File | null;
+    framework: File | null;
+    loader: File | null;
+    index: File | null;
+  };
 };

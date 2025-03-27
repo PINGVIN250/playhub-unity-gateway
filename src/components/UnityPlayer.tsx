@@ -91,6 +91,8 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     setIsLoading(false);
   };
 
+  const hasGameFiles = game.gameFiles && Object.values(game.gameFiles).some(Boolean);
+
   return (
     <div className="w-full">
       <div
