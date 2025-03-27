@@ -11,6 +11,7 @@ interface UnityPlayerProps {
 export function UnityPlayer({ game }: UnityPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const unityInstanceRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -22,22 +23,121 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     setLoadingProgress(0);
     setError(null);
     
-    // Simulating Unity WebGL loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+    const loadUnityGame = async () => {
+      try {
+        // Check if we have game files to load
+        if (game.gameFiles && (
+          game.gameFiles.wasmPath || 
+          game.gameFiles.dataPath || 
+          game.gameFiles.frameworkPath || 
+          game.gameFiles.loaderPath
+        )) {
+          console.log("Loading Unity game from files:", game.gameFiles);
+          
+          // We need a script loader function
+          const loadScript = (src: string): Promise<void> => {
+            return new Promise((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = src;
+              script.onload = () => resolve();
+              script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+              document.body.appendChild(script);
+            });
+          };
+          
+          // Create a Unity loader script if needed
+          if (game.gameFiles.loaderPath) {
+            try {
+              await loadScript(game.gameFiles.loaderPath);
+              console.log("Unity loader script loaded");
+              
+              // Create a Unity config for the container
+              if (typeof window.createUnityInstance === 'function') {
+                const config = {
+                  dataUrl: game.gameFiles.dataPath,
+                  frameworkUrl: game.gameFiles.frameworkPath,
+                  codeUrl: game.gameFiles.wasmPath,
+                  streamingAssetsUrl: "StreamingAssets",
+                  companyName: "Unity Developer",
+                  productName: game.title,
+                  productVersion: "1.0",
+                };
+                
+                const canvas = document.createElement('canvas');
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                canvas.id = 'unity-canvas';
+                
+                // Clear the container and add the canvas
+                if (containerRef.current) {
+                  containerRef.current.innerHTML = '';
+                  containerRef.current.appendChild(canvas);
+                  
+                  // Load Unity game
+                  try {
+                    window.createUnityInstance(canvas, config, (progress: number) => {
+                      setLoadingProgress(progress * 100);
+                    }).then((unityInstance: any) => {
+                      unityInstanceRef.current = unityInstance;
+                      setIsLoading(false);
+                    }).catch((error: Error) => {
+                      console.error("Unity instance creation error:", error);
+                      setError(`Failed to create Unity instance: ${error.message}`);
+                      setIsLoading(false);
+                    });
+                  } catch (error) {
+                    console.error("Error during Unity initialization:", error);
+                    setError(`Error initializing Unity: ${error instanceof Error ? error.message : String(error)}`);
+                    setIsLoading(false);
+                  }
+                }
+              } else {
+                console.error("createUnityInstance function not found");
+                setError("Unity loader is missing or incorrect");
+                setIsLoading(false);
+              }
+            } catch (error) {
+              console.error("Error loading Unity loader script:", error);
+              setError(`Failed to load Unity engine: ${error instanceof Error ? error.message : String(error)}`);
+              setIsLoading(false);
+            }
+          } else {
+            console.error("No Unity loader script provided");
+            setError("Missing Unity loader script");
+            setIsLoading(false);
+          }
+        } else if (game.gameUrl) {
+          // If we have a direct URL to the game, use iframe (fallback)
+          console.log("Using direct game URL:", game.gameUrl);
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 2000);
+        } else {
+          console.error("No game files or URL provided");
+          setError("No game files or URL provided");
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Error loading game:", error);
+        setError(`Error loading game: ${error instanceof Error ? error.message : String(error)}`);
+        setIsLoading(false);
+      }
+    };
 
-    // Simulate loading progress
-    const interval = setInterval(() => {
-      setLoadingProgress(prev => {
-        const newProgress = prev + Math.random() * 15;
-        return newProgress > 100 ? 100 : newProgress;
-      });
-    }, 200);
-
+    // Load the game
+    loadUnityGame();
+    
+    // Cleanup function
     return () => {
-      clearTimeout(timer);
-      clearInterval(interval);
+      // Destroy Unity instance if it exists
+      if (unityInstanceRef.current) {
+        try {
+          unityInstanceRef.current.Quit();
+          unityInstanceRef.current = null;
+        } catch (error) {
+          console.error("Error destroying Unity instance:", error);
+        }
+      }
     };
   }, [game.id]);
 
@@ -65,33 +165,38 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   }, []);
 
   const handleReload = () => {
-    if (iframeRef.current) {
-      // Reload the iframe content
+    // Reset loading state
+    setIsLoading(true);
+    setLoadingProgress(0);
+    setError(null);
+    
+    // Destroy current Unity instance if it exists
+    if (unityInstanceRef.current) {
+      try {
+        unityInstanceRef.current.Quit();
+        unityInstanceRef.current = null;
+      } catch (error) {
+        console.error("Error destroying Unity instance:", error);
+      }
+    }
+    
+    // Reload the iframe if using direct URL
+    if (iframeRef.current && game.gameUrl) {
       const currentSrc = iframeRef.current.src;
-      setIsLoading(true);
-      setLoadingProgress(0);
-      setError(null);
-      
-      // Force iframe reload by changing the src
       iframeRef.current.src = "";
       setTimeout(() => {
         if (iframeRef.current) {
           iframeRef.current.src = currentSrc;
         }
       }, 100);
+    } else {
+      // Re-trigger the useEffect to reload the Unity game
+      const gameId = game.id;
+      setTimeout(() => {
+        setIsLoading(true);
+      }, 0);
     }
   };
-
-  const handleIframeLoad = () => {
-    setIsLoading(false);
-  };
-
-  const handleIframeError = () => {
-    setError("Failed to load game content. Please try again.");
-    setIsLoading(false);
-  };
-
-  const hasGameFiles = game.gameFiles && Object.values(game.gameFiles).some(Boolean);
 
   return (
     <div className="w-full">
@@ -130,16 +235,16 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
           </div>
         ) : (
           <>
-            <iframe
-              ref={iframeRef}
-              src={game.gameUrl}
-              className="absolute inset-0 w-full h-full border-0"
-              title={game.title}
-              allow="autoplay; fullscreen; microphone; gamepad; accelerometer; gyroscope; camera"
-              onLoad={handleIframeLoad}
-              onError={handleIframeError}
-              sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
-            />
+            {game.gameUrl && !game.gameFiles?.indexPath && (
+              <iframe
+                ref={iframeRef}
+                src={game.gameUrl}
+                className="absolute inset-0 w-full h-full border-0"
+                title={game.title}
+                allow="autoplay; fullscreen; microphone; gamepad; accelerometer; gyroscope; camera"
+                sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
+              />
+            )}
             
             <div className="absolute bottom-4 right-4 flex gap-2">
               <Button 
@@ -168,4 +273,15 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
       </div>
     </div>
   );
+}
+
+// Add type declaration for Unity functions
+declare global {
+  interface Window {
+    createUnityInstance: (
+      canvas: HTMLCanvasElement,
+      config: any,
+      onProgress?: (progress: number) => void
+    ) => Promise<any>;
+  }
 }
