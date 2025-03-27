@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Game } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -37,6 +38,13 @@ const mockGames: Game[] = [
     description: "Explore the vastness of space in this exciting adventure game.",
     coverImage: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?q=80&w=1074&auto=format&fit=crop",
     gameUrl: "https://v6p9d9t4.ssl.hwcdn.net/html/4772356/WebGL/index.html",
+    gameFiles: {
+      wasmPath: undefined,
+      dataPath: undefined,
+      frameworkPath: undefined,
+      loaderPath: undefined,
+      indexPath: undefined
+    },
     authorId: "1",
     width: 960,
     height: 600,
@@ -51,6 +59,13 @@ const mockGames: Game[] = [
     description: "Navigate through dark dungeons and defeat monsters to find treasure.",
     coverImage: "https://images.unsplash.com/photo-1594035442286-673c9fc986c8?q=80&w=870&auto=format&fit=crop",
     gameUrl: "https://v6p9d9t4.ssl.hwcdn.net/html/6332008/index.html",
+    gameFiles: {
+      wasmPath: undefined,
+      dataPath: undefined,
+      frameworkPath: undefined,
+      loaderPath: undefined,
+      indexPath: undefined
+    },
     authorId: "1",
     width: 800,
     height: 600,
