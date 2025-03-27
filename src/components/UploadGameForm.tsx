@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -17,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { useGames } from "@/contexts/GameContext";
 import { useNavigate } from "react-router-dom";
-import { Upload, X, Loader2, FileUp, File } from "lucide-react";
+import { Upload, X, Loader2, FileUp, File as FileIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -107,7 +106,6 @@ export function UploadGameForm() {
   };
 
   const onSubmit = async (data: UploadFormValues) => {
-    // Validate that game files are provided if upload method is 'files'
     if (uploadMethod === 'files') {
       const hasRequiredFiles = gameFiles.wasm && gameFiles.data && gameFiles.framework && gameFiles.loader;
       if (!hasRequiredFiles) {
@@ -163,7 +161,7 @@ export function UploadGameForm() {
         </div>
         {file ? (
           <div className="flex items-center gap-2 border rounded px-3 py-2 text-sm">
-            <File className="h-4 w-4 text-muted-foreground" />
+            <FileIcon className="h-4 w-4 text-muted-foreground" />
             <span className="truncate">{file.name}</span>
           </div>
         ) : (
