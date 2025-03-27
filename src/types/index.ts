@@ -12,8 +12,8 @@ export interface Game {
   title: string;
   description: string;
   coverImage: string;
-  gameUrl: string;
-  gameFiles?: {
+  gameUrl?: string;
+  gameFiles: {
     wasmPath?: string;
     dataPath?: string;
     frameworkPath?: string;
@@ -46,11 +46,10 @@ export type GameFormData = {
   title: string;
   description: string;
   coverImage: File | null;
-  gameUrl: string;
   width: number;
   height: number;
   tags: string[];
-  gameFiles?: {
+  gameFiles: {
     wasm: File | null;
     data: File | null;
     framework: File | null;

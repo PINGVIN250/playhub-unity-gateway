@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -18,34 +19,23 @@ import { useGames } from "@/contexts/GameContext";
 import { useNavigate } from "react-router-dom";
 import { Upload, X, Loader2, FileUp, File as FileIcon } from "lucide-react";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const uploadFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(50, "Title must be less than 50 characters"),
   description: z.string().min(10, "Description must be at least 10 characters").max(500, "Description must be less than 500 characters"),
   coverImage: z.instanceof(File, { message: "Cover image is required" }),
-  gameUrl: z.string().url("Please enter a valid URL to your Unity WebGL build").optional(),
   width: z.coerce.number().int().min(300, "Width must be at least 300px").max(1920, "Width must be less than 1920px"),
   height: z.coerce.number().int().min(200, "Height must be at least 200px").max(1080, "Height must be less than 1080px"),
   tags: z.string().transform(val => val.split(",").map(tag => tag.trim()).filter(Boolean))
 });
 
-type UploadFormValues = z.infer<typeof uploadFormSchema> & {
-  gameFiles?: {
-    wasm: File | null;
-    data: File | null;
-    framework: File | null;
-    loader: File | null;
-    index: File | null;
-  }
-};
+type UploadFormValues = z.infer<typeof uploadFormSchema>;
 
 export function UploadGameForm() {
   const { addGame } = useGames();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
-  const [uploadMethod, setUploadMethod] = useState<'url' | 'files'>('url');
   const [gameFiles, setGameFiles] = useState<{
     wasm: File | null;
     data: File | null;
@@ -65,7 +55,6 @@ export function UploadGameForm() {
     defaultValues: {
       title: "",
       description: "",
-      gameUrl: "",
       width: 960,
       height: 600,
       tags: []
@@ -106,14 +95,9 @@ export function UploadGameForm() {
   };
 
   const onSubmit = async (data: UploadFormValues) => {
-    if (uploadMethod === 'files') {
-      const hasRequiredFiles = gameFiles.wasm && gameFiles.data && gameFiles.framework && gameFiles.loader;
-      if (!hasRequiredFiles) {
-        toast.error("Please upload all required Unity WebGL files (at minimum: .wasm, .data, framework.js, and loader.js)");
-        return;
-      }
-    } else if (!data.gameUrl) {
-      toast.error("Please provide a game URL");
+    const hasRequiredFiles = gameFiles.wasm && gameFiles.data && gameFiles.framework && gameFiles.loader;
+    if (!hasRequiredFiles) {
+      toast.error("Please upload all required Unity WebGL files (at minimum: .wasm, .data, framework.js, and loader.js)");
       return;
     }
 
@@ -123,11 +107,11 @@ export function UploadGameForm() {
         data.title,
         data.description,
         data.coverImage,
-        data.gameUrl || "",
+        "",
         data.width,
         data.height,
         data.tags,
-        uploadMethod === 'files' ? gameFiles : undefined
+        gameFiles
       );
       toast.success("Game successfully uploaded!");
       navigate("/dashboard");
@@ -333,80 +317,36 @@ export function UploadGameForm() {
               )}
             />
 
-            <Tabs defaultValue="url" onValueChange={(v) => setUploadMethod(v as 'url' | 'files')}>
-              <TabsList className="w-full grid grid-cols-2">
-                <TabsTrigger value="url">URL</TabsTrigger>
-                <TabsTrigger value="files">Upload Files</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="url" className="pt-4">
-                <FormField
-                  control={form.control}
-                  name="gameUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Unity WebGL Game URL</FormLabel>
-                      <FormDescription>
-                        Enter the URL to your hosted Unity WebGL game (index.html)
-                      </FormDescription>
-                      <FormControl>
-                        <Input 
-                          placeholder="https://example.com/webgl/index.html" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium mb-2">Upload Unity WebGL Files</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Upload your Unity WebGL build files directly. You'll need at minimum the following files from your Unity WebGL build folder.
+                </p>
+              </div>
 
-                <div className="p-4 bg-muted/50 rounded-md mt-4">
-                  <h3 className="font-medium mb-2 flex items-center">
-                    <FileUp className="h-4 w-4 mr-2" />
-                    How to upload your Unity WebGL game via URL
-                  </h3>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li>1. Build your game in Unity using WebGL platform</li>
-                    <li>2. Host the build files on a web server (GitHub Pages, Vercel, etc.)</li>
-                    <li>3. Enter the URL to the index.html file of your WebGL build</li>
-                    <li>4. Make sure your WebGL build is properly configured for cross-origin loading</li>
-                  </ul>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="files" className="pt-4">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium mb-2">Upload Unity WebGL Files</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Upload your Unity WebGL build files directly. You'll need at minimum the following files from your Unity WebGL build folder.
-                    </p>
-                  </div>
+              <div className="grid gap-3">
+                {renderFileUpload('wasm', 'WebAssembly (.wasm)', 'wasm')}
+                {renderFileUpload('data', 'Data File (.data)', 'data')}
+                {renderFileUpload('framework', 'Framework JS', 'js')}
+                {renderFileUpload('loader', 'Loader JS', 'js')}
+                {renderFileUpload('index', 'Index HTML (optional)', 'html')}
+              </div>
 
-                  <div className="grid gap-3">
-                    {renderFileUpload('wasm', 'WebAssembly (.wasm)', 'wasm')}
-                    {renderFileUpload('data', 'Data File (.data)', 'data')}
-                    {renderFileUpload('framework', 'Framework JS', 'js')}
-                    {renderFileUpload('loader', 'Loader JS', 'js')}
-                    {renderFileUpload('index', 'Index HTML (optional)', 'html')}
-                  </div>
-
-                  <div className="p-4 bg-muted/50 rounded-md mt-2">
-                    <h3 className="font-medium mb-2 flex items-center">
-                      <FileUp className="h-4 w-4 mr-2" />
-                      About Unity WebGL files
-                    </h3>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li><strong>.wasm file:</strong> Contains the compiled WebAssembly code</li>
-                      <li><strong>.data file:</strong> Contains assets and resources</li>
-                      <li><strong>framework.js:</strong> Unity's WebGL framework</li>
-                      <li><strong>loader.js:</strong> Loads and initializes the Unity content</li>
-                      <li><strong>index.html:</strong> Optional, contains the HTML wrapper</li>
-                    </ul>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
+              <div className="p-4 bg-muted/50 rounded-md mt-2">
+                <h3 className="font-medium mb-2 flex items-center">
+                  <FileUp className="h-4 w-4 mr-2" />
+                  About Unity WebGL files
+                </h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li><strong>.wasm file:</strong> Contains the compiled WebAssembly code</li>
+                  <li><strong>.data file:</strong> Contains assets and resources</li>
+                  <li><strong>framework.js:</strong> Unity's WebGL framework</li>
+                  <li><strong>loader.js:</strong> Loads and initializes the Unity content</li>
+                  <li><strong>index.html:</strong> Optional, contains the HTML wrapper</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
 
