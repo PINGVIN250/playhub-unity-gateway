@@ -11,7 +11,7 @@ interface GameContextType {
     title: string,
     description: string,
     coverImage: File,
-    gameFile: File,
+    gameUrl: string,
     width?: number,
     height?: number,
     tags?: string[]
@@ -30,7 +30,7 @@ const mockGames: Game[] = [
     title: "Space Adventure",
     description: "Explore the vastness of space in this exciting adventure game.",
     coverImage: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?q=80&w=1074&auto=format&fit=crop",
-    gameUrl: "https://example.com/games/space-adventure",
+    gameUrl: "https://v6p9d9t4.ssl.hwcdn.net/html/4772356/WebGL/index.html",
     authorId: "1",
     width: 960,
     height: 600,
@@ -44,7 +44,7 @@ const mockGames: Game[] = [
     title: "Dungeon Crawler",
     description: "Navigate through dark dungeons and defeat monsters to find treasure.",
     coverImage: "https://images.unsplash.com/photo-1594035442286-673c9fc986c8?q=80&w=870&auto=format&fit=crop",
-    gameUrl: "https://example.com/games/dungeon-crawler",
+    gameUrl: "https://v6p9d9t4.ssl.hwcdn.net/html/6332008/index.html",
     authorId: "1",
     width: 800,
     height: 600,
@@ -82,7 +82,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     title: string,
     description: string,
     coverImage: File,
-    gameFile: File,
+    gameUrl: string,
     width: number = 960,
     height: number = 600,
     tags: string[] = []
@@ -96,16 +96,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
         throw new Error("You must be logged in to add a game");
       }
 
-      // Create a URL for the uploaded file (in a real app, this would be uploaded to cloud storage)
+      // Create a URL for the uploaded cover image (in a real app, this would be uploaded to cloud storage)
       const coverImageUrl = URL.createObjectURL(coverImage);
-      const gameFileUrl = URL.createObjectURL(gameFile);
 
       const newGame: Game = {
         id: String(games.length + 1),
         title,
         description,
         coverImage: coverImageUrl,
-        gameUrl: gameFileUrl,
+        gameUrl,
         authorId: user.id,
         width,
         height,

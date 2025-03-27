@@ -12,18 +12,19 @@ import {
   FormField, 
   FormItem, 
   FormLabel, 
-  FormMessage 
+  FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 import { useGames } from "@/contexts/GameContext";
 import { useNavigate } from "react-router-dom";
-import { Upload, X, Loader2 } from "lucide-react";
+import { Upload, X, Loader2, FileUp } from "lucide-react";
 import { toast } from "sonner";
 
 const uploadFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(50, "Title must be less than 50 characters"),
   description: z.string().min(10, "Description must be at least 10 characters").max(500, "Description must be less than 500 characters"),
   coverImage: z.instanceof(File, { message: "Cover image is required" }),
-  gameFile: z.instanceof(File, { message: "Game file is required" }),
+  gameUrl: z.string().url("Please enter a valid URL to your Unity WebGL build"),
   width: z.coerce.number().int().min(300, "Width must be at least 300px").max(1920, "Width must be less than 1920px"),
   height: z.coerce.number().int().min(200, "Height must be at least 200px").max(1080, "Height must be less than 1080px"),
   tags: z.string().transform(val => val.split(",").map(tag => tag.trim()).filter(Boolean))
@@ -36,15 +37,17 @@ export function UploadGameForm() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
+  const [uploadMethod, setUploadMethod] = useState<'url' | 'file'>('url');
   
   const form = useForm<UploadFormValues>({
     resolver: zodResolver(uploadFormSchema),
     defaultValues: {
       title: "",
       description: "",
+      gameUrl: "",
       width: 960,
       height: 600,
-      tags: [] // Fixed: Changed from string to string[] to match the expected type
+      tags: []
     }
   });
 
@@ -54,13 +57,6 @@ export function UploadGameForm() {
       form.setValue("coverImage", file);
       const imageUrl = URL.createObjectURL(file);
       setCoverImagePreview(imageUrl);
-    }
-  };
-
-  const handleGameFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      form.setValue("gameFile", file);
     }
   };
 
@@ -80,11 +76,12 @@ export function UploadGameForm() {
         data.title,
         data.description,
         data.coverImage,
-        data.gameFile,
+        data.gameUrl,
         data.width,
         data.height,
         data.tags
       );
+      toast.success("Game successfully uploaded!");
       navigate("/dashboard");
     } catch (error) {
       console.error("Error uploading game:", error);
@@ -241,41 +238,36 @@ export function UploadGameForm() {
 
             <FormField
               control={form.control}
-              name="gameFile"
-              render={({ field: { value, onChange, ...field } }) => (
+              name="gameUrl"
+              render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Game File (WebGL Build)</FormLabel>
+                  <FormLabel>Unity WebGL Game URL</FormLabel>
+                  <FormDescription>
+                    Enter the URL to your hosted Unity WebGL game (index.html)
+                  </FormDescription>
                   <FormControl>
-                    <div className="border-2 border-dashed border-muted-foreground/25 rounded-md p-8 text-center">
-                      <Upload className="h-10 w-10 text-muted-foreground/50 mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Upload your Unity WebGL build files
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Accepted formats: .zip containing WebGL build
-                      </p>
-                      <Input
-                        id="gameFile"
-                        type="file"
-                        accept=".zip,.unitypackage"
-                        className="hidden"
-                        onChange={handleGameFileChange}
-                        {...field}
-                      />
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="mt-4"
-                        onClick={() => document.getElementById("gameFile")?.click()}
-                      >
-                        Select Game File
-                      </Button>
-                    </div>
+                    <Input 
+                      placeholder="https://example.com/webgl/index.html" 
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            <div className="p-4 bg-muted/50 rounded-md mt-4">
+              <h3 className="font-medium mb-2 flex items-center">
+                <FileUp className="h-4 w-4 mr-2" />
+                How to upload your Unity WebGL game
+              </h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>1. Build your game in Unity using WebGL platform</li>
+                <li>2. Host the build files on a web server (GitHub Pages, Vercel, etc.)</li>
+                <li>3. Enter the URL to the index.html file of your WebGL build</li>
+                <li>4. Make sure your WebGL build is properly configured for cross-origin loading</li>
+              </ul>
+            </div>
           </div>
         </div>
 

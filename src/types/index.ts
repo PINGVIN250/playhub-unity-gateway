@@ -39,7 +39,7 @@ export type GameFormData = {
   title: string;
   description: string;
   coverImage: File | null;
-  gameFile: File | null;
+  gameUrl: string;
   width: number;
   height: number;
   tags: string[];

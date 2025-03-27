@@ -17,6 +17,11 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Reset loading state when game changes
+    setIsLoading(true);
+    setLoadingProgress(0);
+    setError(null);
+    
     // Simulating Unity WebGL loading
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -60,26 +65,21 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   }, []);
 
   const handleReload = () => {
-    setIsLoading(true);
-    setLoadingProgress(0);
-    setError(null);
-
-    // Simulate reloading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    const interval = setInterval(() => {
-      setLoadingProgress(prev => {
-        const newProgress = prev + Math.random() * 15;
-        return newProgress > 100 ? 100 : newProgress;
-      });
-    }, 200);
-
-    return () => {
-      clearTimeout(timer);
-      clearInterval(interval);
-    };
+    if (iframeRef.current) {
+      // Reload the iframe content
+      const currentSrc = iframeRef.current.src;
+      setIsLoading(true);
+      setLoadingProgress(0);
+      setError(null);
+      
+      // Force iframe reload by changing the src
+      iframeRef.current.src = "";
+      setTimeout(() => {
+        if (iframeRef.current) {
+          iframeRef.current.src = currentSrc;
+        }
+      }, 100);
+    }
   };
 
   const handleIframeLoad = () => {
