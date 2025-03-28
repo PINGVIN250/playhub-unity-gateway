@@ -3,13 +3,14 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { User } from "@/types";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { AuthResponse, Session, WeakPassword } from "@supabase/supabase-js";
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<AuthResponse>;
+  register: (username: string, email: string, password: string) => Promise<AuthResponse>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -96,17 +97,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const response = await supabase.auth.signInWithPassword({
         email,
         password
       });
       
-      if (error) {
-        throw error;
+      if (response.error) {
+        throw response.error;
       }
       
       toast.success(`Welcome back!`);
+      return response;
     } catch (error) {
+      console.error("Login error:", error);
       const message = error instanceof Error ? error.message : "Login failed";
       toast.error(message);
       throw error;
@@ -119,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       // Register user
-      const { data, error } = await supabase.auth.signUp({
+      const response = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -129,17 +132,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       });
       
-      if (error) {
-        throw error;
+      if (response.error) {
+        throw response.error;
       }
       
       // Update the username in the profiles table directly if needed
       // This is a fallback in case the trigger doesn't work correctly
-      if (data.user) {
+      if (response.data.user) {
         const { error: profileError } = await supabase
           .from('profiles')
           .update({ username })
-          .eq('id', data.user.id);
+          .eq('id', response.data.user.id);
           
         if (profileError) {
           console.error("Profile update failed:", profileError);
@@ -147,7 +150,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       toast.success("Registration successful! Please check your email for verification.");
+      return response;
     } catch (error) {
+      console.error("Registration error:", error);
       const message = error instanceof Error ? error.message : "Registration failed";
       toast.error(message);
       throw error;
