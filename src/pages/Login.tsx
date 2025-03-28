@@ -43,10 +43,8 @@ const Login = () => {
   const onSubmit = async (data: LoginFormValues) => {
     setIsSubmitting(true);
     try {
-      const response = await login(data.email, data.password);
-      if (response.data.user) {
-        navigate("/dashboard");
-      }
+      await login(data.email, data.password);
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
       // Show error toast with the error message
