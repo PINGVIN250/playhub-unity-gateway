@@ -158,7 +158,11 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
           iframe.className = "absolute inset-0 w-full h-full border-0";
           iframe.title = game.title;
           iframe.allow = "autoplay; fullscreen; microphone; gamepad; accelerometer; gyroscope; camera";
-          iframe.sandbox = "allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts";
+          
+          // Instead of directly setting the sandbox attribute, create it with the correct attribute during creation
+          const sandboxValues = "allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts";
+          iframe.setAttribute("sandbox", sandboxValues);
+          
           iframeRef.current = iframe;
           
           containerRef.current.appendChild(iframe);
