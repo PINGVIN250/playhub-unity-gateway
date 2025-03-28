@@ -105,12 +105,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
       
-      // Success notification only if we have a user
-      if (data?.user) {
-        toast.success(`Welcome back!`);
-      }
+      toast.success(`Welcome back!`);
     } catch (error) {
-      console.error("Login error:", error);
       const message = error instanceof Error ? error.message : "Login failed";
       toast.error(message);
       throw error;
@@ -152,7 +148,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       toast.success("Registration successful! Please check your email for verification.");
     } catch (error) {
-      console.error("Registration error:", error);
       const message = error instanceof Error ? error.message : "Registration failed";
       toast.error(message);
       throw error;
@@ -163,7 +158,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      setIsLoading(true);
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -175,8 +169,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Logout failed:", error);
       toast.error("Logout failed");
-    } finally {
-      setIsLoading(false);
     }
   };
 
