@@ -18,7 +18,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Loader2, Gamepad } from "lucide-react";
-import { toast } from "sonner";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -43,24 +42,10 @@ const Login = () => {
   const onSubmit = async (data: LoginFormValues) => {
     setIsSubmitting(true);
     try {
-      const response = await login(data.email, data.password);
-      if (response.data.user) {
-        navigate("/dashboard");
-      }
+      await login(data.email, data.password);
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
-      // Show error toast with the error message
-      let errorMessage = "Login failed. Please check your credentials.";
-      if (error instanceof Error) {
-        const authError = error as any;
-        if (authError.code === "invalid_credentials") {
-          errorMessage = "Invalid email or password";
-        } else if (authError.message) {
-          errorMessage = authError.message;
-        }
-      }
-      toast.error(errorMessage);
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -91,7 +76,6 @@ const Login = () => {
                         <Input 
                           placeholder="Enter your email" 
                           {...field} 
-                          disabled={isSubmitting}
                         />
                       </FormControl>
                       <FormMessage />
@@ -110,7 +94,6 @@ const Login = () => {
                           type="password" 
                           placeholder="Enter your password" 
                           {...field} 
-                          disabled={isSubmitting}
                         />
                       </FormControl>
                       <FormMessage />
