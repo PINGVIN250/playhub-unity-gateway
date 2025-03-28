@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { Game } from "@/types";
 import { useAuth } from "./AuthContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GameContextType {
   games: Game[];
@@ -30,62 +31,57 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-// Mock data
-const mockGames: Game[] = [
-  {
-    id: "1",
-    title: "Space Adventure",
-    description: "Explore the vastness of space in this exciting adventure game.",
-    coverImage: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?q=80&w=1074&auto=format&fit=crop",
-    gameUrl: "https://v6p9d9t4.ssl.hwcdn.net/html/4772356/WebGL/index.html",
-    gameFiles: {
-      wasmPath: undefined,
-      dataPath: undefined,
-      frameworkPath: undefined,
-      loaderPath: undefined,
-      indexPath: undefined
-    },
-    authorId: "1",
-    width: 960,
-    height: 600,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    tags: ["adventure", "space", "exploration"],
-    featured: true
-  },
-  {
-    id: "2",
-    title: "Dungeon Crawler",
-    description: "Navigate through dark dungeons and defeat monsters to find treasure.",
-    coverImage: "https://images.unsplash.com/photo-1594035442286-673c9fc986c8?q=80&w=870&auto=format&fit=crop",
-    gameUrl: "https://v6p9d9t4.ssl.hwcdn.net/html/6332008/index.html",
-    gameFiles: {
-      wasmPath: undefined,
-      dataPath: undefined,
-      frameworkPath: undefined,
-      loaderPath: undefined,
-      indexPath: undefined
-    },
-    authorId: "1",
-    width: 800,
-    height: 600,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    tags: ["rpg", "dungeon", "adventure"],
-    featured: false
-  }
-];
-
 export function GameProvider({ children }: { children: ReactNode }) {
-  const [games, setGames] = useState<Game[]>(mockGames);
+  const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { user } = useAuth();
 
   useEffect(() => {
     const loadGames = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setGames(mockGames);
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('games')
+          .select(`
+            *,
+            profiles:author_id(username)
+          `);
+
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          const formattedGames: Game[] = data.map(game => ({
+            id: game.id,
+            title: game.title,
+            description: game.description,
+            coverImage: game.cover_image_url || '',
+            gameUrl: game.game_url || '',
+            gameFiles: {
+              wasmPath: game.wasm_path,
+              dataPath: game.data_path,
+              frameworkPath: game.framework_path,
+              loaderPath: game.loader_path,
+              indexPath: game.index_path
+            },
+            authorId: game.author_id,
+            author: game.profiles ? {
+              id: game.author_id,
+              username: game.profiles.username,
+              email: '',
+              createdAt: new Date()
+            } : undefined,
+            width: game.width || 960,
+            height: game.height || 600,
+            createdAt: new Date(game.created_at),
+            updatedAt: new Date(game.updated_at),
+            tags: [],
+            featured: game.featured || false
+          }));
+
+          setGames(formattedGames);
+        }
       } catch (error) {
         console.error("Failed to load games:", error);
         toast.error("Failed to load games");
@@ -115,44 +111,165 @@ export function GameProvider({ children }: { children: ReactNode }) {
   ): Promise<Game> => {
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
       if (!user) {
         throw new Error("You must be logged in to add a game");
       }
 
-      const coverImageUrl = URL.createObjectURL(coverImage);
-      
-      let gameFilePaths = undefined;
-      
-      if (gameFiles && (gameFiles.wasm || gameFiles.data || gameFiles.framework || gameFiles.loader || gameFiles.index)) {
-        gameFilePaths = {
-          wasmPath: gameFiles.wasm ? URL.createObjectURL(gameFiles.wasm) : undefined,
-          dataPath: gameFiles.data ? URL.createObjectURL(gameFiles.data) : undefined,
-          frameworkPath: gameFiles.framework ? URL.createObjectURL(gameFiles.framework) : undefined,
-          loaderPath: gameFiles.loader ? URL.createObjectURL(gameFiles.loader) : undefined,
-          indexPath: gameFiles.index ? URL.createObjectURL(gameFiles.index) : undefined,
-        };
+      let coverImageUrl = '';
+      let wasmPath = '';
+      let dataPath = '';
+      let frameworkPath = '';
+      let loaderPath = '';
+      let indexPath = '';
+
+      // Upload cover image to storage
+      if (coverImage) {
+        const fileExt = coverImage.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+
+        const { error: uploadError, data } = await supabase.storage
+          .from('game_images')
+          .upload(filePath, coverImage);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('game_images')
+          .getPublicUrl(filePath);
+
+        coverImageUrl = urlData.publicUrl;
+      }
+
+      // Upload game files if they exist
+      if (gameFiles) {
+        if (gameFiles.wasm) {
+          const filePath = `${user.id}/${Math.random().toString(36).substring(2, 10)}_${gameFiles.wasm.name}`;
+          await supabase.storage.from('game_files').upload(filePath, gameFiles.wasm);
+          const { data } = supabase.storage.from('game_files').getPublicUrl(filePath);
+          wasmPath = data.publicUrl;
+        }
+
+        if (gameFiles.data) {
+          const filePath = `${user.id}/${Math.random().toString(36).substring(2, 10)}_${gameFiles.data.name}`;
+          await supabase.storage.from('game_files').upload(filePath, gameFiles.data);
+          const { data } = supabase.storage.from('game_files').getPublicUrl(filePath);
+          dataPath = data.publicUrl;
+        }
+
+        if (gameFiles.framework) {
+          const filePath = `${user.id}/${Math.random().toString(36).substring(2, 10)}_${gameFiles.framework.name}`;
+          await supabase.storage.from('game_files').upload(filePath, gameFiles.framework);
+          const { data } = supabase.storage.from('game_files').getPublicUrl(filePath);
+          frameworkPath = data.publicUrl;
+        }
+
+        if (gameFiles.loader) {
+          const filePath = `${user.id}/${Math.random().toString(36).substring(2, 10)}_${gameFiles.loader.name}`;
+          await supabase.storage.from('game_files').upload(filePath, gameFiles.loader);
+          const { data } = supabase.storage.from('game_files').getPublicUrl(filePath);
+          loaderPath = data.publicUrl;
+        }
 
         if (gameFiles.index) {
-          gameUrl = gameFilePaths.indexPath || gameUrl;
+          const filePath = `${user.id}/${Math.random().toString(36).substring(2, 10)}_${gameFiles.index.name}`;
+          await supabase.storage.from('game_files').upload(filePath, gameFiles.index);
+          const { data } = supabase.storage.from('game_files').getPublicUrl(filePath);
+          indexPath = data.publicUrl;
         }
       }
 
+      // Insert game record
+      const { data, error } = await supabase
+        .from('games')
+        .insert({
+          title,
+          description,
+          cover_image_url: coverImageUrl,
+          game_url: gameUrl || indexPath, // Use index.html URL as game URL if no explicit URL provided
+          wasm_path: wasmPath,
+          data_path: dataPath,
+          framework_path: frameworkPath,
+          loader_path: loaderPath,
+          index_path: indexPath,
+          author_id: user.id,
+          width,
+          height
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      // Insert tags if provided
+      if (tags && tags.length > 0) {
+        for (const tagName of tags) {
+          // First check if tag exists
+          let { data: existingTag } = await supabase
+            .from('tags')
+            .select('id')
+            .eq('name', tagName.trim().toLowerCase())
+            .single();
+
+          let tagId;
+
+          if (!existingTag) {
+            // Create tag if it doesn't exist
+            const { data: newTag } = await supabase
+              .from('tags')
+              .insert({ name: tagName.trim().toLowerCase() })
+              .select('id')
+              .single();
+            
+            tagId = newTag?.id;
+          } else {
+            tagId = existingTag.id;
+          }
+
+          if (tagId) {
+            // Create relationship between game and tag
+            await supabase
+              .from('game_tags')
+              .insert({
+                game_id: data.id,
+                tag_id: tagId
+              });
+          }
+        }
+      }
+
+      // Format the new game for the UI
       const newGame: Game = {
-        id: String(games.length + 1),
-        title,
-        description,
-        coverImage: coverImageUrl,
-        gameUrl,
-        gameFiles: gameFilePaths,
-        authorId: user.id,
-        width,
-        height,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        tags,
-        featured: false
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        coverImage: data.cover_image_url || '',
+        gameUrl: data.game_url || '',
+        gameFiles: {
+          wasmPath: data.wasm_path,
+          dataPath: data.data_path,
+          frameworkPath: data.framework_path,
+          loaderPath: data.loader_path,
+          indexPath: data.index_path
+        },
+        authorId: data.author_id,
+        author: user ? {
+          id: user.id,
+          username: user.username,
+          email: '',
+          createdAt: new Date()
+        } : undefined,
+        width: data.width || 960,
+        height: data.height || 600,
+        createdAt: new Date(data.created_at),
+        updatedAt: new Date(data.updated_at),
+        tags: tags || [],
+        featured: data.featured || false
       };
 
       setGames(prevGames => [...prevGames, newGame]);
