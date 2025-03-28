@@ -44,7 +44,7 @@ const Login = () => {
     setIsSubmitting(true);
     try {
       const response = await login(data.email, data.password);
-      if (response.user) {
+      if (response.data.user) {
         navigate("/dashboard");
       }
     } catch (error) {
