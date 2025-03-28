@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Loader2, Gamepad } from "lucide-react";
+import { toast } from "sonner";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -27,7 +28,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login, isLoading } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -40,15 +41,23 @@ const Login = () => {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
+    if (isSubmitting) return; // Prevent multiple submissions
+    
     setIsSubmitting(true);
     try {
       await login(data.email, data.password);
       navigate("/dashboard");
     } catch (error) {
-      console.error("Login error:", error);
+      // Error is already handled in the login function with toast
+      console.error("Login submission error:", error);
+      // Don't show duplicate error messages here since they're shown in AuthContext
+    } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Use both the context loading state and the local submitting state
+  const isButtonLoading = isLoading || isSubmitting;
 
   return (
     <div className="min-h-screen flex flex-col page-transition">
@@ -76,6 +85,7 @@ const Login = () => {
                         <Input 
                           placeholder="Enter your email" 
                           {...field} 
+                          disabled={isButtonLoading}
                         />
                       </FormControl>
                       <FormMessage />
@@ -94,6 +104,7 @@ const Login = () => {
                           type="password" 
                           placeholder="Enter your password" 
                           {...field} 
+                          disabled={isButtonLoading}
                         />
                       </FormControl>
                       <FormMessage />
@@ -113,9 +124,9 @@ const Login = () => {
                 <Button 
                   type="submit" 
                   className="w-full"
-                  disabled={isSubmitting}
+                  disabled={isButtonLoading}
                 >
-                  {isSubmitting && (
+                  {isButtonLoading && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   )}
                   Sign In
