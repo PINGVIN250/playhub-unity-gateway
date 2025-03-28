@@ -3,13 +3,14 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { User } from "@/types";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { AuthResponse, Session, WeakPassword } from "@supabase/supabase-js";
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<AuthResponse>;
+  register: (username: string, email: string, password: string) => Promise<AuthResponse>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
