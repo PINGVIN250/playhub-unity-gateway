@@ -133,6 +133,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
       
+      // Update the username in the profiles table directly if needed
+      // This is a fallback in case the trigger doesn't work correctly
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ username })
+          .eq('id', data.user.id);
+          
+        if (profileError) {
+          console.error("Profile update failed:", profileError);
+        }
+      }
+      
       toast.success("Registration successful! Please check your email for verification.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Registration failed";
