@@ -30,6 +30,7 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -41,11 +42,13 @@ const Login = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsSubmitting(true);
+    setError(null);
     try {
       await login(data.email, data.password);
       navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
+      setError(error instanceof Error ? error.message : "Invalid login credentials. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -63,6 +66,12 @@ const Login = () => {
                 Sign in to access your games and dashboard
               </p>
             </div>
+            
+            {error && (
+              <div className="bg-destructive/15 text-destructive rounded-md p-3 mb-4 text-sm">
+                {error}
+              </div>
+            )}
             
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

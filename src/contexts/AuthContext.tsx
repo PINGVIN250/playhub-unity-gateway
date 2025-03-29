@@ -106,8 +106,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       toast.success(`Welcome back!`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Login failed";
+    } catch (error: any) {
+      const message = error?.message || "Login failed";
       toast.error(message);
       throw error;
     } finally {
@@ -147,8 +147,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       toast.success("Registration successful! Please check your email for verification.");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Registration failed";
+    } catch (error: any) {
+      const message = error?.message || "Registration failed";
       toast.error(message);
       throw error;
     } finally {
