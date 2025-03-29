@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (username: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Register user
+      // Register user with username in the user_metadata
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -133,16 +133,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
       
-      // Update the username in the profiles table directly if needed
-      // This is a fallback in case the trigger doesn't work correctly
+      // Explicitly create or update the profile with the username
       if (data.user) {
         const { error: profileError } = await supabase
           .from('profiles')
-          .update({ username })
-          .eq('id', data.user.id);
+          .upsert({ 
+            id: data.user.id,
+            username,
+            updated_at: new Date().toISOString()
+          });
           
         if (profileError) {
           console.error("Profile update failed:", profileError);
+          throw profileError;
         }
       }
       
