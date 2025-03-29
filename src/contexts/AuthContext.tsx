@@ -81,9 +81,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
           } catch (error) {
             console.error("Profile fetch failed:", error);
+          } finally {
+            setIsLoading(false);
           }
         } else {
           setUser(null);
+          setIsLoading(false);
         }
       }
     );
@@ -105,13 +108,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
       
+      // We don't need to manually set the user here as the onAuthStateChange listener will handle it
       toast.success(`Welcome back!`);
+      return data;
     } catch (error: any) {
       const message = error?.message || "Login failed";
       toast.error(message);
+      setIsLoading(false); // Ensure loading state is reset on error
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -150,17 +154,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       toast.success("Registration successful! Please check your email for verification.");
+      return data;
     } catch (error: any) {
       const message = error?.message || "Registration failed";
       toast.error(message);
+      setIsLoading(false); // Ensure loading state is reset on error
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const logout = async () => {
     try {
+      setIsLoading(true);
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -172,6 +177,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Logout failed:", error);
       toast.error("Logout failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 

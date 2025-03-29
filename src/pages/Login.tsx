@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -27,7 +27,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login, user, isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,15 +40,25 @@ const Login = () => {
     }
   });
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
   const onSubmit = async (data: LoginFormValues) => {
+    if (isSubmitting) return;
+    
     setIsSubmitting(true);
     setError(null);
     try {
       await login(data.email, data.password);
-      navigate("/dashboard");
+      // Don't navigate here, let the useEffect handle it when isAuthenticated changes
     } catch (error) {
       console.error("Login error:", error);
       setError(error instanceof Error ? error.message : "Invalid login credentials. Please try again.");
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -122,9 +132,9 @@ const Login = () => {
                 <Button 
                   type="submit" 
                   className="w-full"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isLoading}
                 >
-                  {isSubmitting && (
+                  {(isSubmitting || isLoading) && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   )}
                   Sign In
