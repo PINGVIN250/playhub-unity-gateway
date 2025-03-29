@@ -7,9 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<any>; // Updated return type
-  register: (username: string, email: string, password: string) => Promise<any>; // Updated return type
-  logout: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string) => Promise<void>;
+  logout: () => void;
   isAuthenticated: boolean;
 }
 
@@ -81,12 +81,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
           } catch (error) {
             console.error("Profile fetch failed:", error);
-          } finally {
-            setIsLoading(false);
           }
         } else {
           setUser(null);
-          setIsLoading(false);
         }
       }
     );
@@ -108,21 +105,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
       
-      // We don't need to manually set the user here as the onAuthStateChange listener will handle it
       toast.success(`Welcome back!`);
-      return data;
-    } catch (error: any) {
-      const message = error?.message || "Login failed";
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Login failed";
       toast.error(message);
-      setIsLoading(false); // Ensure loading state is reset on error
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const register = async (username: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Register user with username in the user_metadata
+      // Register user
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -137,35 +133,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
       
-      // Explicitly create or update the profile with the username
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .upsert({ 
-            id: data.user.id,
-            username,
-            updated_at: new Date().toISOString()
-          });
-          
-        if (profileError) {
-          console.error("Profile update failed:", profileError);
-          throw profileError;
-        }
-      }
-      
       toast.success("Registration successful! Please check your email for verification.");
-      return data;
-    } catch (error: any) {
-      const message = error?.message || "Registration failed";
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Registration failed";
       toast.error(message);
-      setIsLoading(false); // Ensure loading state is reset on error
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = async () => {
     try {
-      setIsLoading(true);
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -177,8 +156,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Logout failed:", error);
       toast.error("Logout failed");
-    } finally {
-      setIsLoading(false);
     }
   };
 

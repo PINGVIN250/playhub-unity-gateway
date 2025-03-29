@@ -35,7 +35,6 @@ const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -49,14 +48,11 @@ const Register = () => {
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsSubmitting(true);
-    setError(null);
     try {
       await register(data.username, data.email, data.password);
       navigate("/dashboard");
     } catch (error) {
       console.error("Registration error:", error);
-      setError(error instanceof Error ? error.message : "Registration failed. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -74,12 +70,6 @@ const Register = () => {
                 Join our community and showcase your Unity games
               </p>
             </div>
-            
-            {error && (
-              <div className="bg-destructive/15 text-destructive rounded-md p-3 mb-4 text-sm">
-                {error}
-              </div>
-            )}
             
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

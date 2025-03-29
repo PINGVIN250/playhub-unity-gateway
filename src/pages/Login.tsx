@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -27,10 +27,9 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const { login, user, isLoading, isAuthenticated } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -40,25 +39,13 @@ const Login = () => {
     }
   });
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated && !isLoading) {
-      navigate("/dashboard");
-    }
-  }, [isAuthenticated, isLoading, navigate]);
-
   const onSubmit = async (data: LoginFormValues) => {
-    if (isSubmitting) return;
-    
     setIsSubmitting(true);
-    setError(null);
     try {
       await login(data.email, data.password);
-      // Don't navigate here, let the useEffect handle it when isAuthenticated changes
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
-      setError(error instanceof Error ? error.message : "Invalid login credentials. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -76,12 +63,6 @@ const Login = () => {
                 Sign in to access your games and dashboard
               </p>
             </div>
-            
-            {error && (
-              <div className="bg-destructive/15 text-destructive rounded-md p-3 mb-4 text-sm">
-                {error}
-              </div>
-            )}
             
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -132,9 +113,9 @@ const Login = () => {
                 <Button 
                   type="submit" 
                   className="w-full"
-                  disabled={isSubmitting || isLoading}
+                  disabled={isSubmitting}
                 >
-                  {(isSubmitting || isLoading) && (
+                  {isSubmitting && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   )}
                   Sign In
