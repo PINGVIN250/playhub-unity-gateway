@@ -144,7 +144,7 @@ const Login = () => {
             
             <div className="mt-6 pt-6 border-t text-center">
               <p className="text-xs text-muted-foreground">
-                For demo purposes, use <strong>admin@example.com</strong> with password <strong>password</strong>
+                For testing purposes, use <strong>admin@example.com</strong> with password <strong>password</strong>
               </p>
             </div>
           </div>
