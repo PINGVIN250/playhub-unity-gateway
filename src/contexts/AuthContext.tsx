@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User } from "@/types";
 import { toast } from "sonner";
@@ -7,8 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<any>;
-  register: (username: string, email: string, password: string) => Promise<any>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -136,7 +135,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Removed the profile update code as requested
       
       toast.success("Registration successful! Please check your email for verification.");
-      return data;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Registration failed";
       toast.error(message);
