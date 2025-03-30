@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Game } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -39,73 +40,46 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const loadGames = async () => {
       try {
         setIsLoading(true);
-        
-        // Fetch games first
-        const { data: gamesData, error: gamesError } = await supabase
+        // Modified query to properly join profiles table by referencing author_id correctly
+        const { data, error } = await supabase
           .from('games')
-          .select('*');
+          .select(`
+            *,
+            profiles:author_id(*)
+          `);
 
-        if (gamesError) {
-          throw gamesError;
+        if (error) {
+          throw error;
         }
 
-        if (gamesData) {
-          // Create a map to store profiles by ID for efficient lookup
-          const profilesMap = new Map();
-          
-          // Fetch all profiles for games' authors
-          const authorIds = gamesData.map(game => game.author_id).filter(Boolean);
-          if (authorIds.length > 0) {
-            const { data: profilesData, error: profilesError } = await supabase
-              .from('profiles')
-              .select('*')
-              .in('id', authorIds);
-              
-            if (profilesError) {
-              console.error("Error fetching profiles:", profilesError);
-            }
-            
-            if (profilesData) {
-              // Create a map of profiles by id for easy lookup
-              profilesData.forEach(profile => {
-                profilesMap.set(profile.id, profile);
-              });
-            }
-          }
-
-          // Map games data with author information
-          const formattedGames: Game[] = gamesData.map(game => {
-            const authorProfile = profilesMap.get(game.author_id);
-            
-            return {
-              id: game.id,
-              title: game.title,
-              description: game.description,
-              coverImage: game.cover_image_url || '',
-              gameUrl: game.game_url || '',
-              gameFiles: {
-                wasmPath: game.wasm_path,
-                dataPath: game.data_path,
-                frameworkPath: game.framework_path,
-                loaderPath: game.loader_path,
-                indexPath: game.index_path
-              },
-              authorId: game.author_id,
-              author: authorProfile ? {
-                id: authorProfile.id,
-                username: authorProfile.username,
-                email: authorProfile.email || '',
-                createdAt: new Date(authorProfile.created_at),
-                isAdmin: authorProfile.is_admin
-              } : undefined,
-              width: game.width || 960,
-              height: game.height || 600,
-              createdAt: new Date(game.created_at),
-              updatedAt: new Date(game.updated_at),
-              tags: [],
-              featured: game.featured || false
-            };
-          });
+        if (data) {
+          const formattedGames: Game[] = data.map(game => ({
+            id: game.id,
+            title: game.title,
+            description: game.description,
+            coverImage: game.cover_image_url || '',
+            gameUrl: game.game_url || '',
+            gameFiles: {
+              wasmPath: game.wasm_path,
+              dataPath: game.data_path,
+              frameworkPath: game.framework_path,
+              loaderPath: game.loader_path,
+              indexPath: game.index_path
+            },
+            authorId: game.author_id,
+            author: game.profiles ? {
+              id: game.author_id,
+              username: game.profiles.username,
+              email: '',
+              createdAt: new Date(game.profiles.created_at)
+            } : undefined,
+            width: game.width || 960,
+            height: game.height || 600,
+            createdAt: new Date(game.created_at),
+            updatedAt: new Date(game.updated_at),
+            tags: [],
+            featured: game.featured || false
+          }));
 
           setGames(formattedGames);
         }
@@ -288,7 +262,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         author: user ? {
           id: user.id,
           username: user.username,
-          email: user.email || '',
+          email: '',
           createdAt: new Date()
         } : undefined,
         width: data.width || 960,
