@@ -40,12 +40,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const loadGames = async () => {
       try {
         setIsLoading(true);
-        // Modified query to properly join profiles table by referencing author_id correctly
         const { data, error } = await supabase
           .from('games')
           .select(`
             *,
-            profiles:author_id(*)
+            profiles:author_id(username)
           `);
 
         if (error) {
@@ -71,7 +70,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
               id: game.author_id,
               username: game.profiles.username,
               email: '',
-              createdAt: new Date(game.profiles.created_at)
+              createdAt: new Date()
             } : undefined,
             width: game.width || 960,
             height: game.height || 600,
