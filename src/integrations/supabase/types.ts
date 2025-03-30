@@ -9,60 +9,21 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      comments: {
+      game_tags: {
         Row: {
-          content: string
           created_at: string
           game_id: string
           id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          game_id: string
-          id?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          game_id?: string
-          id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "comments_game_id_fkey"
-            columns: ["game_id"]
-            isOneToOne: false
-            referencedRelation: "games"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      game_tags: {
-        Row: {
-          game_id: string
-          id: string
           tag_id: string
         }
         Insert: {
+          created_at?: string
           game_id: string
           id?: string
           tag_id: string
         }
         Update: {
+          created_at?: string
           game_id?: string
           id?: string
           tag_id?: string
@@ -90,7 +51,7 @@ export type Database = {
           cover_image_url: string | null
           created_at: string
           data_path: string | null
-          description: string
+          description: string | null
           featured: boolean | null
           framework_path: string | null
           game_url: string | null
@@ -100,7 +61,6 @@ export type Database = {
           loader_path: string | null
           title: string
           updated_at: string
-          views: number | null
           wasm_path: string | null
           width: number | null
         }
@@ -109,7 +69,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           data_path?: string | null
-          description: string
+          description?: string | null
           featured?: boolean | null
           framework_path?: string | null
           game_url?: string | null
@@ -119,7 +79,6 @@ export type Database = {
           loader_path?: string | null
           title: string
           updated_at?: string
-          views?: number | null
           wasm_path?: string | null
           width?: number | null
         }
@@ -128,7 +87,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           data_path?: string | null
-          description?: string
+          description?: string | null
           featured?: boolean | null
           framework_path?: string | null
           game_url?: string | null
@@ -138,96 +97,51 @@ export type Database = {
           loader_path?: string | null
           title?: string
           updated_at?: string
-          views?: number | null
           wasm_path?: string | null
           width?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "games_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
-          avatar_url: string | null
           created_at: string
+          email: string | null
           id: string
-          is_admin: boolean | null
+          is_admin: boolean
           updated_at: string
           username: string
         }
         Insert: {
-          avatar_url?: string | null
           created_at?: string
+          email?: string | null
           id: string
-          is_admin?: boolean | null
+          is_admin?: boolean
           updated_at?: string
           username: string
         }
         Update: {
-          avatar_url?: string | null
           created_at?: string
+          email?: string | null
           id?: string
-          is_admin?: boolean | null
+          is_admin?: boolean
           updated_at?: string
           username?: string
         }
         Relationships: []
       }
-      ratings: {
-        Row: {
-          created_at: string
-          game_id: string
-          id: string
-          score: number
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          game_id: string
-          id?: string
-          score: number
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          game_id?: string
-          id?: string
-          score?: number
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ratings_game_id_fkey"
-            columns: ["game_id"]
-            isOneToOne: false
-            referencedRelation: "games"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ratings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       tags: {
         Row: {
+          created_at: string
           id: string
           name: string
         }
         Insert: {
+          created_at?: string
           id?: string
           name: string
         }
         Update: {
+          created_at?: string
           id?: string
           name?: string
         }

@@ -102,6 +102,22 @@ export function UploadGameForm() {
 
     setIsSubmitting(true);
     try {
+      console.log("Starting game upload with data:", {
+        title: data.title,
+        description: data.description,
+        coverImage: data.coverImage.name,
+        width: data.width,
+        height: data.height,
+        tags: data.tags,
+        gameFiles: {
+          wasm: gameFiles.wasm?.name,
+          data: gameFiles.data?.name,
+          framework: gameFiles.framework?.name,
+          loader: gameFiles.loader?.name,
+          index: gameFiles.index?.name,
+        }
+      });
+      
       await addGame(
         data.title,
         data.description,
@@ -116,7 +132,11 @@ export function UploadGameForm() {
       navigate("/dashboard");
     } catch (error) {
       console.error("Error uploading game:", error);
-      toast.error("Failed to upload game. Please try again.");
+      if (error instanceof Error) {
+        toast.error(`Upload failed: ${error.message}`);
+      } else {
+        toast.error("Failed to upload game. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }

@@ -79,6 +79,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               createdAt: new Date(profileData.created_at),
               isAdmin: profileData.is_admin
             });
+
+            // If this is a new signup, update the profile with the email
+            if (event === 'SIGNED_UP' || event === 'SIGNED_IN') {
+              const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ email: session.user.email })
+                .eq('id', session.user.id);
+                
+              if (updateError) {
+                console.error("Failed to update profile with email:", updateError);
+              }
+            }
           } catch (error) {
             console.error("Profile fetch failed:", error);
           }
@@ -124,26 +136,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: {
           data: {
-            username
+            username,
+            email // Include email in metadata to ensure it's available for the trigger
           },
         }
       });
       
       if (error) {
         throw error;
-      }
-      
-      // Update the username in the profiles table directly if needed
-      // This is a fallback in case the trigger doesn't work correctly
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ username })
-          .eq('id', data.user.id);
-          
-        if (profileError) {
-          console.error("Profile update failed:", profileError);
-        }
       }
       
       toast.success("Registration successful! Please check your email for verification.");
