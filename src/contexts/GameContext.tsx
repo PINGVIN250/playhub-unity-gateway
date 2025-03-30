@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Game } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -43,7 +44,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           .from('games')
           .select(`
             *,
-            profiles:author_id(id, username, email, created_at)
+            profiles:author_id(username)
           `);
 
         if (error) {
@@ -66,10 +67,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
             },
             authorId: game.author_id,
             author: game.profiles ? {
-              id: game.profiles.id,
+              id: game.author_id,
               username: game.profiles.username,
-              email: game.profiles.email || '',
-              createdAt: new Date(game.profiles.created_at)
+              email: '',
+              createdAt: new Date()
             } : undefined,
             width: game.width || 960,
             height: game.height || 600,
@@ -114,7 +115,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
         throw new Error("You must be logged in to add a game");
       }
 
-      console.log("Starting game upload process");
       let coverImageUrl = '';
       let wasmPath = '';
       let dataPath = '';
@@ -122,87 +122,74 @@ export function GameProvider({ children }: { children: ReactNode }) {
       let loaderPath = '';
       let indexPath = '';
 
+      // Upload cover image to storage
       if (coverImage) {
-        console.log("Uploading cover image");
         const fileExt = coverImage.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
         const filePath = `${user.id}/${fileName}`;
 
         const { error: uploadError, data } = await supabase.storage
           .from('game_images')
-          .upload(filePath, coverImage, {
-            cacheControl: '3600',
-            upsert: false
-          });
+          .upload(filePath, coverImage);
 
         if (uploadError) {
-          console.error("Cover image upload error:", uploadError);
           throw uploadError;
         }
 
-        console.log("Cover image uploaded successfully");
-
+        // Get public URL
         const { data: urlData } = supabase.storage
           .from('game_images')
           .getPublicUrl(filePath);
 
         coverImageUrl = urlData.publicUrl;
-        console.log("Cover image URL:", coverImageUrl);
       }
 
+      // Upload game files if they exist
       if (gameFiles) {
-        console.log("Starting game files upload");
-        
-        const uploadFile = async (file: File | null, prefix: string) => {
-          if (!file) return '';
-          
-          console.log(`Uploading ${prefix} file: ${file.name}`);
-          const filePath = `${user.id}/${Math.random().toString(36).substring(2, 10)}_${file.name}`;
-          
-          const { error, data } = await supabase.storage
-            .from('game_files')
-            .upload(filePath, file, {
-              cacheControl: '3600',
-              upsert: false
-            });
-            
-          if (error) {
-            console.error(`${prefix} file upload error:`, error);
-            throw error;
-          }
-          
-          const { data: urlData } = supabase.storage
-            .from('game_files')
-            .getPublicUrl(filePath);
-            
-          console.log(`${prefix} file uploaded successfully: ${urlData.publicUrl}`);
-          return urlData.publicUrl;
-        };
+        if (gameFiles.wasm) {
+          const filePath = `${user.id}/${Math.random().toString(36).substring(2, 10)}_${gameFiles.wasm.name}`;
+          await supabase.storage.from('game_files').upload(filePath, gameFiles.wasm);
+          const { data } = supabase.storage.from('game_files').getPublicUrl(filePath);
+          wasmPath = data.publicUrl;
+        }
 
-        const [wasmResult, dataResult, frameworkResult, loaderResult, indexResult] = await Promise.all([
-          uploadFile(gameFiles.wasm, 'wasm'),
-          uploadFile(gameFiles.data, 'data'),
-          uploadFile(gameFiles.framework, 'framework'),
-          uploadFile(gameFiles.loader, 'loader'),
-          uploadFile(gameFiles.index, 'index')
-        ]);
-        
-        wasmPath = wasmResult;
-        dataPath = dataResult;
-        frameworkPath = frameworkResult;
-        loaderPath = loaderResult;
-        indexPath = indexResult;
+        if (gameFiles.data) {
+          const filePath = `${user.id}/${Math.random().toString(36).substring(2, 10)}_${gameFiles.data.name}`;
+          await supabase.storage.from('game_files').upload(filePath, gameFiles.data);
+          const { data } = supabase.storage.from('game_files').getPublicUrl(filePath);
+          dataPath = data.publicUrl;
+        }
+
+        if (gameFiles.framework) {
+          const filePath = `${user.id}/${Math.random().toString(36).substring(2, 10)}_${gameFiles.framework.name}`;
+          await supabase.storage.from('game_files').upload(filePath, gameFiles.framework);
+          const { data } = supabase.storage.from('game_files').getPublicUrl(filePath);
+          frameworkPath = data.publicUrl;
+        }
+
+        if (gameFiles.loader) {
+          const filePath = `${user.id}/${Math.random().toString(36).substring(2, 10)}_${gameFiles.loader.name}`;
+          await supabase.storage.from('game_files').upload(filePath, gameFiles.loader);
+          const { data } = supabase.storage.from('game_files').getPublicUrl(filePath);
+          loaderPath = data.publicUrl;
+        }
+
+        if (gameFiles.index) {
+          const filePath = `${user.id}/${Math.random().toString(36).substring(2, 10)}_${gameFiles.index.name}`;
+          await supabase.storage.from('game_files').upload(filePath, gameFiles.index);
+          const { data } = supabase.storage.from('game_files').getPublicUrl(filePath);
+          indexPath = data.publicUrl;
+        }
       }
 
-      console.log("All files uploaded, creating game record");
-      
+      // Insert game record
       const { data, error } = await supabase
         .from('games')
         .insert({
           title,
           description,
           cover_image_url: coverImageUrl,
-          game_url: gameUrl || indexPath,
+          game_url: gameUrl || indexPath, // Use index.html URL as game URL if no explicit URL provided
           wasm_path: wasmPath,
           data_path: dataPath,
           framework_path: frameworkPath,
@@ -216,46 +203,28 @@ export function GameProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (error) {
-        console.error("Game record creation error:", error);
         throw error;
       }
 
-      console.log("Game record created successfully:", data);
-
+      // Insert tags if provided
       if (tags && tags.length > 0) {
-        console.log("Processing tags:", tags);
-        
         for (const tagName of tags) {
-          const sanitizedTagName = tagName.trim().toLowerCase();
-          if (!sanitizedTagName) continue;
-          
-          console.log(`Processing tag: ${sanitizedTagName}`);
-          
-          let { data: existingTag, error: tagQueryError } = await supabase
+          // First check if tag exists
+          let { data: existingTag } = await supabase
             .from('tags')
             .select('id')
-            .eq('name', sanitizedTagName)
-            .maybeSingle();
-
-          if (tagQueryError) {
-            console.error("Error checking for existing tag:", tagQueryError);
-            continue;
-          }
+            .eq('name', tagName.trim().toLowerCase())
+            .single();
 
           let tagId;
 
           if (!existingTag) {
-            console.log(`Creating new tag: ${sanitizedTagName}`);
-            const { data: newTag, error: createTagError } = await supabase
+            // Create tag if it doesn't exist
+            const { data: newTag } = await supabase
               .from('tags')
-              .insert({ name: sanitizedTagName })
+              .insert({ name: tagName.trim().toLowerCase() })
               .select('id')
               .single();
-            
-            if (createTagError) {
-              console.error("Error creating new tag:", createTagError);
-              continue;
-            }
             
             tagId = newTag?.id;
           } else {
@@ -263,21 +232,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
           }
 
           if (tagId) {
-            console.log(`Creating game-tag relationship for game ${data.id} and tag ${tagId}`);
-            const { error: relationshipError } = await supabase
+            // Create relationship between game and tag
+            await supabase
               .from('game_tags')
               .insert({
                 game_id: data.id,
                 tag_id: tagId
               });
-              
-            if (relationshipError) {
-              console.error("Error creating game-tag relationship:", relationshipError);
-            }
           }
         }
       }
 
+      // Format the new game for the UI
       const newGame: Game = {
         id: data.id,
         title: data.title,
@@ -311,7 +277,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       return newGame;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to add game";
-      console.error("Game upload error:", error);
       toast.error(message);
       throw error;
     } finally {

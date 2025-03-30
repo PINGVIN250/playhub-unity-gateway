@@ -13,7 +13,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    storage: typeof window !== 'undefined' ? localStorage : undefined,
+    storage: localStorage,
     // Disable email verification during development
     flowType: 'pkce'
   }
