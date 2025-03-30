@@ -40,13 +40,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const loadGames = async () => {
       try {
         setIsLoading(true);
-        // Modified query to properly join profiles table by referencing author_id correctly
+        // Fix the query by using proper join syntax instead of relying on foreign key relationship
         const { data, error } = await supabase
           .from('games')
           .select(`
             *,
-            profiles:author_id(*)
-          `);
+            profiles(*)
+          `)
+          .eq('profiles.id', supabase.auth.getSession() ? 'games.author_id' : null);
 
         if (error) {
           throw error;
