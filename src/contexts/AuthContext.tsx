@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User } from "@/types";
 import { toast } from "sonner";
@@ -78,6 +79,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               createdAt: new Date(profileData.created_at),
               isAdmin: profileData.is_admin
             });
+
+            // If this is a new signup, update the profile with the email
+            if (event === 'SIGNED_UP') {
+              const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ email: session.user.email })
+                .eq('id', session.user.id);
+                
+              if (updateError) {
+                console.error("Failed to update profile with email:", updateError);
+              }
+            }
           } catch (error) {
             console.error("Profile fetch failed:", error);
           }
@@ -123,7 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: {
           data: {
-            username
+            username,
+            email // Include email in metadata to ensure it's available for the trigger
           },
         }
       });
@@ -131,8 +145,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         throw error;
       }
-      
-      // Removed the profile update code as requested
       
       toast.success("Registration successful! Please check your email for verification.");
     } catch (error) {
