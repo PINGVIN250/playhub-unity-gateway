@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
 
             // If this is a new signup, update the profile with the email
-            if (event === 'SIGNED_UP' || event === 'SIGNED_IN') {
+            if (event === 'SIGNED_UP') {
               const { error: updateError } = await supabase
                 .from('profiles')
                 .update({ email: session.user.email })
