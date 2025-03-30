@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Game } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -40,14 +39,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const loadGames = async () => {
       try {
         setIsLoading(true);
-        // Fix the join syntax to correctly get profile data
         const { data, error } = await supabase
           .from('games')
           .select(`
             *,
-            profiles(id, username, email, created_at)
-          `)
-          .eq('profiles.id', 'author_id');
+            profiles:author_id(id, username, email, created_at)
+          `);
 
         if (error) {
           throw error;
@@ -125,7 +122,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       let loaderPath = '';
       let indexPath = '';
 
-      // Upload cover image to storage
       if (coverImage) {
         console.log("Uploading cover image");
         const fileExt = coverImage.name.split('.').pop();
@@ -146,7 +142,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
         console.log("Cover image uploaded successfully");
 
-        // Get public URL
         const { data: urlData } = supabase.storage
           .from('game_images')
           .getPublicUrl(filePath);
@@ -155,11 +150,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         console.log("Cover image URL:", coverImageUrl);
       }
 
-      // Upload game files if they exist
       if (gameFiles) {
         console.log("Starting game files upload");
         
-        // Helper function to upload a file and get its URL
         const uploadFile = async (file: File | null, prefix: string) => {
           if (!file) return '';
           
@@ -186,7 +179,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
           return urlData.publicUrl;
         };
 
-        // Upload all game files in parallel for better performance
         const [wasmResult, dataResult, frameworkResult, loaderResult, indexResult] = await Promise.all([
           uploadFile(gameFiles.wasm, 'wasm'),
           uploadFile(gameFiles.data, 'data'),
@@ -204,14 +196,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       console.log("All files uploaded, creating game record");
       
-      // Insert game record
       const { data, error } = await supabase
         .from('games')
         .insert({
           title,
           description,
           cover_image_url: coverImageUrl,
-          game_url: gameUrl || indexPath, // Use index.html URL as game URL if no explicit URL provided
+          game_url: gameUrl || indexPath,
           wasm_path: wasmPath,
           data_path: dataPath,
           framework_path: frameworkPath,
@@ -231,7 +222,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       console.log("Game record created successfully:", data);
 
-      // Insert tags if provided
       if (tags && tags.length > 0) {
         console.log("Processing tags:", tags);
         
@@ -241,7 +231,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
           
           console.log(`Processing tag: ${sanitizedTagName}`);
           
-          // First check if tag exists
           let { data: existingTag, error: tagQueryError } = await supabase
             .from('tags')
             .select('id')
@@ -257,7 +246,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
           if (!existingTag) {
             console.log(`Creating new tag: ${sanitizedTagName}`);
-            // Create tag if it doesn't exist
             const { data: newTag, error: createTagError } = await supabase
               .from('tags')
               .insert({ name: sanitizedTagName })
@@ -276,7 +264,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
           if (tagId) {
             console.log(`Creating game-tag relationship for game ${data.id} and tag ${tagId}`);
-            // Create relationship between game and tag
             const { error: relationshipError } = await supabase
               .from('game_tags')
               .insert({
@@ -291,7 +278,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Format the new game for the UI
       const newGame: Game = {
         id: data.id,
         title: data.title,
