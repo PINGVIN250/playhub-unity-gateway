@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Comment } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -41,13 +42,13 @@ export function CommentProvider({ children }: { children: ReactNode }) {
             gameId: comment.game_id,
             userId: comment.user_id,
             content: comment.content,
-            createdAt: new Date(comment.created_at || ''),
-            updatedAt: new Date(comment.updated_at || ''),
+            createdAt: comment.created_at ? new Date(comment.created_at) : new Date(),
+            updatedAt: comment.updated_at ? new Date(comment.updated_at) : new Date(),
             user: comment.profiles ? {
               id: comment.profiles.id,
               username: comment.profiles.username,
               email: comment.profiles.email || '',
-              createdAt: new Date(comment.profiles.created_at || '')
+              createdAt: comment.profiles.created_at ? new Date(comment.profiles.created_at) : new Date()
             } : undefined
           }));
 
@@ -93,8 +94,8 @@ export function CommentProvider({ children }: { children: ReactNode }) {
           gameId: data.game_id,
           userId: data.user_id,
           content: data.content,
-          createdAt: new Date(data.created_at || ''),
-          updatedAt: new Date(data.updated_at || ''),
+          createdAt: data.created_at ? new Date(data.created_at) : new Date(),
+          updatedAt: data.updated_at ? new Date(data.updated_at) : new Date(),
           user: {
             id: user.id,
             username: user.username,

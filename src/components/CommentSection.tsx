@@ -42,7 +42,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       await addComment(gameId, content);
       setContent("");
     } catch (error) {
-      // Error is handled by the context
+      console.error("Error submitting comment:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -60,7 +60,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       await updateComment(commentId, editContent);
       setEditingCommentId(null);
     } catch (error) {
-      // Error is handled by the context
+      console.error("Error updating comment:", error);
     }
   };
   
@@ -74,7 +74,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       await deleteComment(commentId);
       setDeleteConfirmId(null);
     } catch (error) {
-      // Error is handled by the context
+      console.error("Error deleting comment:", error);
     }
   };
   
