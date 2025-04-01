@@ -35,13 +35,14 @@ export function CommentSection({ gameId }: CommentSectionProps) {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!content.trim() || !user) return;
     
     try {
       setIsSubmitting(true);
       await addComment(gameId, content);
       setContent("");
     } catch (error) {
+      console.error("Failed to add comment:", error);
       // Error is handled by the context
     } finally {
       setIsSubmitting(false);
@@ -60,6 +61,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       await updateComment(commentId, editContent);
       setEditingCommentId(null);
     } catch (error) {
+      console.error("Failed to update comment:", error);
       // Error is handled by the context
     }
   };
@@ -74,6 +76,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       await deleteComment(commentId);
       setDeleteConfirmId(null);
     } catch (error) {
+      console.error("Failed to delete comment:", error);
       // Error is handled by the context
     }
   };
@@ -129,12 +132,12 @@ export function CommentSection({ gameId }: CommentSectionProps) {
             <div key={comment.id} className="space-y-2">
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarFallback>{comment.user ? getInitials(comment.user.username) : "??"}</AvatarFallback>
+                  <AvatarFallback>{comment.user ? getInitials(comment.user.username || '') : "??"}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-medium">{comment.user?.username}</p>
+                      <p className="font-medium">{comment.user?.username || "Unknown User"}</p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(comment.createdAt).toLocaleDateString()} • 
                         {comment.updatedAt > comment.createdAt && " edited"}
