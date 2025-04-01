@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User } from "@/types";
 import { toast } from "sonner";
@@ -36,13 +37,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               
             if (profileError) throw profileError;
             
-            setUser({
-              id: session.user.id,
-              email: session.user.email || '',
-              username: profileData.username,
-              createdAt: new Date(profileData.created_at),
-              isAdmin: profileData.is_admin
-            });
+            if (profileData) {
+              setUser({
+                id: session.user.id,
+                email: session.user.email || '',
+                username: profileData.username,
+                createdAt: new Date(profileData.created_at || ''),
+                isAdmin: profileData.is_admin || false
+              });
+            }
           } catch (error) {
             console.error("Profile fetch failed:", error);
             setUser(null);
@@ -78,13 +81,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             throw profileError;
           }
           
-          setUser({
-            id: session.user.id,
-            email: session.user.email || '',
-            username: profileData.username,
-            createdAt: new Date(profileData.created_at),
-            isAdmin: profileData.is_admin
-          });
+          if (profileData) {
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              username: profileData.username,
+              createdAt: new Date(profileData.created_at || ''),
+              isAdmin: profileData.is_admin || false
+            });
+          }
         } else {
           console.log("No active session found");
         }

@@ -45,7 +45,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           .from('games')
           .select(`
             *,
-            profiles!games_author_id_fkey(id, username, email, created_at)
+            profiles:author_id(id, username, email, created_at)
           `);
 
         if (error) {
@@ -71,12 +71,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
               id: game.profiles.id,
               username: game.profiles.username,
               email: game.profiles.email || '',
-              createdAt: new Date(game.profiles.created_at)
+              createdAt: new Date(game.profiles.created_at || '')
             } : undefined,
             width: game.width || 960,
             height: game.height || 600,
-            createdAt: new Date(game.created_at),
-            updatedAt: new Date(game.updated_at),
+            createdAt: new Date(game.created_at || ''),
+            updatedAt: new Date(game.updated_at || ''),
             tags: [],
             featured: game.featured || false
           }));
@@ -224,59 +224,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       console.log("Game record created successfully:", data);
 
-      if (tags && tags.length > 0) {
+      if (data?.id && tags && tags.length > 0) {
         console.log("Processing tags:", tags);
-        
         for (const tagName of tags) {
-          const sanitizedTagName = tagName.trim().toLowerCase();
-          if (!sanitizedTagName) continue;
-          
-          console.log(`Processing tag: ${sanitizedTagName}`);
-          
-          let { data: existingTag, error: tagQueryError } = await supabase
-            .from('tags')
-            .select('id')
-            .eq('name', sanitizedTagName)
-            .maybeSingle();
-
-          if (tagQueryError) {
-            console.error("Error checking for existing tag:", tagQueryError);
-            continue;
-          }
-
-          let tagId;
-
-          if (!existingTag) {
-            console.log(`Creating new tag: ${sanitizedTagName}`);
-            const { data: newTag, error: createTagError } = await supabase
-              .from('tags')
-              .insert({ name: sanitizedTagName })
-              .select('id')
-              .single();
-            
-            if (createTagError) {
-              console.error("Error creating new tag:", createTagError);
-              continue;
-            }
-            
-            tagId = newTag?.id;
-          } else {
-            tagId = existingTag.id;
-          }
-
-          if (tagId) {
-            console.log(`Creating game-tag relationship for game ${data.id} and tag ${tagId}`);
-            const { error: relationshipError } = await supabase
-              .from('game_tags')
-              .insert({
-                game_id: data.id,
-                tag_id: tagId
-              });
-              
-            if (relationshipError) {
-              console.error("Error creating game-tag relationship:", relationshipError);
-            }
-          }
+          await handleTagCreation(data.id, tagName);
         }
       }
 
@@ -318,6 +269,63 @@ export function GameProvider({ children }: { children: ReactNode }) {
       throw error;
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleTagCreation = async (gameId: string, tagName: string) => {
+    try {
+      const sanitizedTagName = tagName.trim().toLowerCase();
+      if (!sanitizedTagName) return null;
+      
+      console.log(`Processing tag: ${sanitizedTagName}`);
+      
+      const { data: existingTag, error: tagQueryError } = await supabase
+        .from('tags')
+        .select('id')
+        .eq('name', sanitizedTagName)
+        .maybeSingle();
+
+      if (tagQueryError) {
+        console.error("Error checking for existing tag:", tagQueryError);
+        return null;
+      }
+
+      let tagId = existingTag?.id;
+
+      if (!tagId) {
+        console.log(`Creating new tag: ${sanitizedTagName}`);
+        const { data: newTag, error: createTagError } = await supabase
+          .from('tags')
+          .insert({ name: sanitizedTagName })
+          .select('id')
+          .single();
+        
+        if (createTagError) {
+          console.error("Error creating new tag:", createTagError);
+          return null;
+        }
+        
+        tagId = newTag?.id;
+      }
+
+      if (tagId) {
+        console.log(`Creating game-tag relationship for game ${gameId} and tag ${tagId}`);
+        const { error: relationshipError } = await supabase
+          .from('game_tags')
+          .insert({
+            game_id: gameId,
+            tag_id: tagId
+          });
+          
+        if (relationshipError) {
+          console.error("Error creating game-tag relationship:", relationshipError);
+        }
+      }
+
+      return tagId;
+    } catch (error) {
+      console.error("Error in tag processing:", error);
+      return null;
     }
   };
 

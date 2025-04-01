@@ -40,7 +40,7 @@ export function RatingProvider({ children }: { children: ReactNode }) {
             gameId: rating.game_id,
             userId: rating.user_id,
             score: rating.score,
-            createdAt: new Date(rating.created_at)
+            createdAt: new Date(rating.created_at || '')
           }));
 
           setRatings(formattedRatings);
@@ -121,17 +121,21 @@ export function RatingProvider({ children }: { children: ReactNode }) {
           throw error;
         }
 
-        const newRating: Rating = {
-          id: data.id,
-          gameId: data.game_id,
-          userId: data.user_id,
-          score: data.score,
-          createdAt: new Date(data.created_at)
-        };
+        if (data) {
+          const newRating: Rating = {
+            id: data.id,
+            gameId: data.game_id,
+            userId: data.user_id,
+            score: data.score,
+            createdAt: new Date(data.created_at || '')
+          };
 
-        setRatings(prev => [...prev, newRating]);
-        toast.success("Game rated successfully");
-        return newRating;
+          setRatings(prev => [...prev, newRating]);
+          toast.success("Game rated successfully");
+          return newRating;
+        } else {
+          throw new Error("Failed to create rating");
+        }
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to rate game";

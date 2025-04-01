@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Comment } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -29,7 +28,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
           .from('comments')
           .select(`
             *,
-            profiles!comments_user_id_fkey(id, username, email, created_at)
+            profiles:user_id(id, username, email, created_at)
           `);
 
         if (error) {
@@ -42,13 +41,13 @@ export function CommentProvider({ children }: { children: ReactNode }) {
             gameId: comment.game_id,
             userId: comment.user_id,
             content: comment.content,
-            createdAt: new Date(comment.created_at),
-            updatedAt: new Date(comment.updated_at),
+            createdAt: new Date(comment.created_at || ''),
+            updatedAt: new Date(comment.updated_at || ''),
             user: comment.profiles ? {
               id: comment.profiles.id,
               username: comment.profiles.username,
               email: comment.profiles.email || '',
-              createdAt: new Date(comment.profiles.created_at)
+              createdAt: new Date(comment.profiles.created_at || '')
             } : undefined
           }));
 
@@ -79,7 +78,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
         .insert({
           game_id: gameId,
           user_id: user.id,
-          content
+          content: content
         })
         .select()
         .single();
@@ -88,24 +87,28 @@ export function CommentProvider({ children }: { children: ReactNode }) {
         throw error;
       }
 
-      const newComment: Comment = {
-        id: data.id,
-        gameId: data.game_id,
-        userId: data.user_id,
-        content: data.content,
-        createdAt: new Date(data.created_at),
-        updatedAt: new Date(data.updated_at),
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          createdAt: user.createdAt
-        }
-      };
+      if (data) {
+        const newComment: Comment = {
+          id: data.id,
+          gameId: data.game_id,
+          userId: data.user_id,
+          content: data.content,
+          createdAt: new Date(data.created_at || ''),
+          updatedAt: new Date(data.updated_at || ''),
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            createdAt: user.createdAt
+          }
+        };
 
-      setComments(prev => [...prev, newComment]);
-      toast.success("Comment added successfully");
-      return newComment;
+        setComments(prev => [...prev, newComment]);
+        toast.success("Comment added successfully");
+        return newComment;
+      } else {
+        throw new Error("Failed to create comment");
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to add comment";
       toast.error(message);
@@ -138,7 +141,6 @@ export function CommentProvider({ children }: { children: ReactNode }) {
         throw error;
       }
 
-      // Remove comment from local state
       setComments(prev => prev.filter(c => c.id !== commentId));
       toast.success("Comment deleted successfully");
     } catch (error) {
