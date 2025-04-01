@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Comment } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -46,7 +45,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
             updatedAt: new Date(comment.updated_at || ''),
             user: comment.profiles ? {
               id: comment.profiles.id,
-              username: comment.profiles.username || '',
+              username: comment.profiles.username,
               email: comment.profiles.email || '',
               createdAt: new Date(comment.profiles.created_at || '')
             } : undefined
