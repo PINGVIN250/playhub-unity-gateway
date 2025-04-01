@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Game } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -27,6 +26,8 @@ interface GameContextType {
   getUserGames: () => Game[];
   getFeaturedGames: () => Game[];
   getGameById: (id: string) => Game | undefined;
+  deleteGame: (id: string) => Promise<void>;
+  updateGame: (id: string, data: Partial<Omit<Game, "id" | "author" | "authorId" | "createdAt" | "updatedAt">>) => Promise<Game>;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -40,14 +41,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const loadGames = async () => {
       try {
         setIsLoading(true);
-        // Fix the join syntax to correctly get profile data
         const { data, error } = await supabase
           .from('games')
           .select(`
             *,
-            profiles(id, username, email, created_at)
-          `)
-          .eq('profiles.id', 'author_id');
+            profiles!games_author_id_fkey(id, username, email, created_at)
+          `);
 
         if (error) {
           throw error;
@@ -57,7 +56,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           const formattedGames: Game[] = data.map(game => ({
             id: game.id,
             title: game.title,
-            description: game.description,
+            description: game.description || '',
             coverImage: game.cover_image_url || '',
             gameUrl: game.game_url || '',
             gameFiles: {
@@ -125,7 +124,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       let loaderPath = '';
       let indexPath = '';
 
-      // Upload cover image to storage
       if (coverImage) {
         console.log("Uploading cover image");
         const fileExt = coverImage.name.split('.').pop();
@@ -146,7 +144,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
         console.log("Cover image uploaded successfully");
 
-        // Get public URL
         const { data: urlData } = supabase.storage
           .from('game_images')
           .getPublicUrl(filePath);
@@ -155,11 +152,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         console.log("Cover image URL:", coverImageUrl);
       }
 
-      // Upload game files if they exist
       if (gameFiles) {
         console.log("Starting game files upload");
         
-        // Helper function to upload a file and get its URL
         const uploadFile = async (file: File | null, prefix: string) => {
           if (!file) return '';
           
@@ -186,7 +181,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
           return urlData.publicUrl;
         };
 
-        // Upload all game files in parallel for better performance
         const [wasmResult, dataResult, frameworkResult, loaderResult, indexResult] = await Promise.all([
           uploadFile(gameFiles.wasm, 'wasm'),
           uploadFile(gameFiles.data, 'data'),
@@ -204,14 +198,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       console.log("All files uploaded, creating game record");
       
-      // Insert game record
       const { data, error } = await supabase
         .from('games')
         .insert({
           title,
           description,
           cover_image_url: coverImageUrl,
-          game_url: gameUrl || indexPath, // Use index.html URL as game URL if no explicit URL provided
+          game_url: gameUrl || indexPath,
           wasm_path: wasmPath,
           data_path: dataPath,
           framework_path: frameworkPath,
@@ -231,7 +224,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       console.log("Game record created successfully:", data);
 
-      // Insert tags if provided
       if (tags && tags.length > 0) {
         console.log("Processing tags:", tags);
         
@@ -241,7 +233,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
           
           console.log(`Processing tag: ${sanitizedTagName}`);
           
-          // First check if tag exists
           let { data: existingTag, error: tagQueryError } = await supabase
             .from('tags')
             .select('id')
@@ -257,7 +248,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
           if (!existingTag) {
             console.log(`Creating new tag: ${sanitizedTagName}`);
-            // Create tag if it doesn't exist
             const { data: newTag, error: createTagError } = await supabase
               .from('tags')
               .insert({ name: sanitizedTagName })
@@ -276,7 +266,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
           if (tagId) {
             console.log(`Creating game-tag relationship for game ${data.id} and tag ${tagId}`);
-            // Create relationship between game and tag
             const { error: relationshipError } = await supabase
               .from('game_tags')
               .insert({
@@ -291,7 +280,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Format the new game for the UI
       const newGame: Game = {
         id: data.id,
         title: data.title,
@@ -333,6 +321,97 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const deleteGame = async (id: string): Promise<void> => {
+    try {
+      if (!user) {
+        throw new Error("You must be logged in to delete a game");
+      }
+
+      const game = games.find(g => g.id === id);
+      
+      if (!game) {
+        throw new Error("Game not found");
+      }
+
+      if (game.authorId !== user.id && !user.isAdmin) {
+        throw new Error("You don't have permission to delete this game");
+      }
+
+      const { error } = await supabase
+        .from('games')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
+      setGames(prevGames => prevGames.filter(g => g.id !== id));
+      toast.success("Game deleted successfully");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to delete game";
+      toast.error(message);
+      throw error;
+    }
+  };
+
+  const updateGame = async (
+    id: string, 
+    data: Partial<Omit<Game, "id" | "author" | "authorId" | "createdAt" | "updatedAt">>
+  ): Promise<Game> => {
+    try {
+      if (!user) {
+        throw new Error("You must be logged in to update a game");
+      }
+
+      const game = games.find(g => g.id === id);
+      
+      if (!game) {
+        throw new Error("Game not found");
+      }
+
+      if (game.authorId !== user.id && !user.isAdmin) {
+        throw new Error("You don't have permission to update this game");
+      }
+
+      const updateData: any = {};
+      
+      if (data.title) updateData.title = data.title;
+      if (data.description) updateData.description = data.description;
+      if (data.gameUrl) updateData.game_url = data.gameUrl;
+      if (data.width) updateData.width = data.width;
+      if (data.height) updateData.height = data.height;
+      
+      const { data: updatedGameData, error } = await supabase
+        .from('games')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedGame: Game = {
+        ...game,
+        ...data,
+        updatedAt: new Date()
+      };
+
+      setGames(prevGames => 
+        prevGames.map(g => g.id === id ? updatedGame : g)
+      );
+
+      toast.success("Game updated successfully");
+      return updatedGame;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to update game";
+      toast.error(message);
+      throw error;
+    }
+  };
+
   const getUserGames = (): Game[] => {
     if (!user) return [];
     return games.filter(game => game.authorId === user.id);
@@ -352,7 +431,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
     addGame,
     getUserGames,
     getFeaturedGames,
-    getGameById
+    getGameById,
+    deleteGame,
+    updateGame
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

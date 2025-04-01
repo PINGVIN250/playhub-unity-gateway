@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   username: string;
@@ -12,22 +11,40 @@ export interface Game {
   title: string;
   description: string;
   coverImage: string;
-  gameUrl?: string;
+  gameUrl: string;
   gameFiles: {
-    wasmPath?: string;
-    dataPath?: string;
-    frameworkPath?: string;
-    loaderPath?: string;
-    indexPath?: string;
+    wasmPath: string | null;
+    dataPath: string | null;
+    frameworkPath: string | null;
+    loaderPath: string | null;
+    indexPath: string | null;
   };
   authorId: string;
   author?: User;
-  width?: number;
-  height?: number;
+  width: number;
+  height: number;
   createdAt: Date;
   updatedAt: Date;
-  tags?: string[];
-  featured?: boolean;
+  tags: string[];
+  featured: boolean;
+}
+
+export interface Comment {
+  id: string;
+  gameId: string;
+  userId: string;
+  user?: User;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Rating {
+  id: string;
+  gameId: string;
+  userId: string;
+  score: number;
+  createdAt: Date;
 }
 
 export type LoginFormData = {

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { UnityPlayer } from "@/components/UnityPlayer";
@@ -9,13 +10,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ChevronLeft, Clock, User } from "lucide-react";
+import { CommentSection } from "@/components/CommentSection";
+import { RatingComponent } from "@/components/RatingComponent";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Play = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const { getGameById, games } = useGames();
+  const { user } = useAuth();
   const [relatedGames, setRelatedGames] = useState<typeof games>([]);
+  const [activeTab, setActiveTab] = useState("about");
   
   const game = getGameById(gameId || "");
+  const isOwner = user && game && user.id === game.authorId;
   
   useEffect(() => {
     if (game && games.length > 0) {
@@ -67,14 +74,17 @@ const Play = () => {
           
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">{game.title}</h1>
-            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <User className="h-4 w-4" />
-                <span>By Admin</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2">
+                <RatingComponent gameId={game.id} showCount={false} />
               </div>
               <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span>{new Date(game.createdAt).toLocaleDateString()}</span>
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">By {game.author?.username || "Unknown"}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">{new Date(game.createdAt).toLocaleDateString()}</span>
               </div>
               {game.tags?.map(tag => (
                 <Badge key={tag} variant="secondary" className="capitalize">
@@ -88,9 +98,23 @@ const Play = () => {
             <div className="lg:col-span-2">
               <div className="glass-card overflow-hidden">
                 <UnityPlayer game={game} />
+                
                 <div className="p-6">
-                  <h2 className="text-xl font-bold mb-4">About This Game</h2>
-                  <p className="text-muted-foreground">{game.description}</p>
+                  <Tabs value={activeTab} onValueChange={setActiveTab}>
+                    <TabsList>
+                      <TabsTrigger value="about">About</TabsTrigger>
+                      <TabsTrigger value="comments">Comments</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="about" className="pt-4">
+                      <h2 className="text-xl font-bold mb-4">About This Game</h2>
+                      <p className="text-muted-foreground">{game.description}</p>
+                    </TabsContent>
+                    
+                    <TabsContent value="comments" className="pt-4">
+                      <CommentSection gameId={game.id} />
+                    </TabsContent>
+                  </Tabs>
                 </div>
               </div>
             </div>
@@ -102,12 +126,17 @@ const Play = () => {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Developer</h3>
-                    <p>Admin</p>
+                    <p>{game.author?.username || "Unknown"}</p>
                   </div>
                   
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Published</h3>
                     <p>{new Date(game.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Rating</h3>
+                    <RatingComponent gameId={game.id} />
                   </div>
                   
                   <div>
@@ -121,6 +150,19 @@ const Play = () => {
                   </div>
                 </div>
               </div>
+              
+              {isOwner && (
+                <div className="glass-card p-6">
+                  <h2 className="text-xl font-bold mb-4">Manage Game</h2>
+                  <div className="space-y-2">
+                    <Link to={`/games/${game.id}`}>
+                      <Button variant="outline" className="w-full justify-start">
+                        Edit Game
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
               
               {relatedGames.length > 0 && (
                 <div className="glass-card p-6">

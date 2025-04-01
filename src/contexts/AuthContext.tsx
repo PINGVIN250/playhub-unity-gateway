@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User } from "@/types";
 import { toast } from "sonner";
@@ -23,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check for active session on load
     const checkSession = async () => {
       try {
+        setIsLoading(true);
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -80,8 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               isAdmin: profileData.is_admin
             });
 
-            // If this is a new signup, update the profile with the email
-            if (event === 'SIGNED_UP') {
+            // If this is a new signup or signin, update the profile with the email
+            if (event === 'SIGNED_UP' || event === 'SIGNED_IN') {
               const { error: updateError } = await supabase
                 .from('profiles')
                 .update({ email: session.user.email })

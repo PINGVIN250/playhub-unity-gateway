@@ -2,18 +2,25 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, Play, User, Calendar, Layout } from "lucide-react";
+import { RatingComponent } from "@/components/RatingComponent";
+import { EditGameForm } from "@/components/EditGameForm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const GameDetails = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const { getGameById } = useGames();
+  const { user } = useAuth();
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
   
   const game = getGameById(gameId || "");
+  const isOwner = user && game && user.id === game.authorId;
   
   useEffect(() => {
     // Reset image load state when game changes
@@ -70,15 +77,19 @@ const GameDetails = () => {
               <div className="lg:col-span-2 space-y-6">
                 <div>
                   <h1 className="text-3xl font-bold mb-2">{game.title}</h1>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {game.tags?.map(tag => (
-                      <Badge key={tag} className="capitalize">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {game.featured && (
-                      <Badge variant="secondary">Featured</Badge>
-                    )}
+                  <div className="flex flex-wrap items-center gap-2 mb-4">
+                    <RatingComponent gameId={game.id} />
+                    
+                    <div className="ml-1 flex flex-wrap gap-2">
+                      {game.tags?.map(tag => (
+                        <Badge key={tag} className="capitalize">
+                          {tag}
+                        </Badge>
+                      ))}
+                      {game.featured && (
+                        <Badge variant="secondary">Featured</Badge>
+                      )}
+                    </div>
                   </div>
                   <p className="text-muted-foreground">
                     {game.description}
@@ -93,6 +104,23 @@ const GameDetails = () => {
                     </Button>
                   </Link>
                 </div>
+                
+                {isOwner && (
+                  <div className="mt-8">
+                    <Tabs value={activeTab} onValueChange={setActiveTab}>
+                      <TabsList className="mb-4">
+                        <TabsTrigger value="details">Details</TabsTrigger>
+                        <TabsTrigger value="edit">Edit Game</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="details">
+                        {/* Content is shown by default */}
+                      </TabsContent>
+                      <TabsContent value="edit">
+                        <EditGameForm game={game} />
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                )}
               </div>
               
               <div className="space-y-6">
@@ -101,7 +129,7 @@ const GameDetails = () => {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">Developer: Admin</span>
+                      <span className="text-sm">Developer: {game.author?.username || "Unknown"}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -133,6 +161,6 @@ const GameDetails = () => {
       <Footer />
     </div>
   );
-};
+}
 
 export default GameDetails;

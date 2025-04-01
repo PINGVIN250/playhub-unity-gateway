@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { GameProvider } from "@/contexts/GameContext";
+import { CommentProvider } from "@/contexts/CommentContext";
+import { RatingProvider } from "@/contexts/RatingContext";
 
 // Pages
 import Index from "./pages/Index";
@@ -26,22 +28,26 @@ const App = () => (
     <TooltipProvider>
       <AuthProvider>
         <GameProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/games" element={<Games />} />
-              <Route path="/games/:gameId" element={<GameDetails />} />
-              <Route path="/play/:gameId" element={<Play />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/upload" element={<Upload />} />
-              <Route path="/about" element={<About />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+          <CommentProvider>
+            <RatingProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/games" element={<Games />} />
+                  <Route path="/games/:gameId" element={<GameDetails />} />
+                  <Route path="/play/:gameId" element={<Play />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/upload" element={<Upload />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </RatingProvider>
+          </CommentProvider>
         </GameProvider>
       </AuthProvider>
     </TooltipProvider>
