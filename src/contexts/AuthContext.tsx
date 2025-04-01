@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUser({
                 id: session.user.id,
                 email: session.user.email || '',
-                username: profileData.username,
+                username: profileData.username || '',
                 createdAt: new Date(profileData.created_at || ''),
                 isAdmin: profileData.is_admin || false
               });
@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser({
               id: session.user.id,
               email: session.user.email || '',
-              username: profileData.username,
+              username: profileData.username || '',
               createdAt: new Date(profileData.created_at || ''),
               isAdmin: profileData.is_admin || false
             });
