@@ -19,48 +19,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Check for active session on load
-    const checkSession = async () => {
-      try {
-        setIsLoading(true);
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          throw error;
-        }
-        
-        if (session?.user) {
-          // Get user profile data
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (profileError) {
-            throw profileError;
-          }
-          
-          setUser({
-            id: session.user.id,
-            email: session.user.email || '',
-            username: profileData.username,
-            createdAt: new Date(profileData.created_at),
-            isAdmin: profileData.is_admin
-          });
-        }
-      } catch (error) {
-        console.error("Session check failed:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    checkSession();
-    
-    // Listen for auth state changes
+    // Listen for auth state changes first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.id);
+        setIsLoading(true);
+        
         if (session?.user) {
           try {
             // Get user profile data
@@ -79,26 +43,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               createdAt: new Date(profileData.created_at),
               isAdmin: profileData.is_admin
             });
-
-            // If this is a new signup or signin, update the profile with the email
-            if (event === 'SIGNED_UP' || event === 'SIGNED_IN') {
-              const { error: updateError } = await supabase
-                .from('profiles')
-                .update({ email: session.user.email })
-                .eq('id', session.user.id);
-                
-              if (updateError) {
-                console.error("Failed to update profile with email:", updateError);
-              }
-            }
           } catch (error) {
             console.error("Profile fetch failed:", error);
+            setUser(null);
           }
         } else {
           setUser(null);
         }
+        
+        setIsLoading(false);
       }
     );
+    
+    // Check for active session on load
+    const checkSession = async () => {
+      try {
+        console.log("Checking session on page load...");
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (session?.user) {
+          console.log("Found existing session:", session.user.id);
+          // Get user profile data
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (profileError) {
+            throw profileError;
+          }
+          
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            username: profileData.username,
+            createdAt: new Date(profileData.created_at),
+            isAdmin: profileData.is_admin
+          });
+        } else {
+          console.log("No active session found");
+        }
+      } catch (error) {
+        console.error("Session check failed:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkSession();
     
     return () => {
       subscription.unsubscribe();
