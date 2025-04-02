@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -9,10 +8,11 @@ import { UnityPlayer } from "@/components/UnityPlayer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ChevronLeft, Clock, Maximize2, User } from "lucide-react";
+import { ChevronLeft, Clock, Maximize2, Minimize2, User } from "lucide-react";
 import { CommentSection } from "@/components/CommentSection";
 import { RatingComponent } from "@/components/RatingComponent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const Play = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -21,6 +21,7 @@ const Play = () => {
   const [relatedGames, setRelatedGames] = useState<typeof games>([]);
   const [activeTab, setActiveTab] = useState("about");
   const [fullscreenRef, setFullscreenRef] = useState<HTMLDivElement | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   const game = getGameById(gameId || "");
   const isOwner = user && game && user.id === game.authorId;
@@ -38,6 +39,24 @@ const Play = () => {
       setRelatedGames(similar);
     }
   }, [game, games]);
+  
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+    
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+    };
+  }, []);
   
   const handleFullscreen = () => {
     if (!fullscreenRef) return;
@@ -123,9 +142,20 @@ const Play = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <div className="glass-card overflow-hidden">
-                <div className="relative" ref={setFullscreenRef}>
-                  <UnityPlayer game={game} />
+              <div 
+                className={`glass-card overflow-hidden ${
+                  isFullscreen 
+                    ? "fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4" 
+                    : ""
+                }`}
+                ref={setFullscreenRef}
+              >
+                <div className={`relative ${isFullscreen ? "w-full h-full flex items-center justify-center" : ""}`}>
+                  <div className={isFullscreen ? "w-full max-w-7xl mx-auto h-full flex items-center" : ""}>
+                    <AspectRatio ratio={16 / 9} className="w-full">
+                      <UnityPlayer game={game} />
+                    </AspectRatio>
+                  </div>
                   
                   <Button 
                     variant="secondary"
@@ -133,115 +163,128 @@ const Play = () => {
                     className="absolute top-4 right-4 bg-background/50 backdrop-blur-md hover:bg-background/70 gap-2"
                     onClick={handleFullscreen}
                   >
-                    <Maximize2 className="h-4 w-4" />
-                    <span>Fullscreen</span>
+                    {isFullscreen ? (
+                      <>
+                        <Minimize2 className="h-4 w-4" />
+                        <span>Exit Fullscreen</span>
+                      </>
+                    ) : (
+                      <>
+                        <Maximize2 className="h-4 w-4" />
+                        <span>Fullscreen</span>
+                      </>
+                    )}
                   </Button>
                 </div>
                 
-                <div className="p-6">
-                  <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList>
-                      <TabsTrigger value="about">About</TabsTrigger>
-                      <TabsTrigger value="comments">Comments</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="about" className="pt-4">
-                      <h2 className="text-xl font-bold mb-4">About This Game</h2>
-                      <p className="text-muted-foreground">{game.description}</p>
-                    </TabsContent>
-                    
-                    <TabsContent value="comments" className="pt-4">
-                      <CommentSection gameId={game.id} />
-                    </TabsContent>
-                  </Tabs>
-                </div>
+                {!isFullscreen && (
+                  <div className="p-6">
+                    <Tabs value={activeTab} onValueChange={setActiveTab}>
+                      <TabsList>
+                        <TabsTrigger value="about">About</TabsTrigger>
+                        <TabsTrigger value="comments">Comments</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="about" className="pt-4">
+                        <h2 className="text-xl font-bold mb-4">About This Game</h2>
+                        <p className="text-muted-foreground">{game.description}</p>
+                      </TabsContent>
+                      
+                      <TabsContent value="comments" className="pt-4">
+                        <CommentSection gameId={game.id} />
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                )}
               </div>
             </div>
             
-            <div className="space-y-6">
-              <div className="glass-card p-6">
-                <h2 className="text-xl font-bold mb-4">Game Details</h2>
-                
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Developer</h3>
-                    <p>{game.author?.username || "Unknown"}</p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Published</h3>
-                    <p>{new Date(game.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Rating</h3>
-                    <RatingComponent gameId={game.id} />
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Platform</h3>
-                    <p>Unity WebGL</p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Controls</h3>
-                    <p>Mouse and Keyboard</p>
-                  </div>
-                </div>
-              </div>
-              
-              {isOwner && (
+            {!isFullscreen && (
+              <div className="space-y-6">
                 <div className="glass-card p-6">
-                  <h2 className="text-xl font-bold mb-4">Manage Game</h2>
-                  <div className="space-y-2">
-                    <Link to={`/games/${game.id}`}>
-                      <Button variant="outline" className="w-full justify-start">
-                        Edit Game
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              )}
-              
-              {relatedGames.length > 0 && (
-                <div className="glass-card p-6">
-                  <h2 className="text-xl font-bold mb-4">Related Games</h2>
+                  <h2 className="text-xl font-bold mb-4">Game Details</h2>
                   
                   <div className="space-y-4">
-                    {relatedGames.map(relatedGame => (
-                      <div key={relatedGame.id}>
-                        <Link to={`/play/${relatedGame.id}`} className="group block">
-                          <div className="flex gap-3">
-                            <div className="w-20 h-12 bg-muted rounded overflow-hidden flex-shrink-0">
-                              <img 
-                                src={relatedGame.coverImage} 
-                                alt={relatedGame.title}
-                                className="w-full h-full object-cover transition-transform group-hover:scale-105" 
-                              />
-                            </div>
-                            <div>
-                              <h3 className="font-medium line-clamp-1 group-hover:text-primary transition-colors">
-                                {relatedGame.title}
-                              </h3>
-                              <p className="text-xs text-muted-foreground line-clamp-2">
-                                {relatedGame.description}
-                              </p>
-                            </div>
-                          </div>
-                        </Link>
-                        {relatedGame !== relatedGames[relatedGames.length - 1] && (
-                          <Separator className="my-4" />
-                        )}
-                      </div>
-                    ))}
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground">Developer</h3>
+                      <p>{game.author?.username || "Unknown"}</p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground">Published</h3>
+                      <p>{new Date(game.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground">Rating</h3>
+                      <RatingComponent gameId={game.id} />
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground">Platform</h3>
+                      <p>Unity WebGL</p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground">Controls</h3>
+                      <p>Mouse and Keyboard</p>
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
+                
+                {isOwner && (
+                  <div className="glass-card p-6">
+                    <h2 className="text-xl font-bold mb-4">Manage Game</h2>
+                    <div className="space-y-2">
+                      <Link to={`/games/${game.id}`}>
+                        <Button variant="outline" className="w-full justify-start">
+                          Edit Game
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+                
+                {relatedGames.length > 0 && (
+                  <div className="glass-card p-6">
+                    <h2 className="text-xl font-bold mb-4">Related Games</h2>
+                    
+                    <div className="space-y-4">
+                      {relatedGames.map(relatedGame => (
+                        <div key={relatedGame.id}>
+                          <Link to={`/play/${relatedGame.id}`} className="group block">
+                            <div className="flex gap-3">
+                              <div className="w-20 h-12 bg-muted rounded overflow-hidden flex-shrink-0">
+                                <img 
+                                  src={relatedGame.coverImage} 
+                                  alt={relatedGame.title}
+                                  className="w-full h-full object-cover transition-transform group-hover:scale-105" 
+                                />
+                              </div>
+                              <div>
+                                <h3 className="font-medium line-clamp-1 group-hover:text-primary transition-colors">
+                                  {relatedGame.title}
+                                </h3>
+                                <p className="text-xs text-muted-foreground line-clamp-2">
+                                  {relatedGame.description}
+                                </p>
+                              </div>
+                            </div>
+                          </Link>
+                          {relatedGame !== relatedGames[relatedGames.length - 1] && (
+                            <Separator className="my-4" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </main>
-      <Footer />
+      {!isFullscreen && <Footer />}
     </div>
   );
 };
