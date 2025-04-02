@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Game } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Loader2, Maximize, Minimize, RefreshCw } from "lucide-react";
+import { Loader2, Maximize2, Minimize2, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface UnityPlayerProps {
@@ -205,28 +205,53 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     };
   }, [game.id]);
 
-  const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-
-    if (!isFullscreen) {
-      if (containerRef.current.requestFullscreen) {
-        containerRef.current.requestFullscreen();
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
-    }
-  };
-
+  // Handle fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+    };
   }, []);
+
+  // Toggle fullscreen function with cross-browser support
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+
+    if (!isFullscreen) {
+      // Enter fullscreen mode
+      if (containerRef.current.requestFullscreen) {
+        containerRef.current.requestFullscreen();
+      } else if ((containerRef.current as any).webkitRequestFullscreen) {
+        (containerRef.current as any).webkitRequestFullscreen();
+      } else if ((containerRef.current as any).mozRequestFullScreen) {
+        (containerRef.current as any).mozRequestFullScreen();
+      } else if ((containerRef.current as any).msRequestFullscreen) {
+        (containerRef.current as any).msRequestFullscreen();
+      }
+    } else {
+      // Exit fullscreen mode
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+      } else if ((document as any).mozCancelFullScreen) {
+        (document as any).mozCancelFullScreen();
+      } else if ((document as any).msExitFullscreen) {
+        (document as any).msExitFullscreen();
+      }
+    }
+  };
 
   const handleReload = () => {
     // Reset loading state
@@ -288,11 +313,12 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
               size="icon" 
               className="rounded-full bg-background/50 backdrop-blur-md hover:bg-background/70"
               onClick={toggleFullscreen}
+              title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
             >
               {isFullscreen ? (
-                <Minimize className="h-4 w-4" />
+                <Minimize2 className="h-4 w-4" />
               ) : (
-                <Maximize className="h-4 w-4" />
+                <Maximize2 className="h-4 w-4" />
               )}
             </Button>
             <Button 
@@ -300,6 +326,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
               size="icon" 
               className="rounded-full bg-background/50 backdrop-blur-md hover:bg-background/70"
               onClick={handleReload}
+              title="Reload Game"
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
