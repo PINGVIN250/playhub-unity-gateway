@@ -9,7 +9,7 @@ import { UnityPlayer } from "@/components/UnityPlayer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ChevronLeft, Clock, User } from "lucide-react";
+import { ChevronLeft, Clock, Maximize2, User } from "lucide-react";
 import { CommentSection } from "@/components/CommentSection";
 import { RatingComponent } from "@/components/RatingComponent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,6 +20,7 @@ const Play = () => {
   const { user } = useAuth();
   const [relatedGames, setRelatedGames] = useState<typeof games>([]);
   const [activeTab, setActiveTab] = useState("about");
+  const [fullscreenRef, setFullscreenRef] = useState<HTMLDivElement | null>(null);
   
   const game = getGameById(gameId || "");
   const isOwner = user && game && user.id === game.authorId;
@@ -37,6 +38,32 @@ const Play = () => {
       setRelatedGames(similar);
     }
   }, [game, games]);
+  
+  const handleFullscreen = () => {
+    if (!fullscreenRef) return;
+    
+    if (!document.fullscreenElement) {
+      if (fullscreenRef.requestFullscreen) {
+        fullscreenRef.requestFullscreen();
+      } else if ((fullscreenRef as any).webkitRequestFullscreen) {
+        (fullscreenRef as any).webkitRequestFullscreen();
+      } else if ((fullscreenRef as any).mozRequestFullScreen) {
+        (fullscreenRef as any).mozRequestFullScreen();
+      } else if ((fullscreenRef as any).msRequestFullscreen) {
+        (fullscreenRef as any).msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+      } else if ((document as any).mozCancelFullScreen) {
+        (document as any).mozCancelFullScreen();
+      } else if ((document as any).msExitFullscreen) {
+        (document as any).msExitFullscreen();
+      }
+    }
+  };
   
   if (!game) {
     return (
@@ -97,7 +124,19 @@ const Play = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <div className="glass-card overflow-hidden">
-                <UnityPlayer game={game} />
+                <div className="relative" ref={setFullscreenRef}>
+                  <UnityPlayer game={game} />
+                  
+                  <Button 
+                    variant="secondary"
+                    size="sm"
+                    className="absolute top-4 right-4 bg-background/50 backdrop-blur-md hover:bg-background/70 gap-2"
+                    onClick={handleFullscreen}
+                  >
+                    <Maximize2 className="h-4 w-4" />
+                    <span>Fullscreen</span>
+                  </Button>
+                </div>
                 
                 <div className="p-6">
                   <Tabs value={activeTab} onValueChange={setActiveTab}>
