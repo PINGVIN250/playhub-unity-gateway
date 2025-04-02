@@ -22,7 +22,6 @@ const Play = () => {
   const [relatedGames, setRelatedGames] = useState<typeof games>([]);
   const [activeTab, setActiveTab] = useState("about");
   const [fullscreenRef, setFullscreenRef] = useState<HTMLDivElement | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   
   const game = getGameById(gameId || "");
   const isOwner = user && game && user.id === game.authorId;
@@ -66,25 +65,6 @@ const Play = () => {
       }
     }
   };
-  
-  // Track fullscreen state changes
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-    
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
-    };
-  }, []);
   
   if (!game) {
     return (
@@ -145,14 +125,8 @@ const Play = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <div className="glass-card overflow-hidden">
-                <div 
-                  className={`relative ${isFullscreen ? 'fixed inset-0 z-50 flex items-center justify-center bg-black' : ''}`}
-                  ref={setFullscreenRef}
-                >
-                  <AspectRatio 
-                    ratio={16/9} 
-                    className={`w-full ${isFullscreen ? 'h-full max-h-screen max-w-screen-2xl mx-auto' : ''}`}
-                  >
+                <div className="relative" ref={setFullscreenRef}>
+                  <AspectRatio ratio={16/9} className="w-full">
                     <UnityPlayer game={game} />
                   </AspectRatio>
                   
@@ -163,7 +137,7 @@ const Play = () => {
                     onClick={handleFullscreen}
                   >
                     <Maximize2 className="h-4 w-4" />
-                    <span>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
+                    <span>Fullscreen</span>
                   </Button>
                 </div>
                 
