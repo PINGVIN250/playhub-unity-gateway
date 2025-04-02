@@ -13,7 +13,6 @@ import { ChevronLeft, Clock, Maximize2, User } from "lucide-react";
 import { CommentSection } from "@/components/CommentSection";
 import { RatingComponent } from "@/components/RatingComponent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const Play = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -126,9 +125,7 @@ const Play = () => {
             <div className="lg:col-span-2">
               <div className="glass-card overflow-hidden">
                 <div className="relative" ref={setFullscreenRef}>
-                  <AspectRatio ratio={16/9} className="w-full">
-                    <UnityPlayer game={game} />
-                  </AspectRatio>
+                  <UnityPlayer game={game} />
                   
                   <Button 
                     variant="secondary"
