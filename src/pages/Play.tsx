@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -143,16 +144,16 @@ const Play = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <div 
-                className={`glass-card overflow-hidden ${
+                className={`glass-card overflow-hidden border-0 ${
                   isFullscreen 
-                    ? "fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4" 
+                    ? "fixed inset-0 z-50 p-0 m-0 bg-black flex items-center justify-center" 
                     : ""
                 }`}
                 ref={setFullscreenRef}
               >
                 <div className={`relative ${isFullscreen ? "w-full h-full flex items-center justify-center" : ""}`}>
-                  <div className={isFullscreen ? "w-full max-w-7xl mx-auto h-full flex items-center" : ""}>
-                    <AspectRatio ratio={16 / 9} className="w-full">
+                  <div className={isFullscreen ? "w-full max-w-full mx-auto h-full flex items-center justify-center" : ""}>
+                    <AspectRatio ratio={16 / 9} className={`w-full ${isFullscreen ? "h-full" : ""}`}>
                       <UnityPlayer game={game} />
                     </AspectRatio>
                   </div>

@@ -275,8 +275,8 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     <div className="w-full">
       <div
         ref={containerRef}
-        className={`unity-container glass-card relative overflow-hidden ${
-          isFullscreen ? "fixed inset-0 z-50" : ""
+        className={`unity-container relative overflow-hidden ${
+          isFullscreen ? "fixed inset-0 z-50 border-0 m-0 p-0 bg-black" : "glass-card"
         }`}
         style={{ 
           width: "100%", 
