@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -13,6 +14,8 @@ import { CommentSection } from "@/components/CommentSection";
 import { RatingComponent } from "@/components/RatingComponent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 const Play = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -22,6 +25,7 @@ const Play = () => {
   const [activeTab, setActiveTab] = useState("about");
   const [fullscreenRef, setFullscreenRef] = useState<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showCommentDialog, setShowCommentDialog] = useState(false);
   
   const game = getGameById(gameId || "");
   const isOwner = user && game && user.id === game.authorId;
@@ -43,6 +47,10 @@ const Play = () => {
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
+      // Close comment dialog when exiting fullscreen
+      if (!document.fullscreenElement && showCommentDialog) {
+        setShowCommentDialog(false);
+      }
     };
     
     document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -56,7 +64,7 @@ const Play = () => {
       document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
       document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
     };
-  }, []);
+  }, [showCommentDialog]);
   
   const handleFullscreen = () => {
     if (!fullscreenRef) return;
@@ -82,6 +90,11 @@ const Play = () => {
         (document as any).msExitFullscreen();
       }
     }
+  };
+  
+  // Function to toggle comments dialog in fullscreen mode
+  const toggleCommentsDialog = () => {
+    setShowCommentDialog(!showCommentDialog);
   };
   
   if (!game) {
@@ -157,24 +170,37 @@ const Play = () => {
                     </AspectRatio>
                   </div>
                   
-                  <Button 
-                    variant="secondary"
-                    size="sm"
-                    className="absolute top-4 right-4 bg-background/50 backdrop-blur-md hover:bg-background/70 gap-2"
-                    onClick={handleFullscreen}
-                  >
-                    {isFullscreen ? (
-                      <>
-                        <Minimize2 className="h-4 w-4" />
-                        <span>Exit Fullscreen</span>
-                      </>
-                    ) : (
-                      <>
-                        <Maximize2 className="h-4 w-4" />
-                        <span>Fullscreen</span>
-                      </>
+                  <div className="absolute top-4 right-4 flex gap-2">
+                    {isFullscreen && user && (
+                      <Button 
+                        variant="secondary"
+                        size="sm"
+                        className="bg-background/50 backdrop-blur-md hover:bg-background/70 gap-2"
+                        onClick={toggleCommentsDialog}
+                      >
+                        <span>Comments</span>
+                      </Button>
                     )}
-                  </Button>
+
+                    <Button 
+                      variant="secondary"
+                      size="sm"
+                      className="bg-background/50 backdrop-blur-md hover:bg-background/70 gap-2"
+                      onClick={handleFullscreen}
+                    >
+                      {isFullscreen ? (
+                        <>
+                          <Minimize2 className="h-4 w-4" />
+                          <span>Exit Fullscreen</span>
+                        </>
+                      ) : (
+                        <>
+                          <Maximize2 className="h-4 w-4" />
+                          <span>Fullscreen</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
                 
                 {!isFullscreen && (
@@ -285,6 +311,13 @@ const Play = () => {
         </div>
       </main>
       {!isFullscreen && <Footer />}
+      
+      {/* Dialog for commenting while in fullscreen mode */}
+      <Dialog open={showCommentDialog && isFullscreen} onOpenChange={setShowCommentDialog}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <CommentSection gameId={game.id} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
