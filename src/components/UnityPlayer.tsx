@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { Game } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
         console.error("Error quitting Unity instance:", error);
       } finally {
         unityInstanceRef.current = null;
+        window.unityInstance = null;
         console.log("Unity instance reference cleared");
       }
     }
@@ -103,6 +105,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
                     setLoadingProgress(progress * 100);
                   }).then((unityInstance: any) => {
                     unityInstanceRef.current = unityInstance;
+                    window.unityInstance = unityInstance; // Сохраняем экземпляр Unity в глобальной переменной
                     setIsLoading(false);
                   }).catch((error: Error) => {
                     console.error("Unity instance creation error:", error);
@@ -232,8 +235,8 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     setError(null);
     
     toast({
-      title: "Reloading game",
-      description: "Please wait while the game reloads...",
+      title: "Перезагрузка игры",
+      description: "Пожалуйста, подождите, пока игра перезагружается...",
       duration: 3000,
     });
     
@@ -260,15 +263,15 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
               />
             </div>
             <p className="text-sm text-muted-foreground">
-              Loading game... {Math.round(loadingProgress)}%
+              Загрузка игры... {Math.round(loadingProgress)}%
             </p>
           </div>
         ) : error ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
-            <p className="text-destructive mb-4">Error loading game: {error}</p>
+            <p className="text-destructive mb-4">Ошибка загрузки игры: {error}</p>
             <Button onClick={handleReload} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
-              Try Again
+              Попробовать снова
             </Button>
           </div>
         ) : (
@@ -278,7 +281,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
               size="icon" 
               className="rounded-full bg-background/50 backdrop-blur-md hover:bg-background/70"
               onClick={toggleFullscreen}
-              title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+              title={isFullscreen ? "Выйти из полноэкранного режима" : "Полноэкранный режим"}
             >
               {isFullscreen ? (
                 <Minimize2 className="h-4 w-4" />
@@ -291,7 +294,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
               size="icon" 
               className="rounded-full bg-background/50 backdrop-blur-md hover:bg-background/70"
               onClick={handleReload}
-              title="Reload Game"
+              title="Перезагрузить игру"
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
@@ -309,5 +312,6 @@ declare global {
       config: any,
       onProgress?: (progress: number) => void
     ) => Promise<any>;
+    unityInstance: any; // Добавляем свойство unityInstance в глобальный объект window
   }
 }
