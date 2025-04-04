@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Game } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -20,14 +19,11 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Clear the container safely
   const clearContainer = () => {
     if (!containerRef.current) return;
     
-    // Store current children in array to avoid live collection issues
     const children = Array.from(containerRef.current.children);
     
-    // Remove each child if it exists and is a child of container
     children.forEach(child => {
       try {
         if (containerRef.current?.contains(child)) {
@@ -39,7 +35,6 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     });
   };
 
-  // Safely destroy Unity instance
   const destroyUnityInstance = () => {
     if (unityInstanceRef.current) {
       try {
@@ -54,16 +49,11 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     }
   };
 
-  // Handle loading Unity game
   const loadUnityGame = async () => {
     try {
-      // Safety check - destroy previous instance if exists
       destroyUnityInstance();
-      
-      // Clear container safely before adding new content
       clearContainer();
       
-      // Check if we have game files to load
       if (game.gameFiles && (
         game.gameFiles.wasmPath || 
         game.gameFiles.dataPath || 
@@ -72,7 +62,6 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
       )) {
         console.log("Loading Unity game from files:", game.gameFiles);
         
-        // We need a script loader function
         const loadScript = (src: string): Promise<void> => {
           return new Promise((resolve, reject) => {
             const script = document.createElement('script');
@@ -83,13 +72,11 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
           });
         };
         
-        // Create a Unity loader script if needed
         if (game.gameFiles.loaderPath) {
           try {
             await loadScript(game.gameFiles.loaderPath);
             console.log("Unity loader script loaded");
             
-            // Create a Unity config for the container
             if (typeof window.createUnityInstance === 'function') {
               const config = {
                 dataUrl: game.gameFiles.dataPath,
@@ -101,19 +88,16 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
                 productVersion: "1.0",
               };
               
-              // Create a new canvas element
               const canvas = document.createElement('canvas');
               canvas.style.width = '100%';
               canvas.style.height = '100%';
               canvas.id = 'unity-canvas';
               canvasRef.current = canvas;
               
-              // Clear the container and add the canvas
               if (containerRef.current) {
                 clearContainer();
                 containerRef.current.appendChild(canvas);
                 
-                // Load Unity game
                 try {
                   window.createUnityInstance(canvas, config, (progress: number) => {
                     setLoadingProgress(progress * 100);
@@ -147,7 +131,6 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
           setIsLoading(false);
         }
       } else if (game.gameUrl) {
-        // If we have a direct URL to the game, use iframe (fallback)
         console.log("Using direct game URL:", game.gameUrl);
         
         if (containerRef.current) {
@@ -159,7 +142,6 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
           iframe.title = game.title;
           iframe.allow = "autoplay; fullscreen; microphone; gamepad; accelerometer; gyroscope; camera";
           
-          // Instead of directly setting the sandbox attribute, create it with the correct attribute during creation
           const sandboxValues = "allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts";
           iframe.setAttribute("sandbox", sandboxValues);
           
@@ -184,28 +166,22 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   };
 
   useEffect(() => {
-    // Reset loading state when game changes
     setIsLoading(true);
     setLoadingProgress(0);
     setError(null);
     
-    // Load the game
     loadUnityGame();
     
-    // Cleanup function
     return () => {
       console.log("Cleanup running for game ID:", game.id);
       destroyUnityInstance();
       
-      // Clear references to DOM elements to prevent memory leaks
       canvasRef.current = null;
       
-      // Don't manipulate DOM in cleanup - React will handle it
       iframeRef.current = null;
     };
   }, [game.id]);
 
-  // Handle fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -224,12 +200,10 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     };
   }, []);
 
-  // Toggle fullscreen function with cross-browser support
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
 
     if (!isFullscreen) {
-      // Enter fullscreen mode
       if (containerRef.current.requestFullscreen) {
         containerRef.current.requestFullscreen();
       } else if ((containerRef.current as any).webkitRequestFullscreen) {
@@ -240,7 +214,6 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
         (containerRef.current as any).msRequestFullscreen();
       }
     } else {
-      // Exit fullscreen mode
       if (document.exitFullscreen) {
         document.exitFullscreen();
       } else if ((document as any).webkitExitFullscreen) {
@@ -254,7 +227,6 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   };
 
   const handleReload = () => {
-    // Reset loading state
     setIsLoading(true);
     setLoadingProgress(0);
     setError(null);
@@ -265,7 +237,6 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
       duration: 3000,
     });
     
-    // Load the game again
     setTimeout(() => {
       loadUnityGame();
     }, 100);
@@ -278,12 +249,6 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
         className={`unity-container relative overflow-hidden ${
           isFullscreen ? "fixed inset-0 z-50 border-0 m-0 p-0 bg-black" : "glass-card"
         }`}
-        style={{ 
-          width: "100%", 
-          aspectRatio: game.width && game.height 
-            ? `${game.width}/${game.height}` 
-            : "16/9" 
-        }}
       >
         {isLoading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
@@ -337,7 +302,6 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   );
 }
 
-// Add type declaration for Unity functions
 declare global {
   interface Window {
     createUnityInstance: (

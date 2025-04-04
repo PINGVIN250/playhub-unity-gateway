@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -29,7 +28,6 @@ const Play = () => {
   
   useEffect(() => {
     if (game && games.length > 0) {
-      // Get games with similar tags or by the same author
       const similar = games.filter(g => 
         g.id !== game.id && (
           g.authorId === game.authorId ||
