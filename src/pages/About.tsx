@@ -10,48 +10,48 @@ const About = () => {
       <main className="flex-1 py-24">
         <div className="container mx-auto px-4">
           <PageTitle 
-            title="About UnityPlay"
-            description="Our mission and vision for the Unity game platform"
+            title="О UnityPlay"
+            description="Наша миссия и видение для платформы игр Unity"
           />
           
           <div className="glass-card p-8 mb-8">
             <div className="max-w-3xl mx-auto">
-              <h2 className="text-2xl font-bold mb-4">Our Story</h2>
+              <h2 className="text-2xl font-bold mb-4">Наша история</h2>
               <p className="text-muted-foreground mb-6">
-                UnityPlay was created with a simple mission: to provide Unity developers with a platform to showcase their games and connect with players worldwide. Our team of passionate gamers and developers built this platform to support the growing community of independent game creators.
+                UnityPlay был создан с простой миссией: предоставить разработчикам Unity платформу для демонстрации своих игр и связи с игроками по всему миру. Наша команда увлеченных геймеров и разработчиков создала эту платформу для поддержки растущего сообщества независимых создателей игр.
               </p>
               
-              <h2 className="text-2xl font-bold mb-4">Why Unity WebGL?</h2>
+              <h2 className="text-2xl font-bold mb-4">Почему Unity WebGL?</h2>
               <p className="text-muted-foreground mb-6">
-                Unity's WebGL build option allows games to run directly in the browser without requiring players to download or install anything. This creates a frictionless experience for players and a wider audience for developers. We believe in the power of web-based gaming to make great experiences more accessible to everyone.
+                Опция сборки Unity WebGL позволяет играм работать прямо в браузере без необходимости скачивания или установки чего-либо игроками. Это создает беспрепятственный опыт для игроков и более широкую аудиторию для разработчиков. Мы верим в силу веб-игр, делающих отличный игровой опыт более доступным для каждого.
               </p>
               
-              <h2 className="text-2xl font-bold mb-4">Our Vision</h2>
+              <h2 className="text-2xl font-bold mb-4">Наше видение</h2>
               <p className="text-muted-foreground mb-6">
-                We envision a future where independent game developers can easily share their creations with the world, receive valuable feedback, and build communities around their games. UnityPlay aims to be the bridge that connects talented developers with enthusiastic players.
+                Мы представляем будущее, где независимые разработчики игр могут легко делиться своими творениями с миром, получать ценные отзывы и строить сообщества вокруг своих игр. UnityPlay стремится быть мостом, соединяющим талантливых разработчиков с энтузиастами-игроками.
               </p>
               
-              <h2 className="text-2xl font-bold mb-4">For Developers</h2>
+              <h2 className="text-2xl font-bold mb-4">Для разработчиков</h2>
               <p className="text-muted-foreground mb-6">
-                If you're a Unity developer, UnityPlay offers a simple way to upload your WebGL builds and share them with the world. Create an account, upload your game, and start collecting feedback from players. Our platform handles the hosting and provides you with insights into how players are engaging with your creation.
+                Если вы разработчик Unity, UnityPlay предлагает простой способ загрузить ваши WebGL сборки и поделиться ими с миром. Создайте аккаунт, загрузите вашу игру и начните собирать отзывы от игроков. Наша платформа управляет хостингом и предоставляет вам информацию о том, как игроки взаимодействуют с вашим творением.
               </p>
               
-              <h2 className="text-2xl font-bold mb-4">For Players</h2>
+              <h2 className="text-2xl font-bold mb-4">Для игроков</h2>
               <p className="text-muted-foreground mb-6">
-                Discover new and exciting games from talented developers around the world. Play directly in your browser without downloads or installations. Support independent game creators by playing their games and providing feedback.
+                Откройте для себя новые и захватывающие игры от талантливых разработчиков со всего мира. Играйте прямо в вашем браузере без загрузок или установок. Поддерживайте независимых создателей игр, играя в их игры и предоставляя отзывы.
               </p>
               
-              <h2 className="text-2xl font-bold mb-4">Join Our Community</h2>
+              <h2 className="text-2xl font-bold mb-4">Присоединяйтесь к нашему сообществу</h2>
               <p className="text-muted-foreground">
-                Whether you're a developer looking to showcase your games or a player eager to discover new experiences, we invite you to join the UnityPlay community. Together, we can build a vibrant platform that celebrates creativity and innovation in game development.
+                Независимо от того, являетесь ли вы разработчиком, желающим продемонстрировать свои игры, или игроком, стремящимся открыть для себя новые впечатления, мы приглашаем вас присоединиться к сообществу UnityPlay. Вместе мы можем создать яркую платформу, которая прославляет творчество и инновации в разработке игр.
               </p>
             </div>
           </div>
           
           <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6">Meet The Team</h2>
+            <h2 className="text-3xl font-bold mb-6">Познакомьтесь с командой</h2>
             <p className="text-muted-foreground mb-12">
-              Our team is made up of passionate gamers, developers, and designers who believe in the power of indie game development.
+              Наша команда состоит из увлеченных геймеров, разработчиков и дизайнеров, которые верят в силу инди-разработки игр.
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -61,8 +61,8 @@ const About = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <h3 className="font-bold text-lg">Alex Johnson</h3>
-                <p className="text-muted-foreground">Founder & Lead Developer</p>
+                <h3 className="font-bold text-lg">Алексей Петров</h3>
+                <p className="text-muted-foreground">Основатель и Ведущий разработчик</p>
               </div>
               
               <div className="flex flex-col items-center">
@@ -71,8 +71,8 @@ const About = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <h3 className="font-bold text-lg">Maria Rodriguez</h3>
-                <p className="text-muted-foreground">UX Designer</p>
+                <h3 className="font-bold text-lg">Мария Иванова</h3>
+                <p className="text-muted-foreground">UX Дизайнер</p>
               </div>
               
               <div className="flex flex-col items-center">
@@ -81,8 +81,8 @@ const About = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <h3 className="font-bold text-lg">David Chen</h3>
-                <p className="text-muted-foreground">Community Manager</p>
+                <h3 className="font-bold text-lg">Дмитрий Смирнов</h3>
+                <p className="text-muted-foreground">Менеджер сообщества</p>
               </div>
             </div>
           </div>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -19,8 +20,8 @@ import { Footer } from "@/components/Footer";
 import { Loader2, Gamepad } from "lucide-react";
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters")
+  email: z.string().email("Неверный формат email"),
+  password: z.string().min(6, "Пароль должен содержать минимум 6 символов")
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -49,7 +50,7 @@ const Login = () => {
     try {
       await login(data.email, data.password);
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Ошибка входа:", error);
       setIsSubmitting(false);
     }
   };
@@ -58,7 +59,7 @@ const Login = () => {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center">
         <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">Checking authentication...</p>
+        <p className="text-muted-foreground">Проверка аутентификации...</p>
       </div>
     );
   }
@@ -75,9 +76,9 @@ const Login = () => {
           <div className="glass-card p-8">
             <div className="flex flex-col items-center mb-6">
               <Gamepad className="h-10 w-10 text-primary mb-2" />
-              <h1 className="text-3xl font-bold">Welcome Back</h1>
+              <h1 className="text-3xl font-bold">Добро пожаловать</h1>
               <p className="text-muted-foreground text-center mt-1">
-                Sign in to access your games and dashboard
+                Войдите, чтобы получить доступ к вашим играм и панели управления
               </p>
             </div>
             
@@ -91,7 +92,7 @@ const Login = () => {
                       <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Enter your email" 
+                          placeholder="Введите ваш email" 
                           {...field} 
                         />
                       </FormControl>
@@ -105,11 +106,11 @@ const Login = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Пароль</FormLabel>
                       <FormControl>
                         <Input 
                           type="password" 
-                          placeholder="Enter your password" 
+                          placeholder="Введите ваш пароль" 
                           {...field} 
                         />
                       </FormControl>
@@ -123,7 +124,7 @@ const Login = () => {
                     to="/forgot-password" 
                     className="text-sm text-primary hover:underline"
                   >
-                    Forgot Password?
+                    Забыли пароль?
                   </Link>
                 </div>
                 
@@ -135,16 +136,16 @@ const Login = () => {
                   {isSubmitting && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   )}
-                  Sign In
+                  Войти
                 </Button>
                 
                 <p className="text-center text-sm">
-                  Don't have an account?{" "}
+                  Нет аккаунта?{" "}
                   <Link 
                     to="/register" 
                     className="text-primary hover:underline"
                   >
-                    Register
+                    Зарегистрироваться
                   </Link>
                 </p>
               </form>
@@ -152,7 +153,7 @@ const Login = () => {
             
             <div className="mt-6 pt-6 border-t text-center">
               <p className="text-xs text-muted-foreground">
-                For demo purposes, use <strong>admin@example.com</strong> with password <strong>password</strong>
+                Для демонстрации используйте <strong>admin@example.com</strong> с паролем <strong>password</strong>
               </p>
             </div>
           </div>

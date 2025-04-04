@@ -17,7 +17,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("my-games");
 
-  // Redirect to login if not authenticated
+  // Перенаправление на логин, если пользователь не авторизован
   if (!isAuthenticated) {
     navigate("/login");
     return null;
@@ -31,22 +31,22 @@ const Dashboard = () => {
       <main className="flex-1 py-24">
         <div className="container mx-auto px-4">
           <PageTitle 
-            title={`Welcome, ${user?.username}`}
-            description="Manage your games and account settings"
+            title={`Добро пожаловать, ${user?.username}`}
+            description="Управляйте своими играми и настройками аккаунта"
           >
             <Link to="/upload">
               <Button className="gap-2">
                 <PlusCircle className="h-4 w-4" />
-                <span>Add New Game</span>
+                <span>Добавить новую игру</span>
               </Button>
             </Link>
           </PageTitle>
           
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-3 max-w-md">
-              <TabsTrigger value="my-games">My Games</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsTrigger value="my-games">Мои игры</TabsTrigger>
+              <TabsTrigger value="analytics">Аналитика</TabsTrigger>
+              <TabsTrigger value="settings">Настройки</TabsTrigger>
             </TabsList>
             
             <TabsContent value="my-games" className="space-y-6">
@@ -72,14 +72,14 @@ const Dashboard = () => {
                   {userGames.length === 0 ? (
                     <div className="glass-card p-8 text-center">
                       <Upload className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-                      <h3 className="text-xl font-bold mb-2">No Games Yet</h3>
+                      <h3 className="text-xl font-bold mb-2">Пока нет игр</h3>
                       <p className="text-muted-foreground mb-6">
-                        You haven't uploaded any games yet. Start showcasing your Unity creations!
+                        Вы еще не загрузили ни одной игры. Начните демонстрировать свои творения на Unity!
                       </p>
                       <Link to="/upload">
                         <Button className="gap-2">
                           <PlusCircle className="h-4 w-4" />
-                          <span>Add Your First Game</span>
+                          <span>Добавить вашу первую игру</span>
                         </Button>
                       </Link>
                     </div>
@@ -87,7 +87,7 @@ const Dashboard = () => {
                     <GameGrid 
                       games={userGames} 
                       columns={3}
-                      emptyMessage="You haven't uploaded any games yet."
+                      emptyMessage="Вы еще не загрузили ни одной игры."
                     />
                   )}
                 </>
@@ -113,12 +113,12 @@ const Dashboard = () => {
                   </svg>
                   <div className="absolute">
                     <p className="text-3xl font-bold">60%</p>
-                    <p className="text-xs text-muted-foreground">Engagement</p>
+                    <p className="text-xs text-muted-foreground">Вовлеченность</p>
                   </div>
                 </div>
-                <h3 className="text-xl font-bold mb-2">Analytics Coming Soon</h3>
+                <h3 className="text-xl font-bold mb-2">Аналитика скоро появится</h3>
                 <p className="text-muted-foreground">
-                  User engagement and game play statistics will be available soon.
+                  Статистика вовлеченности пользователей и игрового процесса будет доступна в ближайшее время.
                 </p>
               </div>
             </TabsContent>
@@ -133,7 +133,7 @@ const Dashboard = () => {
                     <h3 className="text-xl font-bold">{user?.username}</h3>
                     <p className="text-muted-foreground">{user?.email}</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Member since {new Date(user?.createdAt || Date.now()).toLocaleDateString()}
+                      Участник с {new Date(user?.createdAt || Date.now()).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -141,40 +141,40 @@ const Dashboard = () => {
                 <div className="border-t pt-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-medium">Profile Settings</h4>
+                      <h4 className="font-medium">Настройки профиля</h4>
                       <p className="text-sm text-muted-foreground">
-                        Update your profile information
+                        Обновите информацию вашего профиля
                       </p>
                     </div>
                     <Button variant="outline" size="sm" className="gap-1">
                       <Settings className="h-4 w-4" />
-                      <span>Edit</span>
+                      <span>Изменить</span>
                     </Button>
                   </div>
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-medium">Account Security</h4>
+                      <h4 className="font-medium">Безопасность аккаунта</h4>
                       <p className="text-sm text-muted-foreground">
-                        Change password and security settings
+                        Изменить пароль и настройки безопасности
                       </p>
                     </div>
                     <Button variant="outline" size="sm" className="gap-1">
                       <Settings className="h-4 w-4" />
-                      <span>Manage</span>
+                      <span>Управление</span>
                     </Button>
                   </div>
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-medium">Notification Preferences</h4>
+                      <h4 className="font-medium">Настройки уведомлений</h4>
                       <p className="text-sm text-muted-foreground">
-                        Control how we contact you
+                        Управление способами связи с вами
                       </p>
                     </div>
                     <Button variant="outline" size="sm" className="gap-1">
                       <Settings className="h-4 w-4" />
-                      <span>Configure</span>
+                      <span>Настроить</span>
                     </Button>
                   </div>
                 </div>
@@ -183,9 +183,9 @@ const Dashboard = () => {
                   <div className="flex items-start gap-2 p-4 rounded-md bg-muted/50">
                     <AlertCircle className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-medium">Developer Mode</h4>
+                      <h4 className="font-medium">Режим разработчика</h4>
                       <p className="text-sm text-muted-foreground">
-                        This is a demo application. In a real application, these settings would be fully functional.
+                        Это демонстрационное приложение. В реальном приложении эти настройки были бы полностью функциональными.
                       </p>
                     </div>
                   </div>

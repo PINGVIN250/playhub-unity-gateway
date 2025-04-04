@@ -25,9 +25,9 @@ const Index = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold mb-2">Upload Your Games</h3>
+                <h3 className="text-xl font-bold mb-2">Загрузите свои игры</h3>
                 <p className="text-muted-foreground">
-                  Easily upload your Unity WebGL games to our platform and share them with the world.
+                  Легко загружайте ваши игры Unity WebGL на нашу платформу и делитесь ими с миром.
                 </p>
               </div>
               
@@ -38,9 +38,9 @@ const Index = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold mb-2">Get Discovered</h3>
+                <h3 className="text-xl font-bold mb-2">Будьте замечены</h3>
                 <p className="text-muted-foreground">
-                  Showcase your creations to our growing community of game developers and players.
+                  Покажите свои творения нашему растущему сообществу разработчиков и игроков.
                 </p>
               </div>
               
@@ -50,9 +50,9 @@ const Index = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold mb-2">Instant Play</h3>
+                <h3 className="text-xl font-bold mb-2">Мгновенная игра</h3>
                 <p className="text-muted-foreground">
-                  Players can instantly enjoy your games in the browser without any downloads or installations.
+                  Игроки могут мгновенно наслаждаться вашими играми в браузере без загрузок и установок.
                 </p>
               </div>
             </div>

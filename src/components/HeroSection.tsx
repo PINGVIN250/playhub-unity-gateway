@@ -25,15 +25,15 @@ export function HeroSection() {
             <div className="flex items-center gap-2 mb-4">
               <Gamepad className="text-primary h-6 w-6" />
               <h2 className="text-sm uppercase tracking-wider font-semibold">
-                Unity Game Platform
+                Платформа Unity Игр
               </h2>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              Showcase Your <span className="text-primary">Unity Games</span> to the World
+              Покажите свои <span className="text-primary">Unity игры</span> миру
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl">
-              Create, share, and play amazing Unity WebGL games. Join our platform
-              to showcase your creations and discover games from talented developers.
+              Создавайте, делитесь и играйте в удивительные игры Unity WebGL. Присоединяйтесь к нашей 
+              платформе, чтобы показать свои творения и открыть для себя игры талантливых разработчиков.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4">
@@ -41,13 +41,13 @@ export function HeroSection() {
                 <>
                   <Link to="/dashboard">
                     <Button size="lg" className="gap-2">
-                      Your Dashboard
+                      Ваша панель
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </Link>
                   <Link to="/games">
                     <Button variant="outline" size="lg">
-                      Browse Games
+                      Смотреть игры
                     </Button>
                   </Link>
                 </>
@@ -55,13 +55,13 @@ export function HeroSection() {
                 <>
                   <Link to="/register">
                     <Button size="lg" className="gap-2">
-                      Get Started
+                      Начать
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </Link>
                   <Link to="/login">
                     <Button variant="outline" size="lg">
-                      Login
+                      Войти
                     </Button>
                   </Link>
                 </>

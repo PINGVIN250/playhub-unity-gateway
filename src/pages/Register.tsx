@@ -20,12 +20,12 @@ import { Footer } from "@/components/Footer";
 import { Loader2, Gamepad } from "lucide-react";
 
 const registerSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  username: z.string().min(3, "Имя пользователя должно содержать не менее 3 символов"),
+  email: z.string().email("Неверный формат email"),
+  password: z.string().min(6, "Пароль должен содержать минимум 6 символов"),
   confirmPassword: z.string()
 }).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
+  message: "Пароли не совпадают",
   path: ["confirmPassword"]
 });
 
@@ -52,7 +52,7 @@ const Register = () => {
       await register(data.username, data.email, data.password);
       navigate("/dashboard");
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Ошибка регистрации:", error);
       setIsSubmitting(false);
     }
   };
@@ -65,9 +65,9 @@ const Register = () => {
           <div className="glass-card p-8">
             <div className="flex flex-col items-center mb-6">
               <Gamepad className="h-10 w-10 text-primary mb-2" />
-              <h1 className="text-3xl font-bold">Create Account</h1>
+              <h1 className="text-3xl font-bold">Создать аккаунт</h1>
               <p className="text-muted-foreground text-center mt-1">
-                Join our community and showcase your Unity games
+                Присоединяйтесь к нашему сообществу и покажите свои игры Unity
               </p>
             </div>
             
@@ -78,10 +78,10 @@ const Register = () => {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>Имя пользователя</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Choose a username" 
+                          placeholder="Выберите имя пользователя" 
                           {...field} 
                         />
                       </FormControl>
@@ -98,7 +98,7 @@ const Register = () => {
                       <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Enter your email" 
+                          placeholder="Введите ваш email" 
                           {...field} 
                         />
                       </FormControl>
@@ -112,11 +112,11 @@ const Register = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Пароль</FormLabel>
                       <FormControl>
                         <Input 
                           type="password" 
-                          placeholder="Create a password" 
+                          placeholder="Создайте пароль" 
                           {...field} 
                         />
                       </FormControl>
@@ -130,11 +130,11 @@ const Register = () => {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
+                      <FormLabel>Подтверждение пароля</FormLabel>
                       <FormControl>
                         <Input 
                           type="password" 
-                          placeholder="Confirm your password" 
+                          placeholder="Подтвердите пароль" 
                           {...field} 
                         />
                       </FormControl>
@@ -151,16 +151,16 @@ const Register = () => {
                   {isSubmitting && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   )}
-                  Create Account
+                  Создать аккаунт
                 </Button>
                 
                 <p className="text-center text-sm">
-                  Already have an account?{" "}
+                  Уже есть аккаунт?{" "}
                   <Link 
                     to="/login" 
                     className="text-primary hover:underline"
                   >
-                    Sign In
+                    Войти
                   </Link>
                 </p>
               </form>
