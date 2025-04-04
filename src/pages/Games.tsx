@@ -15,12 +15,12 @@ const Games = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  // Get all unique tags from games
+  // Получаем все уникальные теги из игр
   const allTags = Array.from(
     new Set(games.flatMap(game => game.tags || []))
   ).sort();
 
-  // Filter games based on search query and selected tags
+  // Фильтруем игры на основе поискового запроса и выбранных тегов
   const filteredGames = games.filter(game => {
     const matchesSearch = searchQuery
       ? game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -53,8 +53,8 @@ const Games = () => {
       <main className="flex-1 py-24">
         <div className="container mx-auto px-4">
           <PageTitle
-            title="Browse Games"
-            description="Discover and play amazing Unity WebGL games from our community"
+            title="Игры"
+            description="Откройте для себя и играйте в потрясающие Unity WebGL игры от нашего сообщества"
           />
           
           <div className="mb-8 space-y-4">
@@ -62,7 +62,7 @@ const Games = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
                 type="text"
-                placeholder="Search games..."
+                placeholder="Поиск игр..."
                 className="pl-10"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
@@ -96,7 +96,8 @@ const Games = () => {
               {(searchQuery || selectedTags.length > 0) && (
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
-                    Found {filteredGames.length} {filteredGames.length === 1 ? "game" : "games"}
+                    Найдено {filteredGames.length} {filteredGames.length === 1 ? "игра" : 
+                     filteredGames.length >= 2 && filteredGames.length <= 4 ? "игры" : "игр"}
                   </p>
                   <Button
                     variant="ghost"
@@ -104,7 +105,7 @@ const Games = () => {
                     onClick={clearFilters}
                     className="text-sm"
                   >
-                    Clear Filters
+                    Очистить фильтры
                   </Button>
                 </div>
               )}
@@ -132,7 +133,7 @@ const Games = () => {
             <GameGrid 
               games={filteredGames} 
               columns={3}
-              emptyMessage="No games found. Try adjusting your filters."
+              emptyMessage="Игры не найдены. Попробуйте изменить фильтры."
             />
           )}
         </div>

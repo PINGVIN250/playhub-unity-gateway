@@ -10,7 +10,7 @@ const Upload = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect to login if not authenticated
+  // Перенаправляем на страницу входа, если пользователь не аутентифицирован
   if (!isAuthenticated) {
     navigate("/login");
     return null;
@@ -22,8 +22,8 @@ const Upload = () => {
       <main className="flex-1 py-24">
         <div className="container mx-auto px-4">
           <PageTitle 
-            title="Upload Game"
-            description="Share your Unity WebGL game with the community"
+            title="Загрузка игры"
+            description="Поделитесь своей Unity WebGL игрой с сообществом"
           />
           
           <div className="glass-card p-6 md:p-8">

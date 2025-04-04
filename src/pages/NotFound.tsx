@@ -7,9 +7,10 @@ import { Gamepad, Home } from "lucide-react";
 const NotFound = () => {
   const location = useLocation();
 
+  // Логирование ошибки 404 при попытке доступа к несуществующему маршруту
   useEffect(() => {
     console.error(
-      "404 Error: User attempted to access non-existent route:",
+      "Ошибка 404: Пользователь попытался получить доступ к несуществующему маршруту:",
       location.pathname
     );
   }, [location.pathname]);
@@ -21,14 +22,14 @@ const NotFound = () => {
           <Gamepad className="h-10 w-10 text-primary" />
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold mb-3">404</h1>
-        <h2 className="text-2xl font-semibold mb-4">Page not found</h2>
+        <h2 className="text-2xl font-semibold mb-4">Страница не найдена</h2>
         <p className="text-muted-foreground mb-8">
-          The page you're looking for doesn't exist or has been moved.
+          Страница, которую вы ищете, не существует или была перемещена.
         </p>
         <Link to="/">
           <Button className="gap-2">
             <Home className="h-4 w-4" />
-            <span>Back to Home</span>
+            <span>Вернуться на главную</span>
           </Button>
         </Link>
       </div>

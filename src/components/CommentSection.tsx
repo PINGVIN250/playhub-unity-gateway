@@ -23,7 +23,9 @@ interface CommentSectionProps {
 }
 
 export function CommentSection({ gameId }: CommentSectionProps) {
+  // Получаем данные о пользователе и статус аутентификации
   const { user, isAuthenticated } = useAuth();
+  // Получаем функции для работы с комментариями
   const { getGameComments, addComment, deleteComment, updateComment, isLoading } = useComments();
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,8 +33,10 @@ export function CommentSection({ gameId }: CommentSectionProps) {
   const [editContent, setEditContent] = useState("");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   
+  // Получаем комментарии для конкретной игры
   const comments = getGameComments(gameId);
   
+  // Обработчик отправки комментария
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
@@ -42,17 +46,19 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       await addComment(gameId, content);
       setContent("");
     } catch (error) {
-      console.error("Error submitting comment:", error);
+      console.error("Ошибка при отправке комментария:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
   
+  // Начало редактирования комментария
   const handleStartEdit = (commentId: string, currentContent: string) => {
     setEditingCommentId(commentId);
     setEditContent(currentContent);
   };
   
+  // Сохранение отредактированного комментария
   const handleSaveEdit = async (commentId: string) => {
     if (!editContent.trim()) return;
     
@@ -60,24 +66,27 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       await updateComment(commentId, editContent);
       setEditingCommentId(null);
     } catch (error) {
-      console.error("Error updating comment:", error);
+      console.error("Ошибка при обновлении комментария:", error);
     }
   };
   
+  // Отмена редактирования комментария
   const handleCancelEdit = () => {
     setEditingCommentId(null);
     setEditContent("");
   };
   
+  // Удаление комментария
   const handleDelete = async (commentId: string) => {
     try {
       await deleteComment(commentId);
       setDeleteConfirmId(null);
     } catch (error) {
-      console.error("Error deleting comment:", error);
+      console.error("Ошибка при удалении комментария:", error);
     }
   };
   
+  // Получение инициалов имени пользователя
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -90,7 +99,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     <div className="space-y-6">
       <h2 className="text-xl font-bold flex items-center gap-2">
         <MessageCircle className="h-5 w-5" />
-        <span>Comments</span>
+        <span>Комментарии</span>
         {comments.length > 0 && (
           <span className="text-sm font-normal text-muted-foreground">
             ({comments.length})
@@ -101,7 +110,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       {isAuthenticated ? (
         <form onSubmit={handleSubmit} className="space-y-4">
           <Textarea
-            placeholder="Write a comment..."
+            placeholder="Напишите комментарий..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
             className="min-h-[100px]"
@@ -111,14 +120,14 @@ export function CommentSection({ gameId }: CommentSectionProps) {
               type="submit"
               disabled={!content.trim() || isSubmitting}
             >
-              {isSubmitting ? "Posting..." : "Post Comment"}
+              {isSubmitting ? "Отправка..." : "Отправить комментарий"}
             </Button>
           </div>
         </form>
       ) : (
         <div className="rounded-md bg-muted/50 p-4 text-center">
           <p className="text-muted-foreground">
-            Please <a href="/login" className="text-primary hover:underline">sign in</a> to leave a comment.
+            Пожалуйста, <a href="/login" className="text-primary hover:underline">войдите в систему</a>, чтобы оставить комментарий.
           </p>
         </div>
       )}
@@ -137,7 +146,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
                       <p className="font-medium">{comment.user?.username}</p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(comment.createdAt).toLocaleDateString()} • 
-                        {comment.updatedAt > comment.createdAt && " edited"}
+                        {comment.updatedAt > comment.createdAt && " изменено"}
                       </p>
                     </div>
                     
@@ -176,7 +185,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
                           size="sm"
                           onClick={handleCancelEdit}
                         >
-                          Cancel
+                          Отмена
                         </Button>
                         <Button
                           size="sm"
@@ -184,7 +193,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
                           disabled={!editContent.trim()}
                         >
                           <Save className="h-4 w-4 mr-1" />
-                          Save
+                          Сохранить
                         </Button>
                       </div>
                     </div>
@@ -199,25 +208,25 @@ export function CommentSection({ gameId }: CommentSectionProps) {
         </div>
       ) : (
         <div className="text-center py-8">
-          <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>
+          <p className="text-muted-foreground">Комментариев пока нет. Будьте первым, кто оставит комментарий!</p>
         </div>
       )}
       
       <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Comment</AlertDialogTitle>
+            <AlertDialogTitle>Удалить комментарий</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this comment? This action cannot be undone.
+              Вы уверены, что хотите удалить этот комментарий? Это действие нельзя отменить.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
             >
-              Delete
+              Удалить
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

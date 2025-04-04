@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -23,9 +24,11 @@ const Play = () => {
   const [fullscreenRef, setFullscreenRef] = useState<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   
+  // Получаем данные об игре по её идентификатору
   const game = getGameById(gameId || "");
   const isOwner = user && game && user.id === game.authorId;
   
+  // Поиск похожих игр при загрузке игры
   useEffect(() => {
     if (game && games.length > 0) {
       const similar = games.filter(g => 
@@ -39,6 +42,7 @@ const Play = () => {
     }
   }, [game, games]);
   
+  // Отслеживание состояния полноэкранного режима
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -57,6 +61,7 @@ const Play = () => {
     };
   }, []);
   
+  // Управление полноэкранным режимом
   const handleFullscreen = () => {
     if (!fullscreenRef) return;
     
@@ -83,18 +88,19 @@ const Play = () => {
     }
   };
   
+  // Если игра не найдена, показываем сообщение об ошибке
   if (!game) {
     return (
       <div className="min-h-screen flex flex-col page-transition">
         <Navbar />
         <main className="flex-1 py-24 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-3xl font-bold mb-4">Game Not Found</h1>
+            <h1 className="text-3xl font-bold mb-4">Игра не найдена</h1>
             <p className="text-muted-foreground mb-6">
-              The game you're looking for doesn't exist or may have been removed.
+              Игра, которую вы ищете, не существует или была удалена.
             </p>
             <Link to="/games">
-              <Button>Browse Games</Button>
+              <Button>Просмотр игр</Button>
             </Link>
           </div>
         </main>
@@ -112,7 +118,7 @@ const Play = () => {
             <Link to="/games">
               <Button variant="ghost" size="sm" className="gap-1">
                 <ChevronLeft className="h-4 w-4" />
-                <span>Back to Games</span>
+                <span>Назад к играм</span>
               </Button>
             </Link>
           </div>
@@ -125,7 +131,7 @@ const Play = () => {
               </div>
               <div className="flex items-center gap-1">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">By {game.author?.username || "Unknown"}</span>
+                <span className="text-sm text-muted-foreground">Автор: {game.author?.username || "Неизвестно"}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="h-4 w-4 text-muted-foreground" />
@@ -162,7 +168,7 @@ const Play = () => {
                       size="icon"
                       className="bg-background/50 backdrop-blur-md hover:bg-background/70 rounded-full"
                       onClick={handleFullscreen}
-                      title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                      title={isFullscreen ? "Выйти из полноэкранного режима" : "Полноэкранный режим"}
                     >
                       {isFullscreen ? (
                         <Minimize2 className="h-4 w-4" />
@@ -177,12 +183,12 @@ const Play = () => {
                   <div className="p-6">
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
                       <TabsList>
-                        <TabsTrigger value="about">About</TabsTrigger>
-                        <TabsTrigger value="comments">Comments</TabsTrigger>
+                        <TabsTrigger value="about">Об игре</TabsTrigger>
+                        <TabsTrigger value="comments">Комментарии</TabsTrigger>
                       </TabsList>
                       
                       <TabsContent value="about" className="pt-4">
-                        <h2 className="text-xl font-bold mb-4">About This Game</h2>
+                        <h2 className="text-xl font-bold mb-4">Об этой игре</h2>
                         <p className="text-muted-foreground">{game.description}</p>
                       </TabsContent>
                       
@@ -198,43 +204,43 @@ const Play = () => {
             {!isFullscreen && (
               <div className="space-y-6">
                 <div className="glass-card p-6">
-                  <h2 className="text-xl font-bold mb-4">Game Details</h2>
+                  <h2 className="text-xl font-bold mb-4">Детали игры</h2>
                   
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">Developer</h3>
-                      <p>{game.author?.username || "Unknown"}</p>
+                      <h3 className="text-sm font-medium text-muted-foreground">Разработчик</h3>
+                      <p>{game.author?.username || "Неизвестно"}</p>
                     </div>
                     
                     <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">Published</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground">Опубликовано</h3>
                       <p>{new Date(game.createdAt).toLocaleDateString()}</p>
                     </div>
                     
                     <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">Rating</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground">Рейтинг</h3>
                       <RatingComponent gameId={game.id} />
                     </div>
                     
                     <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">Platform</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground">Платформа</h3>
                       <p>Unity WebGL</p>
                     </div>
                     
                     <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">Controls</h3>
-                      <p>Mouse and Keyboard</p>
+                      <h3 className="text-sm font-medium text-muted-foreground">Управление</h3>
+                      <p>Мышь и клавиатура</p>
                     </div>
                   </div>
                 </div>
                 
                 {isOwner && (
                   <div className="glass-card p-6">
-                    <h2 className="text-xl font-bold mb-4">Manage Game</h2>
+                    <h2 className="text-xl font-bold mb-4">Управление игрой</h2>
                     <div className="space-y-2">
                       <Link to={`/games/${game.id}`}>
                         <Button variant="outline" className="w-full justify-start">
-                          Edit Game
+                          Редактировать игру
                         </Button>
                       </Link>
                     </div>
@@ -243,7 +249,7 @@ const Play = () => {
                 
                 {relatedGames.length > 0 && (
                   <div className="glass-card p-6">
-                    <h2 className="text-xl font-bold mb-4">Related Games</h2>
+                    <h2 className="text-xl font-bold mb-4">Похожие игры</h2>
                     
                     <div className="space-y-4">
                       {relatedGames.map(relatedGame => (

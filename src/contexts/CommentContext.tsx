@@ -21,6 +21,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { user } = useAuth();
 
+  // Загрузка комментариев из Supabase при инициализации
   useEffect(() => {
     const loadComments = async () => {
       try {
@@ -37,6 +38,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
         }
 
         if (data) {
+          // Форматируем данные комментариев из БД в формат, понятный фронтенду
           const formattedComments: Comment[] = data.map(comment => ({
             id: comment.id,
             gameId: comment.game_id,
@@ -55,7 +57,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
           setComments(formattedComments);
         }
       } catch (error) {
-        console.error("Failed to load comments:", error);
+        console.error("Не удалось загрузить комментарии:", error);
       } finally {
         setIsLoading(false);
       }
@@ -64,14 +66,16 @@ export function CommentProvider({ children }: { children: ReactNode }) {
     loadComments();
   }, []);
 
+  // Получение комментариев для конкретной игры
   const getGameComments = (gameId: string): Comment[] => {
     return comments.filter(comment => comment.gameId === gameId);
   };
 
+  // Добавление нового комментария
   const addComment = async (gameId: string, content: string): Promise<Comment> => {
     try {
       if (!user) {
-        throw new Error("You must be logged in to add a comment");
+        throw new Error("Вы должны войти в систему, чтобы добавить комментарий");
       }
 
       const { data, error } = await supabase
@@ -105,32 +109,33 @@ export function CommentProvider({ children }: { children: ReactNode }) {
         };
 
         setComments(prev => [...prev, newComment]);
-        toast.success("Comment added successfully");
+        toast.success("Комментарий успешно добавлен");
         return newComment;
       } else {
-        throw new Error("Failed to create comment");
+        throw new Error("Не удалось создать комментарий");
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to add comment";
+      const message = error instanceof Error ? error.message : "Не удалось добавить комментарий";
       toast.error(message);
       throw error;
     }
   };
 
+  // Удаление комментария
   const deleteComment = async (commentId: string): Promise<void> => {
     try {
       if (!user) {
-        throw new Error("You must be logged in to delete a comment");
+        throw new Error("Вы должны войти в систему, чтобы удалить комментарий");
       }
 
       const comment = comments.find(c => c.id === commentId);
       
       if (!comment) {
-        throw new Error("Comment not found");
+        throw new Error("Комментарий не найден");
       }
 
       if (comment.userId !== user.id && !user.isAdmin) {
-        throw new Error("You don't have permission to delete this comment");
+        throw new Error("У вас нет прав для удаления этого комментария");
       }
 
       const { error } = await supabase
@@ -143,28 +148,29 @@ export function CommentProvider({ children }: { children: ReactNode }) {
       }
 
       setComments(prev => prev.filter(c => c.id !== commentId));
-      toast.success("Comment deleted successfully");
+      toast.success("Комментарий успешно удален");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to delete comment";
+      const message = error instanceof Error ? error.message : "Не удалось удалить комментарий";
       toast.error(message);
       throw error;
     }
   };
 
+  // Обновление комментария
   const updateComment = async (commentId: string, content: string): Promise<Comment> => {
     try {
       if (!user) {
-        throw new Error("You must be logged in to update a comment");
+        throw new Error("Вы должны войти в систему, чтобы обновить комментарий");
       }
 
       const comment = comments.find(c => c.id === commentId);
       
       if (!comment) {
-        throw new Error("Comment not found");
+        throw new Error("Комментарий не найден");
       }
 
       if (comment.userId !== user.id && !user.isAdmin) {
-        throw new Error("You don't have permission to update this comment");
+        throw new Error("У вас нет прав для обновления этого комментария");
       }
 
       const { data, error } = await supabase
@@ -188,10 +194,10 @@ export function CommentProvider({ children }: { children: ReactNode }) {
         prev.map(c => c.id === commentId ? updatedComment : c)
       );
 
-      toast.success("Comment updated successfully");
+      toast.success("Комментарий успешно обновлен");
       return updatedComment;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to update comment";
+      const message = error instanceof Error ? error.message : "Не удалось обновить комментарий";
       toast.error(message);
       throw error;
     }
@@ -212,7 +218,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
 export function useComments() {
   const context = useContext(CommentContext);
   if (context === undefined) {
-    throw new Error("useComments must be used within a CommentProvider");
+    throw new Error("useComments должен использоваться внутри CommentProvider");
   }
   return context;
 }
