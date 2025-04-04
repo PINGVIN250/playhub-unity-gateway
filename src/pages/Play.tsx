@@ -9,12 +9,11 @@ import { UnityPlayer } from "@/components/UnityPlayer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ChevronLeft, Clock, Maximize2, Minimize2, User, MessageCircle } from "lucide-react";
+import { ChevronLeft, Clock, Maximize2, Minimize2, User } from "lucide-react";
 import { CommentSection } from "@/components/CommentSection";
 import { RatingComponent } from "@/components/RatingComponent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 const Play = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -24,7 +23,6 @@ const Play = () => {
   const [activeTab, setActiveTab] = useState("about");
   const [fullscreenRef, setFullscreenRef] = useState<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [commentsDialogOpen, setCommentsDialogOpen] = useState(false);
   
   const game = getGameById(gameId || "");
   const isOwner = user && game && user.id === game.authorId;
@@ -46,9 +44,6 @@ const Play = () => {
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
-      if (!document.fullscreenElement) {
-        setCommentsDialogOpen(false);
-      }
     };
     
     document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -164,23 +159,6 @@ const Play = () => {
                   </div>
                   
                   <div className="absolute bottom-4 right-4 flex gap-2 z-10">
-                    {isFullscreen && (
-                      <Dialog open={commentsDialogOpen} onOpenChange={setCommentsDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button 
-                            variant="secondary" 
-                            size="icon"
-                            className="rounded-full bg-background/50 backdrop-blur-md hover:bg-background/70"
-                            title="Show Comments"
-                          >
-                            <MessageCircle className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-                          <CommentSection gameId={game.id} />
-                        </DialogContent>
-                      </Dialog>
-                    )}
                     <Button 
                       variant="secondary"
                       size="icon"
