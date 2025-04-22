@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { Game } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -108,16 +109,30 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
                     unityInstanceRef.current = unityInstance;
                     window.unityInstance = unityInstance;
                     
+                    // Проверяем, имеет ли текстовое поле фокус при загрузке
                     const activeElement = document.activeElement;
                     if (activeElement instanceof HTMLTextAreaElement || 
                         activeElement instanceof HTMLInputElement) {
                       console.log("Textarea/input has focus, disabling unity input");
                       try {
                         unityInstance.SendMessage("GameManager", "SetInputEnabled", "false");
+                        window.unityInputDisabled = true;
                       } catch (error) {
                         console.log("Unity SendMessage failed:", error);
                       }
                     }
+                    
+                    // Добавляем обработчик для обнаружения нажатий клавиш
+                    const handleKeyEvents = (e: KeyboardEvent) => {
+                      if (window.unityInputDisabled) {
+                        // Если ввод Unity отключен, блокируем все события клавиатуры для Unity
+                        e.stopPropagation();
+                      }
+                    };
+                    
+                    document.addEventListener('keydown', handleKeyEvents, { capture: true });
+                    document.addEventListener('keypress', handleKeyEvents, { capture: true });
+                    document.addEventListener('keyup', handleKeyEvents, { capture: true });
                     
                     setIsLoading(false);
                   }).catch((error: Error) => {
@@ -206,7 +221,6 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     
     return () => {
       console.log("Cleanup running for game ID:", game.id);
-      clearTimeout(focusCheckTimer);
       destroyUnityInstance();
       
       canvasRef.current = null;

@@ -11,6 +11,8 @@ declare global {
       config: any,
       onProgress?: (progress: number) => void
     ) => Promise<any>;
+    // Флаг для отслеживания состояния ввода Unity
+    unityInputDisabled?: boolean;
   }
 }
 

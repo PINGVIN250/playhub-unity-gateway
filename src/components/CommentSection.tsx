@@ -41,6 +41,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       console.log("Отключение ввода Unity");
       if (window.unityInstance) {
         window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "false");
+        window.unityInputDisabled = true;
       }
     } catch (error) {
       console.error("Ошибка при отключении ввода Unity:", error);
@@ -52,6 +53,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       console.log("Включение ввода Unity");
       if (window.unityInstance) {
         window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "true");
+        window.unityInputDisabled = false;
       }
     } catch (error) {
       console.error("Ошибка при включении ввода Unity:", error);
@@ -69,26 +71,13 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     const isStillInForm = 
       relatedTarget && 
       (relatedTarget.tagName === "TEXTAREA" || 
+       relatedTarget.tagName === "INPUT" ||
        relatedTarget.tagName === "BUTTON" && relatedTarget.closest(".comment-textarea-container"));
     
     if (!isStillInForm) {
       console.log("Текстовое поле потеряло фокус");
       setIsInputActive(false);
       enableUnityInput();
-    }
-  };
-  
-  const handleDocumentClick = (e: MouseEvent) => {
-    if (isInputActive) {
-      const target = e.target as HTMLElement;
-      const isTextarea = target.tagName === "TEXTAREA";
-      const isTextareaParent = target.closest(".comment-textarea-container");
-      
-      if (!isTextarea && !isTextareaParent) {
-        console.log("Клик вне формы комментариев");
-        setIsInputActive(false);
-        enableUnityInput();
-      }
     }
   };
   
@@ -99,13 +88,37 @@ export function CommentSection({ gameId }: CommentSectionProps) {
   };
   
   useEffect(() => {
-    document.addEventListener("click", handleDocumentClick);
-    document.addEventListener("keydown", handleKeyDown, true);
+    document.addEventListener("keydown", handleKeyDown, { capture: true });
+    document.addEventListener("keypress", handleKeyDown, { capture: true });
+    document.addEventListener("keyup", handleKeyDown, { capture: true });
     
     return () => {
-      document.removeEventListener("click", handleDocumentClick);
-      document.removeEventListener("keydown", handleKeyDown, true);
+      document.removeEventListener("keydown", handleKeyDown, { capture: true });
+      document.removeEventListener("keypress", handleKeyDown, { capture: true });
+      document.removeEventListener("keyup", handleKeyDown, { capture: true });
       enableUnityInput();
+    };
+  }, [isInputActive]);
+  
+  useEffect(() => {
+    const handleMouseClick = (e: MouseEvent) => {
+      if (isInputActive) {
+        const target = e.target as HTMLElement;
+        const isTextarea = target.tagName === "TEXTAREA" || target.tagName === "INPUT";
+        const isTextareaParent = target.closest(".comment-textarea-container");
+        
+        if (!isTextarea && !isTextareaParent) {
+          console.log("Клик вне формы комментариев");
+          setIsInputActive(false);
+          enableUnityInput();
+        }
+      }
+    };
+    
+    document.addEventListener("click", handleMouseClick);
+    
+    return () => {
+      document.removeEventListener("click", handleMouseClick);
     };
   }, [isInputActive]);
   

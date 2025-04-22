@@ -7,7 +7,7 @@ export interface TextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, onFocus, onBlur, onClick, ...props }, ref) => {
+  ({ className, onFocus, onBlur, onClick, onKeyDown, ...props }, ref) => {
     
     // Обработчик фокуса с отключением ввода Unity
     const handleFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
@@ -15,6 +15,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         console.log("Textarea получила фокус, отключаем ввод Unity");
         if (window.unityInstance) {
           window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "false");
+          window.unityInputDisabled = true;
         }
       } catch (error) {
         console.error("Error disabling Unity input:", error);
@@ -30,7 +31,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       const relatedTarget = e.relatedTarget as HTMLElement;
       const isStillInForm = 
         relatedTarget && 
-        (relatedTarget.tagName === "TEXTAREA" || 
+        (relatedTarget.tagName === "TEXTAREA" ||
+         relatedTarget.tagName === "INPUT" || 
          relatedTarget.tagName === "BUTTON" && 
          relatedTarget.closest(".comment-textarea-container"));
       
@@ -39,6 +41,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           console.log("Textarea потеряла фокус, включаем ввод Unity");
           if (window.unityInstance) {
             window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "true");
+            window.unityInputDisabled = false;
           }
         } catch (error) {
           console.error("Error enabling Unity input:", error);
@@ -55,6 +58,15 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       onClick?.(e);
     };
     
+    // Обработчик нажатия клавиш
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // Предотвращаем всплытие события нажатия клавиш в Unity
+      e.stopPropagation();
+      
+      // Вызываем оригинальный обработчик
+      onKeyDown?.(e);
+    };
+    
     return (
       <textarea
         className={cn(
@@ -65,6 +77,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         onFocus={handleFocus}
         onBlur={handleBlur}
         onClick={handleClick}
+        onKeyDown={handleKeyDown}
         {...props}
       />
     )
