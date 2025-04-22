@@ -1,9 +1,45 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+  ({ className, type, onFocus, onBlur, onClick, ...props }, ref) => {
+    
+    // Обработчик фокуса с отключением ввода Unity
+    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+      try {
+        if (window.unityInstance) {
+          window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "false");
+        }
+      } catch (error) {
+        console.error("Error disabling Unity input:", error);
+      }
+      
+      // Вызываем оригинальный обработчик
+      onFocus?.(e);
+    };
+    
+    // Обработчик потери фокуса с включением ввода Unity
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+      try {
+        if (window.unityInstance) {
+          window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "true");
+        }
+      } catch (error) {
+        console.error("Error enabling Unity input:", error);
+      }
+      
+      // Вызываем оригинальный обработчик
+      onBlur?.(e);
+    };
+    
+    // Предотвращаем всплытие события клика
+    const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
+      e.stopPropagation();
+      onClick?.(e);
+    };
+    
     return (
       <input
         type={type}
@@ -12,6 +48,9 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className
         )}
         ref={ref}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onClick={handleClick}
         {...props}
       />
     )
@@ -20,3 +59,10 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 Input.displayName = "Input"
 
 export { Input }
+
+// Обновляем глобальные типы
+declare global {
+  interface Window {
+    unityInstance?: any;
+  }
+}

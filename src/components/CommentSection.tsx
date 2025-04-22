@@ -34,44 +34,109 @@ export function CommentSection({ gameId }: CommentSectionProps) {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const editTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isInputActive, setIsInputActive] = useState(false);
   
   // Получаем комментарии для конкретной игры
   const comments = getGameComments(gameId);
-
-  // Обработчик фокуса на текстовых полях, который останавливает перехват событий клавиатуры Unity
-  const handleTextareaFocus = () => {
-    // Отправляем сообщение в Unity для отключения обработки ввода
-    if (window.unityInstance) {
-      try {
+  
+  // Функция для отключения ввода в Unity
+  const disableUnityInput = () => {
+    try {
+      console.log("Отключение ввода Unity");
+      if (window.unityInstance) {
         window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "false");
-      } catch (error) {
-        console.log("Unity SendMessage не удался:", error);
       }
+    } catch (error) {
+      console.error("Ошибка при отключении ввода Unity:", error);
     }
-    
-    // Добавляем обработчик для повторного включения ввода при клике вне текстовой области
-    document.addEventListener("click", handleDocumentClick);
   };
   
-  // Обработчик клика по документу для определения потери фокуса
-  const handleDocumentClick = (e: MouseEvent) => {
-    const target = e.target as HTMLElement;
-    const isTextarea = target.tagName === "TEXTAREA";
-    const isTextareaParent = target.closest(".comment-textarea-container");
-    
-    if (!isTextarea && !isTextareaParent) {
-      // Возвращаем обработку ввода в Unity при клике вне текстовой области
+  // Функция для включения ввода в Unity
+  const enableUnityInput = () => {
+    try {
+      console.log("Включение ввода Unity");
       if (window.unityInstance) {
-        try {
-          window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "true");
-        } catch (error) {
-          console.log("Unity SendMessage не удался:", error);
-        }
+        window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "true");
       }
-      
-      document.removeEventListener("click", handleDocumentClick);
+    } catch (error) {
+      console.error("Ошибка при включении ввода Unity:", error);
     }
   };
+
+  // Обработчик фокуса на текстовой области
+  const handleTextareaFocus = () => {
+    console.log("Текстовое поле получило фокус");
+    setIsInputActive(true);
+    disableUnityInput();
+  };
+  
+  // Обработчик потери фокуса текстовой области
+  const handleTextareaBlur = (e: React.FocusEvent) => {
+    // Проверяем, перешел ли фокус на другой элемент формы ввода
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    const isStillInForm = 
+      relatedTarget && 
+      (relatedTarget.tagName === "TEXTAREA" || 
+       relatedTarget.tagName === "BUTTON" && relatedTarget.closest(".comment-textarea-container"));
+    
+    if (!isStillInForm) {
+      console.log("Текстовое поле потеряло фокус");
+      setIsInputActive(false);
+      enableUnityInput();
+    }
+  };
+  
+  // Обработчик клика по документу - перехватывает клики вне формы
+  const handleDocumentClick = (e: MouseEvent) => {
+    if (isInputActive) {
+      const target = e.target as HTMLElement;
+      const isTextarea = target.tagName === "TEXTAREA";
+      const isTextareaParent = target.closest(".comment-textarea-container");
+      
+      if (!isTextarea && !isTextareaParent) {
+        console.log("Клик вне формы комментариев");
+        setIsInputActive(false);
+        enableUnityInput();
+      }
+    }
+  };
+  
+  // Обработчик нажатия клавиш
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (isInputActive) {
+      // Это предотвращает обработку клавиш внутри игры Unity
+      e.stopPropagation();
+    }
+  };
+  
+  // Добавляем обработчики событий при монтировании компонента
+  useEffect(() => {
+    // Добавляем глобальные обработчики событий
+    document.addEventListener("click", handleDocumentClick);
+    document.addEventListener("keydown", handleKeyDown, true); // Используем capture phase
+    
+    return () => {
+      // Убираем обработчики при размонтировании
+      document.removeEventListener("click", handleDocumentClick);
+      document.removeEventListener("keydown", handleKeyDown, true);
+      
+      // Восстанавливаем ввод в Unity при размонтировании
+      enableUnityInput();
+    };
+  }, [isInputActive]);
+  
+  // Устанавливаем фокус на поле ввода при монтировании компонента
+  useEffect(() => {
+    // Задержка для установки фокуса, чтобы дать Unity время загрузиться
+    const focusTimer = setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        handleTextareaFocus();
+      }
+    }, 200);
+    
+    return () => clearTimeout(focusTimer);
+  }, []);
   
   // Обработчик отправки комментария
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,6 +151,11 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       console.error("Ошибка при отправке комментария:", error);
     } finally {
       setIsSubmitting(false);
+      
+      // После отправки комментария фокусируемся на поле ввода
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
     }
   };
   
@@ -98,6 +168,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     setTimeout(() => {
       if (editTextareaRef.current) {
         editTextareaRef.current.focus();
+        handleTextareaFocus();
       }
     }, 50);
   };
@@ -139,22 +210,6 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       .toUpperCase();
   };
 
-  // Очистка обработчиков событий при размонтировании компонента
-  useEffect(() => {
-    return () => {
-      document.removeEventListener("click", handleDocumentClick);
-      
-      // Восстанавливаем обработку ввода в Unity при размонтировании
-      if (window.unityInstance) {
-        try {
-          window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "true");
-        } catch (error) {
-          console.log("Unity SendMessage не удался:", error);
-        }
-      }
-    };
-  }, []);
-
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold flex items-center gap-2">
@@ -175,12 +230,19 @@ export function CommentSection({ gameId }: CommentSectionProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onFocus={handleTextareaFocus}
+            onBlur={handleTextareaBlur}
             className="min-h-[100px]"
+            onClick={(e) => {
+              // Предотвращаем всплытие события клика
+              e.stopPropagation();
+              handleTextareaFocus();
+            }}
           />
           <div className="flex justify-end">
             <Button
               type="submit"
               disabled={!content.trim() || isSubmitting}
+              onClick={(e) => e.stopPropagation()}
             >
               {isSubmitting ? "Отправка..." : "Отправить комментарий"}
             </Button>
@@ -218,7 +280,10 @@ export function CommentSection({ gameId }: CommentSectionProps) {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8"
-                          onClick={() => handleStartEdit(comment.id, comment.content)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStartEdit(comment.id, comment.content);
+                          }}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -226,7 +291,10 @@ export function CommentSection({ gameId }: CommentSectionProps) {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-destructive"
-                          onClick={() => setDeleteConfirmId(comment.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteConfirmId(comment.id);
+                          }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -241,19 +309,27 @@ export function CommentSection({ gameId }: CommentSectionProps) {
                         value={editContent}
                         onChange={(e) => setEditContent(e.target.value)}
                         onFocus={handleTextareaFocus}
+                        onBlur={handleTextareaBlur}
                         className="min-h-[100px]"
+                        onClick={(e) => e.stopPropagation()}
                       />
                       <div className="flex justify-end gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={handleCancelEdit}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCancelEdit();
+                          }}
                         >
                           Отмена
                         </Button>
                         <Button
                           size="sm"
-                          onClick={() => handleSaveEdit(comment.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveEdit(comment.id);
+                          }}
                           disabled={!editContent.trim()}
                         >
                           <Save className="h-4 w-4 mr-1" />
@@ -285,10 +361,13 @@ export function CommentSection({ gameId }: CommentSectionProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Отмена</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteConfirmId && handleDelete(deleteConfirmId);
+              }}
             >
               Удалить
             </AlertDialogAction>

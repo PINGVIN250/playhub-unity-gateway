@@ -104,8 +104,22 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
                   window.createUnityInstance(canvas, config, (progress: number) => {
                     setLoadingProgress(progress * 100);
                   }).then((unityInstance: any) => {
+                    console.log("Unity instance created successfully");
                     unityInstanceRef.current = unityInstance;
-                    window.unityInstance = unityInstance; // Сохраняем экземпляр Unity в глобальной переменной
+                    window.unityInstance = unityInstance;
+                    
+                    // Проверяем, есть ли активные поля ввода на странице
+                    const activeElement = document.activeElement;
+                    if (activeElement instanceof HTMLTextAreaElement || 
+                        activeElement instanceof HTMLInputElement) {
+                      console.log("Textarea/input has focus, disabling unity input");
+                      try {
+                        unityInstance.SendMessage("GameManager", "SetInputEnabled", "false");
+                      } catch (error) {
+                        console.log("Unity SendMessage failed:", error);
+                      }
+                    }
+                    
                     setIsLoading(false);
                   }).catch((error: Error) => {
                     console.error("Unity instance creation error:", error);
@@ -175,12 +189,31 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     
     loadUnityGame();
     
+    // При монтировании компонента, если фокус на текстовом поле,
+    // отключаем ввод Unity
+    const checkActiveElement = () => {
+      const activeElement = document.activeElement;
+      if (activeElement instanceof HTMLTextAreaElement || 
+          activeElement instanceof HTMLInputElement) {
+        if (window.unityInstance) {
+          try {
+            window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "false");
+          } catch (error) {
+            console.log("Unity SendMessage failed:", error);
+          }
+        }
+      }
+    };
+    
+    // Проверяем фокус через небольшую задержку после загрузки игры
+    const focusCheckTimer = setTimeout(checkActiveElement, 1000);
+    
     return () => {
       console.log("Cleanup running for game ID:", game.id);
+      clearTimeout(focusCheckTimer);
       destroyUnityInstance();
       
       canvasRef.current = null;
-      
       iframeRef.current = null;
     };
   }, [game.id]);
@@ -246,7 +279,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full" onClick={(e) => e.stopPropagation()}>
       <div
         ref={containerRef}
         className={`unity-container relative overflow-hidden ${
@@ -312,6 +345,6 @@ declare global {
       config: any,
       onProgress?: (progress: number) => void
     ) => Promise<any>;
-    unityInstance: any; // Добавляем свойство unityInstance в глобальный объект window
+    unityInstance: any;
   }
 }
