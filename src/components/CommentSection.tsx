@@ -39,16 +39,43 @@ export function CommentSection({ gameId }: CommentSectionProps) {
   // Массив комментариев для выбранной игры
   const comments = getGameComments(gameId);
 
-  // При фокусе на textarea отключаем ввод для Unity
-  const handleTextareaFocus = () => {
-    // Отключаем ввод Unity через SendMessage
+  // Безопасная отправка сообщений в Unity
+  const sendMessageToUnity = (objectName: string, methodName: string, value: string) => {
     if (window.unityInstance) {
       try {
-        window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "false");
+        // Проверяем существование объекта через вызов GetInstanceID
+        // Если объект не существует, будет выброшено исключение
+        window.unityInstance.SendMessage(objectName, "GetInstanceID");
+        
+        // Если мы дошли до этой строки, значит объект существует
+        window.unityInstance.SendMessage(objectName, methodName, value);
+        return true;
       } catch (error) {
-        console.log("Ошибка отправки сообщения Unity:", error);
+        console.log(`Объект ${objectName} не найден в Unity или ошибка при отправке сообщения:`, error);
+        return false;
       }
     }
+    return false;
+  };
+
+  // При фокусе на textarea отключаем ввод для Unity
+  const handleTextareaFocus = () => {
+    // Пробуем отправить сообщение в Unity более безопасным способом
+    const objectsToTry = ["GameManager", "InputManager", "UIManager", "GameController"];
+    let messageDelivered = false;
+    
+    // Пробуем разные объекты, которые могут существовать в сцене Unity
+    for (const objectName of objectsToTry) {
+      if (sendMessageToUnity(objectName, "SetInputEnabled", "false")) {
+        messageDelivered = true;
+        break;
+      }
+    }
+    
+    if (!messageDelivered && window.unityInstance) {
+      console.log("Не удалось найти подходящий объект в Unity для отключения ввода");
+    }
+    
     // Добавляем обработчик для возврата ввода после потери фокуса
     document.addEventListener("click", handleDocumentClick);
   };
@@ -58,14 +85,23 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     const target = e.target as HTMLElement;
     const isTextarea = target.tagName === "TEXTAREA";
     const isTextareaParent = target.closest(".comment-textarea-container");
+    
     if (!isTextarea && !isTextareaParent) {
-      if (window.unityInstance) {
-        try {
-          window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "true");
-        } catch (error) {
-          console.log("Ошибка отправки сообщения Unity:", error);
+      const objectsToTry = ["GameManager", "InputManager", "UIManager", "GameController"];
+      let messageDelivered = false;
+      
+      // Пробуем разные объекты, которые могут существовать в сцене Unity
+      for (const objectName of objectsToTry) {
+        if (sendMessageToUnity(objectName, "SetInputEnabled", "true")) {
+          messageDelivered = true;
+          break;
         }
       }
+      
+      if (!messageDelivered && window.unityInstance) {
+        console.log("Не удалось найти подходящий объект в Unity для включения ввода");
+      }
+      
       document.removeEventListener("click", handleDocumentClick);
     }
   };
@@ -136,12 +172,10 @@ export function CommentSection({ gameId }: CommentSectionProps) {
   useEffect(() => {
     return () => {
       document.removeEventListener("click", handleDocumentClick);
-      if (window.unityInstance) {
-        try {
-          window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "true");
-        } catch (error) {
-          console.log("Ошибка отправки сообщения Unity:", error);
-        }
+      
+      const objectsToTry = ["GameManager", "InputManager", "UIManager", "GameController"];
+      for (const objectName of objectsToTry) {
+        sendMessageToUnity(objectName, "SetInputEnabled", "true");
       }
     };
   }, []);
