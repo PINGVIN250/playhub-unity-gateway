@@ -23,78 +23,72 @@ interface CommentSectionProps {
 }
 
 export function CommentSection({ gameId }: CommentSectionProps) {
-  // Получаем данные о пользователе и статус аутентификации
+  // Получение пользователя и статуса авторизации
   const { user, isAuthenticated } = useAuth();
-  // Получаем функции для работы с комментариями
+  // Доступ к функциям работы с комментариями
   const { getGameComments, addComment, deleteComment, updateComment, isLoading } = useComments();
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const editTextareaRef = useRef<HTMLTextAreaElement>(null);
   
-  // Получаем комментарии для конкретной игры
+  // Массив комментариев для выбранной игры
   const comments = getGameComments(gameId);
 
-  // Обработчик фокуса на текстовых полях, который останавливает перехват событий клавиатуры Unity
+  // При фокусе на textarea отключаем ввод для Unity
   const handleTextareaFocus = () => {
-    // Отправляем сообщение в Unity для отключения обработки ввода
+    // Отключаем ввод Unity через SendMessage
     if (window.unityInstance) {
       try {
         window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "false");
       } catch (error) {
-        console.log("Unity SendMessage не удался:", error);
+        console.log("Ошибка отправки сообщения Unity:", error);
       }
     }
-    
-    // Добавляем обработчик для повторного включения ввода при клике вне текстовой области
+    // Добавляем обработчик для возврата ввода после потери фокуса
     document.addEventListener("click", handleDocumentClick);
   };
   
-  // Обработчик клика по документу для определения потери фокуса
+  // При клике вне поля комментария возвращаем ввод в Unity
   const handleDocumentClick = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
     const isTextarea = target.tagName === "TEXTAREA";
     const isTextareaParent = target.closest(".comment-textarea-container");
-    
     if (!isTextarea && !isTextareaParent) {
-      // Возвращаем обработку ввода в Unity при клике вне текстовой области
       if (window.unityInstance) {
         try {
           window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "true");
         } catch (error) {
-          console.log("Unity SendMessage не удался:", error);
+          console.log("Ошибка отправки сообщения Unity:", error);
         }
       }
-      
       document.removeEventListener("click", handleDocumentClick);
     }
   };
   
-  // Обработчик отправки комментария
+  // Отправка нового комментария
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
-    
     try {
       setIsSubmitting(true);
       await addComment(gameId, content);
       setContent("");
     } catch (error) {
-      console.error("Ошибка при отправке комментария:", error);
+      console.error("Ошибка добавления комментария:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
   
-  // Начало редактирования комментария
+  // Запуск редактирования: устанавливаем id и текст редактируемого комментария, фокусируем поле
   const handleStartEdit = (commentId: string, currentContent: string) => {
     setEditingCommentId(commentId);
     setEditContent(currentContent);
-    
-    // Фокус на поле редактирования с задержкой
     setTimeout(() => {
       if (editTextareaRef.current) {
         editTextareaRef.current.focus();
@@ -102,35 +96,34 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     }, 50);
   };
   
-  // Сохранение отредактированного комментария
+  // Сохраняем отредактированный комментарий
   const handleSaveEdit = async (commentId: string) => {
     if (!editContent.trim()) return;
-    
     try {
       await updateComment(commentId, editContent);
       setEditingCommentId(null);
     } catch (error) {
-      console.error("Ошибка при обновлении комментария:", error);
+      console.error("Ошибка обновления комментария:", error);
     }
   };
   
-  // Отмена редактирования комментария
+  // Отмена редактирования комментария — очищаем состояние
   const handleCancelEdit = () => {
     setEditingCommentId(null);
     setEditContent("");
   };
   
-  // Удаление комментария
+  // Удаление комментария с подтверждением
   const handleDelete = async (commentId: string) => {
     try {
       await deleteComment(commentId);
       setDeleteConfirmId(null);
     } catch (error) {
-      console.error("Ошибка при удалении комментария:", error);
+      console.error("Ошибка удаления комментария:", error);
     }
   };
   
-  // Получение инициалов имени пользователя
+  // Возвращает инициалы пользователя (например, "ИМ" из "Иван Михайлов")
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -139,17 +132,15 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       .toUpperCase();
   };
 
-  // Очистка обработчиков событий при размонтировании компонента
+  // При размонтировании компонента убираем обработчики и возвращаем ввод Unity
   useEffect(() => {
     return () => {
       document.removeEventListener("click", handleDocumentClick);
-      
-      // Восстанавливаем обработку ввода в Unity при размонтировании
       if (window.unityInstance) {
         try {
           window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "true");
         } catch (error) {
-          console.log("Unity SendMessage не удался:", error);
+          console.log("Ошибка отправки сообщения Unity:", error);
         }
       }
     };
@@ -157,6 +148,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
 
   return (
     <div className="space-y-6">
+      {/* Заголовок и количество комментариев */}
       <h2 className="text-xl font-bold flex items-center gap-2">
         <MessageCircle className="h-5 w-5" />
         <span>Комментарии</span>
@@ -167,6 +159,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
         )}
       </h2>
       
+      {/* Форма для создания комментария доступна только авторизованным пользователям */}
       {isAuthenticated ? (
         <form onSubmit={handleSubmit} className="space-y-4 comment-textarea-container">
           <Textarea
@@ -187,6 +180,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
           </div>
         </form>
       ) : (
+        // Сообщение для неавторизованных пользователей
         <div className="rounded-md bg-muted/50 p-4 text-center">
           <p className="text-muted-foreground">
             Пожалуйста, <a href="/login" className="text-primary hover:underline">войдите в систему</a>, чтобы оставить комментарий.
@@ -194,6 +188,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
         </div>
       )}
       
+      {/* Список комментариев или сообщение об отсутствии */}
       {comments.length > 0 ? (
         <div className="space-y-6">
           {comments.map((comment) => (
@@ -211,7 +206,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
                         {comment.updatedAt > comment.createdAt && " изменено"}
                       </p>
                     </div>
-                    
+                    {/* Кнопки редактирования и удаления — доступны автору или админу */}
                     {user && (user.id === comment.userId || user.isAdmin) && editingCommentId !== comment.id && (
                       <div className="flex items-center gap-2">
                         <Button
@@ -233,7 +228,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
                       </div>
                     )}
                   </div>
-                  
+                  {/* Блок редактирования или отображение текста комментария */}
                   {editingCommentId === comment.id ? (
                     <div className="space-y-2 comment-textarea-container">
                       <Textarea
@@ -271,11 +266,13 @@ export function CommentSection({ gameId }: CommentSectionProps) {
           ))}
         </div>
       ) : (
+        // Сообщение при отсутствии комментариев
         <div className="text-center py-8">
           <p className="text-muted-foreground">Комментариев пока нет. Будьте первым, кто оставит комментарий!</p>
         </div>
       )}
       
+      {/* Диалог подтверждения удаления */}
       <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -299,7 +296,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
   );
 }
 
-// Обновляем интерфейс Window, чтобы включить unityInstance
+// Обновляем тип Window, чтобы добавить unityInstance для взаимодействия с игрой
 declare global {
   interface Window {
     unityInstance: any;
