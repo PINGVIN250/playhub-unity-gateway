@@ -333,14 +333,3 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     </div>
   );
 }
-
-declare global {
-  interface Window {
-    createUnityInstance: (
-      canvas: HTMLCanvasElement,
-      config: any,
-      onProgress?: (progress: number) => void
-    ) => Promise<any>;
-    unityInstance: any;
-  }
-}

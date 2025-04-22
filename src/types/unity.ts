@@ -1,12 +1,12 @@
 
 /**
- * Тип для Unity WebGL инстанса
+ * Типы для Unity WebGL инстанса
  * Это глобальный интерфейс, который используется в нескольких компонентах
  */
 declare global {
   interface Window {
     unityInstance: any;
-    createUnityInstance?: (
+    createUnityInstance: (
       canvas: HTMLCanvasElement,
       config: any,
       onProgress?: (progress: number) => void
