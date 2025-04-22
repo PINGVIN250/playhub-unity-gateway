@@ -4,7 +4,6 @@ import { Game } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Loader2, Maximize2, Minimize2, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import "@/types/unity";
 
 interface UnityPlayerProps {
   game: Game;
@@ -105,35 +104,8 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
                   window.createUnityInstance(canvas, config, (progress: number) => {
                     setLoadingProgress(progress * 100);
                   }).then((unityInstance: any) => {
-                    console.log("Unity instance created successfully");
                     unityInstanceRef.current = unityInstance;
-                    window.unityInstance = unityInstance;
-                    
-                    // Проверяем, имеет ли текстовое поле фокус при загрузке
-                    const activeElement = document.activeElement;
-                    if (activeElement instanceof HTMLTextAreaElement || 
-                        activeElement instanceof HTMLInputElement) {
-                      console.log("Textarea/input has focus, disabling unity input");
-                      try {
-                        unityInstance.SendMessage("GameManager", "SetInputEnabled", "false");
-                        window.unityInputDisabled = true;
-                      } catch (error) {
-                        console.log("Unity SendMessage failed:", error);
-                      }
-                    }
-                    
-                    // Добавляем обработчик для обнаружения нажатий клавиш
-                    const handleKeyEvents = (e: KeyboardEvent) => {
-                      if (window.unityInputDisabled) {
-                        // Если ввод Unity отключен, блокируем все события клавиатуры для Unity
-                        e.stopPropagation();
-                      }
-                    };
-                    
-                    document.addEventListener('keydown', handleKeyEvents, { capture: true });
-                    document.addEventListener('keypress', handleKeyEvents, { capture: true });
-                    document.addEventListener('keyup', handleKeyEvents, { capture: true });
-                    
+                    window.unityInstance = unityInstance; // Сохраняем экземпляр Unity в глобальной переменной
                     setIsLoading(false);
                   }).catch((error: Error) => {
                     console.error("Unity instance creation error:", error);
@@ -203,27 +175,12 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     
     loadUnityGame();
     
-    const checkActiveElement = () => {
-      const activeElement = document.activeElement;
-      if (activeElement instanceof HTMLTextAreaElement || 
-          activeElement instanceof HTMLInputElement) {
-        if (window.unityInstance) {
-          try {
-            window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "false");
-          } catch (error) {
-            console.log("Unity SendMessage failed:", error);
-          }
-        }
-      }
-    };
-    
-    const focusCheckTimer = setTimeout(checkActiveElement, 1000);
-    
     return () => {
       console.log("Cleanup running for game ID:", game.id);
       destroyUnityInstance();
       
       canvasRef.current = null;
+      
       iframeRef.current = null;
     };
   }, [game.id]);
@@ -289,7 +246,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   };
 
   return (
-    <div className="w-full" onClick={(e) => e.stopPropagation()}>
+    <div className="w-full">
       <div
         ref={containerRef}
         className={`unity-container relative overflow-hidden ${
@@ -346,4 +303,15 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
       </div>
     </div>
   );
+}
+
+declare global {
+  interface Window {
+    createUnityInstance: (
+      canvas: HTMLCanvasElement,
+      config: any,
+      onProgress?: (progress: number) => void
+    ) => Promise<any>;
+    unityInstance: any; // Добавляем свойство unityInstance в глобальный объект window
+  }
 }

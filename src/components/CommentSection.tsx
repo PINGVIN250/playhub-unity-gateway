@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { useComments } from "@/contexts/CommentContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,14 +17,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { MessageCircle, Trash2, Edit, Save } from "lucide-react";
-import "@/types/unity";
 
 interface CommentSectionProps {
   gameId: string;
 }
 
 export function CommentSection({ gameId }: CommentSectionProps) {
+  // Получаем данные о пользователе и статус аутентификации
   const { user, isAuthenticated } = useAuth();
+  // Получаем функции для работы с комментариями
   const { getGameComments, addComment, deleteComment, updateComment, isLoading } = useComments();
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,107 +34,46 @@ export function CommentSection({ gameId }: CommentSectionProps) {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const editTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const [isInputActive, setIsInputActive] = useState(false);
   
+  // Получаем комментарии для конкретной игры
   const comments = getGameComments(gameId);
-  
-  const disableUnityInput = () => {
-    try {
-      console.log("Отключение ввода Unity");
-      if (window.unityInstance) {
-        window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "false");
-        window.unityInputDisabled = true;
-      }
-    } catch (error) {
-      console.error("Ошибка при отключении ввода Unity:", error);
-    }
-  };
-  
-  const enableUnityInput = () => {
-    try {
-      console.log("Включение ввода Unity");
-      if (window.unityInstance) {
-        window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "true");
-        window.unityInputDisabled = false;
-      }
-    } catch (error) {
-      console.error("Ошибка при включении ввода Unity:", error);
-    }
-  };
 
+  // Обработчик фокуса на текстовых полях, который останавливает перехват событий клавиатуры Unity
   const handleTextareaFocus = () => {
-    console.log("Текстовое поле получило фокус");
-    setIsInputActive(true);
-    disableUnityInput();
-  };
-  
-  const handleTextareaBlur = (e: React.FocusEvent) => {
-    const relatedTarget = e.relatedTarget as HTMLElement;
-    const isStillInForm = 
-      relatedTarget && 
-      (relatedTarget.tagName === "TEXTAREA" || 
-       relatedTarget.tagName === "INPUT" ||
-       relatedTarget.tagName === "BUTTON" && relatedTarget.closest(".comment-textarea-container"));
-    
-    if (!isStillInForm) {
-      console.log("Текстовое поле потеряло фокус");
-      setIsInputActive(false);
-      enableUnityInput();
+    // Отправляем сообщение в Unity для отключения обработки ввода
+    if (window.unityInstance) {
+      try {
+        window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "false");
+      } catch (error) {
+        console.log("Unity SendMessage не удался:", error);
+      }
     }
-  };
-  
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (isInputActive) {
-      e.stopPropagation();
-    }
-  };
-  
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown, { capture: true });
-    document.addEventListener("keypress", handleKeyDown, { capture: true });
-    document.addEventListener("keyup", handleKeyDown, { capture: true });
     
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown, { capture: true });
-      document.removeEventListener("keypress", handleKeyDown, { capture: true });
-      document.removeEventListener("keyup", handleKeyDown, { capture: true });
-      enableUnityInput();
-    };
-  }, [isInputActive]);
+    // Добавляем обработчик для повторного включения ввода при клике вне текстовой области
+    document.addEventListener("click", handleDocumentClick);
+  };
   
-  useEffect(() => {
-    const handleMouseClick = (e: MouseEvent) => {
-      if (isInputActive) {
-        const target = e.target as HTMLElement;
-        const isTextarea = target.tagName === "TEXTAREA" || target.tagName === "INPUT";
-        const isTextareaParent = target.closest(".comment-textarea-container");
-        
-        if (!isTextarea && !isTextareaParent) {
-          console.log("Клик вне формы комментариев");
-          setIsInputActive(false);
-          enableUnityInput();
+  // Обработчик клика по документу для определения потери фокуса
+  const handleDocumentClick = (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const isTextarea = target.tagName === "TEXTAREA";
+    const isTextareaParent = target.closest(".comment-textarea-container");
+    
+    if (!isTextarea && !isTextareaParent) {
+      // Возвращаем обработку ввода в Unity при клике вне текстовой области
+      if (window.unityInstance) {
+        try {
+          window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "true");
+        } catch (error) {
+          console.log("Unity SendMessage не удался:", error);
         }
       }
-    };
-    
-    document.addEventListener("click", handleMouseClick);
-    
-    return () => {
-      document.removeEventListener("click", handleMouseClick);
-    };
-  }, [isInputActive]);
+      
+      document.removeEventListener("click", handleDocumentClick);
+    }
+  };
   
-  useEffect(() => {
-    const focusTimer = setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-        handleTextareaFocus();
-      }
-    }, 200);
-    
-    return () => clearTimeout(focusTimer);
-  }, []);
-  
+  // Обработчик отправки комментария
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
@@ -145,25 +86,23 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       console.error("Ошибка при отправке комментария:", error);
     } finally {
       setIsSubmitting(false);
-      
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-      }
     }
   };
   
+  // Начало редактирования комментария
   const handleStartEdit = (commentId: string, currentContent: string) => {
     setEditingCommentId(commentId);
     setEditContent(currentContent);
     
+    // Фокус на поле редактирования с задержкой
     setTimeout(() => {
       if (editTextareaRef.current) {
         editTextareaRef.current.focus();
-        handleTextareaFocus();
       }
     }, 50);
   };
   
+  // Сохранение отредактированного комментария
   const handleSaveEdit = async (commentId: string) => {
     if (!editContent.trim()) return;
     
@@ -175,11 +114,13 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     }
   };
   
+  // Отмена редактирования комментария
   const handleCancelEdit = () => {
     setEditingCommentId(null);
     setEditContent("");
   };
   
+  // Удаление комментария
   const handleDelete = async (commentId: string) => {
     try {
       await deleteComment(commentId);
@@ -189,6 +130,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     }
   };
   
+  // Получение инициалов имени пользователя
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -196,6 +138,22 @@ export function CommentSection({ gameId }: CommentSectionProps) {
       .join('')
       .toUpperCase();
   };
+
+  // Очистка обработчиков событий при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      document.removeEventListener("click", handleDocumentClick);
+      
+      // Восстанавливаем обработку ввода в Unity при размонтировании
+      if (window.unityInstance) {
+        try {
+          window.unityInstance.SendMessage("GameManager", "SetInputEnabled", "true");
+        } catch (error) {
+          console.log("Unity SendMessage не удался:", error);
+        }
+      }
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -217,18 +175,12 @@ export function CommentSection({ gameId }: CommentSectionProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onFocus={handleTextareaFocus}
-            onBlur={handleTextareaBlur}
             className="min-h-[100px]"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleTextareaFocus();
-            }}
           />
           <div className="flex justify-end">
             <Button
               type="submit"
               disabled={!content.trim() || isSubmitting}
-              onClick={(e) => e.stopPropagation()}
             >
               {isSubmitting ? "Отправка..." : "Отправить комментарий"}
             </Button>
@@ -266,10 +218,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStartEdit(comment.id, comment.content);
-                          }}
+                          onClick={() => handleStartEdit(comment.id, comment.content)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -277,10 +226,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-destructive"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteConfirmId(comment.id);
-                          }}
+                          onClick={() => setDeleteConfirmId(comment.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -295,27 +241,19 @@ export function CommentSection({ gameId }: CommentSectionProps) {
                         value={editContent}
                         onChange={(e) => setEditContent(e.target.value)}
                         onFocus={handleTextareaFocus}
-                        onBlur={handleTextareaBlur}
                         className="min-h-[100px]"
-                        onClick={(e) => e.stopPropagation()}
                       />
                       <div className="flex justify-end gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCancelEdit();
-                          }}
+                          onClick={handleCancelEdit}
                         >
                           Отмена
                         </Button>
                         <Button
                           size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSaveEdit(comment.id);
-                          }}
+                          onClick={() => handleSaveEdit(comment.id)}
                           disabled={!editContent.trim()}
                         >
                           <Save className="h-4 w-4 mr-1" />
@@ -347,13 +285,10 @@ export function CommentSection({ gameId }: CommentSectionProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Отмена</AlertDialogCancel>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={(e) => {
-                e.stopPropagation();
-                deleteConfirmId && handleDelete(deleteConfirmId);
-              }}
+              onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
             >
               Удалить
             </AlertDialogAction>
@@ -364,6 +299,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
   );
 }
 
+// Обновляем интерфейс Window, чтобы включить unityInstance
 declare global {
   interface Window {
     unityInstance: any;
