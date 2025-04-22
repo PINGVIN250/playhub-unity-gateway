@@ -1,7 +1,7 @@
 
 import * as React from "react"
-
 import { cn } from "@/lib/utils"
+import "@/types/unity" // Импортируем типы Unity
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, type, onFocus, onBlur, onClick, ...props }, ref) => {
@@ -59,10 +59,3 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 Input.displayName = "Input"
 
 export { Input }
-
-// Обновляем глобальные типы
-declare global {
-  interface Window {
-    unityInstance?: any;
-  }
-}

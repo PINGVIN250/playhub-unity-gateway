@@ -1,9 +1,9 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Game } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Loader2, Maximize2, Minimize2, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import "@/types/unity";
 
 interface UnityPlayerProps {
   game: Game;
@@ -108,7 +108,6 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
                     unityInstanceRef.current = unityInstance;
                     window.unityInstance = unityInstance;
                     
-                    // Проверяем, есть ли активные поля ввода на странице
                     const activeElement = document.activeElement;
                     if (activeElement instanceof HTMLTextAreaElement || 
                         activeElement instanceof HTMLInputElement) {
@@ -189,8 +188,6 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     
     loadUnityGame();
     
-    // При монтировании компонента, если фокус на текстовом поле,
-    // отключаем ввод Unity
     const checkActiveElement = () => {
       const activeElement = document.activeElement;
       if (activeElement instanceof HTMLTextAreaElement || 
@@ -205,7 +202,6 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
       }
     };
     
-    // Проверяем фокус через небольшую задержку после загрузки игры
     const focusCheckTimer = setTimeout(checkActiveElement, 1000);
     
     return () => {

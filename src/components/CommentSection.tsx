@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useComments } from "@/contexts/CommentContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,15 +16,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { MessageCircle, Trash2, Edit, Save } from "lucide-react";
+import "@/types/unity";
 
 interface CommentSectionProps {
   gameId: string;
 }
 
 export function CommentSection({ gameId }: CommentSectionProps) {
-  // Получаем данные о пользователе и статус аутентификации
   const { user, isAuthenticated } = useAuth();
-  // Получаем функции для работы с комментариями
   const { getGameComments, addComment, deleteComment, updateComment, isLoading } = useComments();
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,10 +34,8 @@ export function CommentSection({ gameId }: CommentSectionProps) {
   const editTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [isInputActive, setIsInputActive] = useState(false);
   
-  // Получаем комментарии для конкретной игры
   const comments = getGameComments(gameId);
   
-  // Функция для отключения ввода в Unity
   const disableUnityInput = () => {
     try {
       console.log("Отключение ввода Unity");
@@ -51,7 +47,6 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     }
   };
   
-  // Функция для включения ввода в Unity
   const enableUnityInput = () => {
     try {
       console.log("Включение ввода Unity");
@@ -63,16 +58,13 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     }
   };
 
-  // Обработчик фокуса на текстовой области
   const handleTextareaFocus = () => {
     console.log("Текстовое поле получило фокус");
     setIsInputActive(true);
     disableUnityInput();
   };
   
-  // Обработчик потери фокуса текстовой области
   const handleTextareaBlur = (e: React.FocusEvent) => {
-    // Проверяем, перешел ли фокус на другой элемент формы ввода
     const relatedTarget = e.relatedTarget as HTMLElement;
     const isStillInForm = 
       relatedTarget && 
@@ -86,7 +78,6 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     }
   };
   
-  // Обработчик клика по документу - перехватывает клики вне формы
   const handleDocumentClick = (e: MouseEvent) => {
     if (isInputActive) {
       const target = e.target as HTMLElement;
@@ -101,33 +92,24 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     }
   };
   
-  // Обработчик нажатия клавиш
   const handleKeyDown = (e: KeyboardEvent) => {
     if (isInputActive) {
-      // Это предотвращает обработку клавиш внутри игры Unity
       e.stopPropagation();
     }
   };
   
-  // Добавляем обработчики событий при монтировании компонента
   useEffect(() => {
-    // Добавляем глобальные обработчики событий
     document.addEventListener("click", handleDocumentClick);
-    document.addEventListener("keydown", handleKeyDown, true); // Используем capture phase
+    document.addEventListener("keydown", handleKeyDown, true);
     
     return () => {
-      // Убираем обработчики при размонтировании
       document.removeEventListener("click", handleDocumentClick);
       document.removeEventListener("keydown", handleKeyDown, true);
-      
-      // Восстанавливаем ввод в Unity при размонтировании
       enableUnityInput();
     };
   }, [isInputActive]);
   
-  // Устанавливаем фокус на поле ввода при монтировании компонента
   useEffect(() => {
-    // Задержка для установки фокуса, чтобы дать Unity время загрузиться
     const focusTimer = setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.focus();
@@ -138,7 +120,6 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     return () => clearTimeout(focusTimer);
   }, []);
   
-  // Обработчик отправки комментария
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
@@ -152,19 +133,16 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     } finally {
       setIsSubmitting(false);
       
-      // После отправки комментария фокусируемся на поле ввода
       if (textareaRef.current) {
         textareaRef.current.focus();
       }
     }
   };
   
-  // Начало редактирования комментария
   const handleStartEdit = (commentId: string, currentContent: string) => {
     setEditingCommentId(commentId);
     setEditContent(currentContent);
     
-    // Фокус на поле редактирования с задержкой
     setTimeout(() => {
       if (editTextareaRef.current) {
         editTextareaRef.current.focus();
@@ -173,7 +151,6 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     }, 50);
   };
   
-  // Сохранение отредактированного комментария
   const handleSaveEdit = async (commentId: string) => {
     if (!editContent.trim()) return;
     
@@ -185,13 +162,11 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     }
   };
   
-  // Отмена редактирования комментария
   const handleCancelEdit = () => {
     setEditingCommentId(null);
     setEditContent("");
   };
   
-  // Удаление комментария
   const handleDelete = async (commentId: string) => {
     try {
       await deleteComment(commentId);
@@ -201,7 +176,6 @@ export function CommentSection({ gameId }: CommentSectionProps) {
     }
   };
   
-  // Получение инициалов имени пользователя
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -233,7 +207,6 @@ export function CommentSection({ gameId }: CommentSectionProps) {
             onBlur={handleTextareaBlur}
             className="min-h-[100px]"
             onClick={(e) => {
-              // Предотвращаем всплытие события клика
               e.stopPropagation();
               handleTextareaFocus();
             }}
@@ -378,7 +351,6 @@ export function CommentSection({ gameId }: CommentSectionProps) {
   );
 }
 
-// Обновляем интерфейс Window, чтобы включить unityInstance
 declare global {
   interface Window {
     unityInstance: any;
