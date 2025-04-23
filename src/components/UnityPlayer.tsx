@@ -13,7 +13,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const unityInstanceRef = useRef<any>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -169,21 +169,12 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   };
 
   useEffect(() => {
-    setIsLoading(false);
-    setLoadingProgress(0);
-    setError(null);
-    destroyUnityInstance();
-    clearContainer();
+    // Только очистка, без загрузки
     return () => {
-      console.log("Cleanup running for game ID:", game.id);
       destroyUnityInstance();
-      
-      canvasRef.current = null;
-      
-      iframeRef.current = null;
+      clearContainer();
     };
-  }, [game.id]);
-
+  }, [game.id]); // Зависимость только от game.id
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -256,13 +247,12 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   };
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full">
       <div
         ref={containerRef}
-        className={`unity-container relative overflow-hidden w-full h-full ${
+        className={`unity-container relative overflow-hidden ${
           isFullscreen ? "fixed inset-0 z-50 border-0 m-0 p-0 bg-black" : "glass-card"
         }`}
-        style={{ minHeight: "300px" }}
       >
         {!isStarted ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/85 backdrop-blur-lg z-10">
