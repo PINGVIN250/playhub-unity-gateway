@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Comment } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -21,7 +20,6 @@ export function CommentProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { user } = useAuth();
 
-  // Загрузка комментариев из Supabase при инициализации
   useEffect(() => {
     const loadComments = async () => {
       try {
@@ -30,15 +28,20 @@ export function CommentProvider({ children }: { children: ReactNode }) {
           .from('comments')
           .select(`
             *,
-            profiles:user_id(id, username, email, created_at)
-          `);
+            profiles:user_id (
+              id,
+              username,
+              email,
+              created_at
+            )
+          `)
+          .order('created_at', { ascending: false });
 
         if (error) {
           throw error;
         }
 
         if (data) {
-          // Форматируем данные комментариев из БД в формат, понятный фронтенду
           const formattedComments: Comment[] = data.map(comment => ({
             id: comment.id,
             gameId: comment.game_id,
@@ -46,12 +49,12 @@ export function CommentProvider({ children }: { children: ReactNode }) {
             content: comment.content,
             createdAt: comment.created_at ? new Date(comment.created_at) : new Date(),
             updatedAt: comment.updated_at ? new Date(comment.updated_at) : new Date(),
-            user: comment.profiles ? {
+            user: {
               id: comment.profiles.id,
-              username: comment.profiles.username || "Пользователь удален",
+              username: comment.profiles.username,
               email: comment.profiles.email || '',
               createdAt: comment.profiles.created_at ? new Date(comment.profiles.created_at) : new Date()
-            } : undefined
+            }
           }));
 
           setComments(formattedComments);
@@ -66,17 +69,21 @@ export function CommentProvider({ children }: { children: ReactNode }) {
     loadComments();
   }, []);
 
-  // Получение комментариев для конкретной игры
   const getGameComments = (gameId: string): Comment[] => {
     return comments.filter(comment => comment.gameId === gameId);
   };
 
-  // Добавление нового комментария
   const addComment = async (gameId: string, content: string): Promise<Comment> => {
     try {
       if (!user) {
         throw new Error("Вы должны войти в систему, чтобы добавить комментарий");
       }
+
+      const { data: userData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
       const { data, error } = await supabase
         .from('comments')
@@ -85,7 +92,15 @@ export function CommentProvider({ children }: { children: ReactNode }) {
           user_id: user.id,
           content: content
         })
-        .select()
+        .select(`
+          *,
+          profiles:user_id (
+            id,
+            username,
+            email,
+            created_at
+          )
+        `)
         .single();
 
       if (error) {
@@ -101,14 +116,14 @@ export function CommentProvider({ children }: { children: ReactNode }) {
           createdAt: data.created_at ? new Date(data.created_at) : new Date(),
           updatedAt: data.updated_at ? new Date(data.updated_at) : new Date(),
           user: {
-            id: user.id,
-            username: user.username || "Пользователь удален",
-            email: user.email,
-            createdAt: user.createdAt
+            id: data.profiles.id,
+            username: data.profiles.username,
+            email: data.profiles.email || '',
+            createdAt: data.profiles.created_at ? new Date(data.profiles.created_at) : new Date()
           }
         };
 
-        setComments(prev => [...prev, newComment]);
+        setComments(prev => [newComment, ...prev]);
         toast.success("Комментарий успешно добавлен");
         return newComment;
       } else {
@@ -121,7 +136,6 @@ export function CommentProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Удаление комментария
   const deleteComment = async (commentId: string): Promise<void> => {
     try {
       if (!user) {
@@ -156,7 +170,6 @@ export function CommentProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Обновление комментария
   const updateComment = async (commentId: string, content: string): Promise<Comment> => {
     try {
       if (!user) {
