@@ -1,8 +1,7 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Game } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Loader2, Maximize2, Minimize2, RefreshCw } from "lucide-react";
+import { Loader2, Maximize2, Minimize2, RefreshCw, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface UnityPlayerProps {
@@ -18,6 +17,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isStarted, setIsStarted] = useState(false);
   const { toast } = useToast();
 
   const clearContainer = () => {
@@ -105,7 +105,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
                     setLoadingProgress(progress * 100);
                   }).then((unityInstance: any) => {
                     unityInstanceRef.current = unityInstance;
-                    window.unityInstance = unityInstance; // Сохраняем экземпляр Unity в глобальной переменной
+                    window.unityInstance = unityInstance;
                     setIsLoading(false);
                   }).catch((error: Error) => {
                     console.error("Unity instance creation error:", error);
@@ -169,12 +169,11 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   };
 
   useEffect(() => {
-    setIsLoading(true);
+    setIsLoading(false);
     setLoadingProgress(0);
     setError(null);
-    
-    loadUnityGame();
-    
+    destroyUnityInstance();
+    clearContainer();
     return () => {
       console.log("Cleanup running for game ID:", game.id);
       destroyUnityInstance();
@@ -245,6 +244,17 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
     }, 100);
   };
 
+  const handleStartGame = () => {
+    setIsLoading(true);
+    setLoadingProgress(0);
+    setError(null);
+    setIsStarted(true);
+
+    setTimeout(() => {
+      loadUnityGame();
+    }, 100);
+  };
+
   return (
     <div className="w-full">
       <div
@@ -253,7 +263,19 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
           isFullscreen ? "fixed inset-0 z-50 border-0 m-0 p-0 bg-black" : "glass-card"
         }`}
       >
-        {isLoading ? (
+        {!isStarted ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/85 backdrop-blur-lg z-10">
+            <Button
+              size="lg"
+              className="gap-2 text-lg px-8 py-4 rounded-xl bg-primary/95 hover:bg-primary"
+              onClick={handleStartGame}
+            >
+              <Play className="h-6 w-6 mr-2" />
+              Играть
+            </Button>
+            <p className="mt-4 text-muted-foreground text-sm">Нажмите, чтобы запустить игру</p>
+          </div>
+        ) : isLoading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
             <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
             <div className="w-64 h-2 bg-muted rounded-full overflow-hidden mb-2">
@@ -269,7 +291,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
         ) : error ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
             <p className="text-destructive mb-4">Ошибка загрузки игры: {error}</p>
-            <Button onClick={handleReload} variant="outline" size="sm">
+            <Button onClick={handleStartGame} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
               Попробовать снова
             </Button>
@@ -312,6 +334,6 @@ declare global {
       config: any,
       onProgress?: (progress: number) => void
     ) => Promise<any>;
-    unityInstance: any; // Добавляем свойство unityInstance в глобальный объект window
+    unityInstance: any;
   }
 }

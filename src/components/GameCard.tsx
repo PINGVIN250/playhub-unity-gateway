@@ -5,7 +5,7 @@ import { Game } from "@/types";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Info } from "lucide-react";
+import { Play } from "lucide-react";
 
 interface GameCardProps {
   game: Game;
@@ -56,12 +56,7 @@ export function GameCard({ game, variant = "default" }: GameCardProps) {
       </CardContent>
 
       <CardFooter className={`flex justify-between gap-2 ${isFeatured ? "pt-0" : "pt-2"}`}>
-        <Link to={`/games/${game.id}`} className="flex-1">
-          <Button variant="outline" className="w-full">
-            <Info className="h-4 w-4 mr-2" />
-            Details
-          </Button>
-        </Link>
+        {/* Удалили кнопку Details */}
         <Link to={`/play/${game.id}`} className="flex-1">
           <Button className="w-full">
             <Play className="h-4 w-4 mr-2" />
