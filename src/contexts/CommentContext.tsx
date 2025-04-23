@@ -48,7 +48,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
             updatedAt: comment.updated_at ? new Date(comment.updated_at) : new Date(),
             user: comment.profiles ? {
               id: comment.profiles.id,
-              username: comment.profiles.username,
+              username: comment.profiles.username || "Пользователь удален",
               email: comment.profiles.email || '',
               createdAt: comment.profiles.created_at ? new Date(comment.profiles.created_at) : new Date()
             } : undefined
@@ -102,7 +102,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
           updatedAt: data.updated_at ? new Date(data.updated_at) : new Date(),
           user: {
             id: user.id,
-            username: user.username,
+            username: user.username || "Пользователь удален",
             email: user.email,
             createdAt: user.createdAt
           }

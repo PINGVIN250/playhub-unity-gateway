@@ -161,11 +161,21 @@ export function CommentSection({ gameId }: CommentSectionProps) {
   
   // Возвращает инициалы пользователя (например, "ИМ" из "Иван Михайлов")
   const getInitials = (name: string) => {
+    if (!name) return "??";
+    
     return name
       .split(' ')
       .map((part) => part[0])
       .join('')
       .toUpperCase();
+  };
+
+  // Получение безопасного имени пользователя с запасным вариантом
+  const getUserName = (comment: any) => {
+    if (comment.user?.username) {
+      return comment.user.username;
+    }
+    return "Пользователь удален";
   };
 
   // При размонтировании компонента убираем обработчики и возвращаем ввод Unity
@@ -229,12 +239,12 @@ export function CommentSection({ gameId }: CommentSectionProps) {
             <div key={comment.id} className="space-y-2">
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarFallback>{comment.user ? getInitials(comment.user.username) : "??"}</AvatarFallback>
+                  <AvatarFallback>{getInitials(comment.user?.username || "")}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-medium">{comment.user?.username}</p>
+                      <p className="font-medium">{getUserName(comment)}</p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(comment.createdAt).toLocaleDateString()} • 
                         {comment.updatedAt > comment.createdAt && " изменено"}

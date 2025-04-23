@@ -11,6 +11,7 @@ import { ChevronLeft, Play, User, Calendar, Layout } from "lucide-react";
 import { RatingComponent } from "@/components/RatingComponent";
 import { EditGameForm } from "@/components/EditGameForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CommentSection } from "@/components/CommentSection";
 
 const GameDetails = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -48,6 +49,9 @@ const GameDetails = () => {
       </div>
     );
   }
+
+  // Получаем имя разработчика или используем "Неизвестно" с более надежной проверкой
+  const developerName = game.author?.username || (game.authorId ? "Пользователь удален" : "Неизвестно");
   
   return (
     <div className="min-h-screen flex flex-col page-transition">
@@ -123,6 +127,10 @@ const GameDetails = () => {
                     </Tabs>
                   </div>
                 )}
+                
+                <div className="mt-8">
+                  <CommentSection gameId={game.id} />
+                </div>
               </div>
               
               <div className="space-y-6">
@@ -131,7 +139,7 @@ const GameDetails = () => {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">Разработчик: {game.author?.username || "Неизвестно"}</span>
+                      <span className="text-sm">Разработчик: {developerName}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
