@@ -13,7 +13,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const unityInstanceRef = useRef<any>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -256,12 +256,13 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full">
       <div
         ref={containerRef}
-        className={`unity-container relative overflow-hidden ${
+        className={`unity-container relative overflow-hidden w-full h-full ${
           isFullscreen ? "fixed inset-0 z-50 border-0 m-0 p-0 bg-black" : "glass-card"
         }`}
+        style={{ minHeight: "300px" }}
       >
         {!isStarted ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/85 backdrop-blur-lg z-10">
