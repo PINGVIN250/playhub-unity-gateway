@@ -55,7 +55,12 @@ export function CommentProvider({ children }: { children: ReactNode }) {
               username: comment.profiles.username,
               email: comment.profiles.email || '',
               createdAt: comment.profiles.created_at ? new Date(comment.profiles.created_at) : new Date()
-            } : undefined
+            } : {
+              id: comment.user_id,
+              username: 'Пользователь удален',
+              email: '',
+              createdAt: new Date()
+            }
           }));
 
           setComments(formattedComments);
@@ -121,7 +126,12 @@ export function CommentProvider({ children }: { children: ReactNode }) {
             username: data.profiles.username,
             email: data.profiles.email || '',
             createdAt: data.profiles.created_at ? new Date(data.profiles.created_at) : new Date()
-          } : undefined
+          } : {
+            id: data.user_id,
+            username: 'Пользователь удален',
+            email: '',
+            createdAt: new Date()
+          }
         };
 
         setComments(prev => [newComment, ...prev]);

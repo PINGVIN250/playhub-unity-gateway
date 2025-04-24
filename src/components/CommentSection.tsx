@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useComments } from "@/contexts/CommentContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -141,7 +140,6 @@ export function CommentSection({ gameId }: CommentSectionProps) {
   };
 
   const getInitials = (name: string) => {
-    if (!name) return "??";
     return name
       .split(' ')
       .map((part) => part[0])
@@ -205,12 +203,12 @@ export function CommentSection({ gameId }: CommentSectionProps) {
             <div key={comment.id} className="space-y-2">
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarFallback>{getInitials(comment.user?.username || '')}</AvatarFallback>
+                  <AvatarFallback>{getInitials(comment.user.username)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-medium">{comment.user?.username || "Пользователь удален"}</p>
+                      <p className="font-medium">{comment.user.username}</p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(comment.createdAt).toLocaleDateString()} • 
                         {comment.updatedAt > comment.createdAt && " изменено"}
