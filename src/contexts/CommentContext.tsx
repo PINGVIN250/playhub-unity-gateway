@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Comment } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -49,12 +50,12 @@ export function CommentProvider({ children }: { children: ReactNode }) {
             content: comment.content,
             createdAt: comment.created_at ? new Date(comment.created_at) : new Date(),
             updatedAt: comment.updated_at ? new Date(comment.updated_at) : new Date(),
-            user: {
+            user: comment.profiles ? {
               id: comment.profiles.id,
               username: comment.profiles.username,
               email: comment.profiles.email || '',
               createdAt: comment.profiles.created_at ? new Date(comment.profiles.created_at) : new Date()
-            }
+            } : undefined
           }));
 
           setComments(formattedComments);
@@ -115,12 +116,12 @@ export function CommentProvider({ children }: { children: ReactNode }) {
           content: data.content,
           createdAt: data.created_at ? new Date(data.created_at) : new Date(),
           updatedAt: data.updated_at ? new Date(data.updated_at) : new Date(),
-          user: {
+          user: data.profiles ? {
             id: data.profiles.id,
             username: data.profiles.username,
             email: data.profiles.email || '',
             createdAt: data.profiles.created_at ? new Date(data.profiles.created_at) : new Date()
-          }
+          } : undefined
         };
 
         setComments(prev => [newComment, ...prev]);

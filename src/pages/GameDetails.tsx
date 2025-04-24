@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -51,7 +50,7 @@ const GameDetails = () => {
   }
 
   // Получаем имя разработчика или используем "Неизвестно" с более надежной проверкой
-  const developerName = game.author?.username || (game.authorId ? "Пользователь удален" : "Неизвестно");
+  const developerName = game.author?.username || "Неизвестно";
   
   return (
     <div className="min-h-screen flex flex-col page-transition">

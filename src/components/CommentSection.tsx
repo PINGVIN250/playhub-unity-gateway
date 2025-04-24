@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { useComments } from "@/contexts/CommentContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -209,7 +210,7 @@ export function CommentSection({ gameId }: CommentSectionProps) {
                 <div className="flex-1 space-y-1">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-medium">{comment.user?.username}</p>
+                      <p className="font-medium">{comment.user?.username || "Пользователь удален"}</p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(comment.createdAt).toLocaleDateString()} • 
                         {comment.updatedAt > comment.createdAt && " изменено"}
