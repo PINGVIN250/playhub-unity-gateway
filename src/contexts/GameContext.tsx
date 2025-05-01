@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Game } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -51,7 +50,32 @@ export function GameProvider({ children }: { children: ReactNode }) {
           `);
 
         if (data) {
-   
+          // Fetch tags for all games
+          const gameIds = data.map(game => game.id);
+          
+          // Get all game-tag relationships for these games
+          const { data: gameTagsData, error: gameTagsError } = await supabase
+            .from('game_tags')
+            .select(`
+              game_id,
+              tags!tag_id (name)
+            `)
+            .in('game_id', gameIds);
+            
+          // Group tags by game_id
+          const tagsByGameId: Record<string, string[]> = {};
+          
+          if (gameTagsData) {
+            gameTagsData.forEach(item => {
+              if (!tagsByGameId[item.game_id]) {
+                tagsByGameId[item.game_id] = [];
+              }
+              
+              if (item.tags && item.tags.name) {
+                tagsByGameId[item.game_id].push(item.tags.name);
+              }
+            });
+          }
           
           const formattedGames: Game[] = data.map(game => ({
             id: game.id,
@@ -78,7 +102,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
             height: game.height || 600,
             createdAt: new Date(game.created_at),
             updatedAt: new Date(game.updated_at),
-            tags: game.tags || [],
+            tags: tagsByGameId[game.id] || [],
             featured: game.featured || false
           }));
   
@@ -223,8 +247,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
         console.error("Game record creation error:", error);
         throw error;
       }
-
-
 
       if (data?.id && tags && tags.length > 0) {
         console.log("Processing tags:", tags);
