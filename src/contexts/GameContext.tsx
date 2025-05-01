@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Game } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -36,23 +37,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { user } = useAuth();
-
   useEffect(() => {
     const loadGames = async () => {
       try {
         setIsLoading(true);
+        
+
         const { data, error } = await supabase
           .from('games')
           .select(`
             *,
-            profiles:author_id(id, username, email, created_at)
+            profiles!author_id (id, username, email, created_at, is_admin)
           `);
 
-        if (error) {
-          throw error;
-        }
-
         if (data) {
+   
+          
           const formattedGames: Game[] = data.map(game => ({
             id: game.id,
             title: game.title,
@@ -71,26 +71,27 @@ export function GameProvider({ children }: { children: ReactNode }) {
               id: game.profiles.id,
               username: game.profiles.username,
               email: game.profiles.email || '',
-              createdAt: new Date(game.profiles.created_at || '')
+              createdAt: new Date(game.profiles.created_at),
+              isAdmin: game.profiles.is_admin || false
             } : undefined,
             width: game.width || 960,
             height: game.height || 600,
-            createdAt: new Date(game.created_at || ''),
-            updatedAt: new Date(game.updated_at || ''),
-            tags: [],
+            createdAt: new Date(game.created_at),
+            updatedAt: new Date(game.updated_at),
+            tags: game.tags || [],
             featured: game.featured || false
           }));
-
+  
           setGames(formattedGames);
         }
       } catch (error) {
-        console.error("Failed to load games:", error);
-        toast.error("Failed to load games");
+        console.error("Ошибка загрузки игр:", error);
+        toast.error("Не удалось загрузить игры");
       } finally {
         setIsLoading(false);
       }
     };
-
+  
     loadGames();
   }, []);
 
@@ -211,6 +212,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           loader_path: loaderPath,
           index_path: indexPath,
           author_id: user.id,
+          
           width,
           height
         })
@@ -222,7 +224,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         throw error;
       }
 
-      console.log("Game record created successfully:", data);
+
 
       if (data?.id && tags && tags.length > 0) {
         console.log("Processing tags:", tags);
@@ -259,18 +261,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
         featured: data.featured || false
       };
 
-      setGames(prevGames => [...prevGames, newGame]);
-      toast.success("Game added successfully!");
-      return newGame;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to add game";
-      console.error("Game upload error:", error);
-      toast.error(message);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setGames(prevGames => {
+      if (prevGames.some(g => g.id === newGame.id)) {
+        console.warn(`Duplicate game ID detected: ${newGame.id}`);
+        return prevGames;
+      }
+      return [newGame, ...prevGames];
+    });
+
+    toast.success("Game added successfully!");
+    return newGame;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to add game";
+    toast.error(message);
+    throw error;
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleTagCreation = async (gameId: string, tagName: string) => {
     try {

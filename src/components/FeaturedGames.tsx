@@ -5,6 +5,7 @@ import { Game } from "@/types";
 import { GameCard } from "./GameCard";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface FeaturedGamesProps {
   games: Game[];
@@ -18,15 +19,23 @@ export function FeaturedGames({
   subtitle = "Discover the best Unity games created by our community"
 }: FeaturedGamesProps) {
   const [visibleGames, setVisibleGames] = useState<Game[]>([]);
+  const { isAuthenticated } = useAuth();
   
   useEffect(() => {
+    // Сбрасываем видимые игры при изменении списка игр или статуса аутентификации
+    setVisibleGames([]);
+    
+    if (games.length === 0) return;
+    
     // Animate the games appearing one after another
     const timer = setTimeout(() => {
       const showGames = async () => {
         const gamesArray = [...games];
+        const newVisibleGames: Game[] = [];
         
         for (let i = 0; i < gamesArray.length; i++) {
-          setVisibleGames(prev => [...prev, gamesArray[i]]);
+          newVisibleGames.push(gamesArray[i]);
+          setVisibleGames([...newVisibleGames]);
           if (i < gamesArray.length - 1) {
             await new Promise(resolve => setTimeout(resolve, 200));
           }
@@ -37,7 +46,7 @@ export function FeaturedGames({
     }, 300);
     
     return () => clearTimeout(timer);
-  }, [games]);
+  }, [games, isAuthenticated]); // Добавляем isAuthenticated в зависимости
   
   if (games.length === 0) return null;
   
@@ -54,7 +63,7 @@ export function FeaturedGames({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {visibleGames.map((game, index) => (
             <div 
-              key={game.id} 
+              key={`${game.id}-${index}`} 
               className={`transition-all duration-500 transform ${
                 visibleGames.includes(game) 
                   ? "translate-y-0 opacity-100" 

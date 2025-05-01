@@ -9,7 +9,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -19,110 +19,119 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // Полная синхронизация пользователя с Supabase
+  const syncUser = async () => {
+    setIsLoading(true);
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) throw error;
+      
+      if (session?.user) {
+        // Получаем полные данные пользователя
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profileError) throw profileError;
+        
+        const userData = {
+          id: session.user.id,
+          email: session.user.email || '',
+          username: profile?.username || '',
+          createdAt: profile?.created_at ? new Date(profile.created_at) : new Date(),
+          isAdmin: profile?.is_admin || false
+        };
+        
+        setUser(userData);
+        localStorage.setItem('sb-user', JSON.stringify({
+          ...userData,
+          // Добавляем токен для проверки актуальности
+          _token: session.access_token
+        }));
+      } else {
+        setUser(null);
+        localStorage.removeItem('sb-user');
+      }
+    } catch (error) {
+      console.error('Auth sync error:', error);
+      setUser(null);
+      localStorage.removeItem('sb-user');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Проверка актуальности сохраненного пользователя
+  const validateStoredUser = async () => {
+    const storedUser = localStorage.getItem('sb-user');
+    if (!storedUser) return null;
+    
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      if (!parsedUser?._token) {
+        localStorage.removeItem('sb-user');
+        return null;
+      }
+      
+      // Проверяем токен с Supabase
+      const { data: { user }, error } = await supabase.auth.getUser(parsedUser._token);
+      
+      if (error || !user) {
+        localStorage.removeItem('sb-user');
+        return null;
+      }
+      
+      return parsedUser;
+    } catch (e) {
+      localStorage.removeItem('sb-user');
+      return null;
+    }
+  };
+
   useEffect(() => {
-    // Listen for auth state changes first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth state changed:", event, session?.user?.id);
-        setIsLoading(true);
-        
-        if (session?.user) {
-          try {
-            // Get user profile data
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-              
-            if (profileError) throw profileError;
-            
-            if (profileData) {
-              setUser({
-                id: session.user.id,
-                email: session.user.email || '',
-                username: profileData.username || '',
-                createdAt: new Date(profileData.created_at || ''),
-                isAdmin: profileData.is_admin || false
-              });
-            }
-          } catch (error) {
-            console.error("Profile fetch failed:", error);
-            setUser(null);
-          }
-        } else {
+    // 1. Проверяем сохраненного пользователя
+    const initializeAuth = async () => {
+      const validUser = await validateStoredUser();
+      if (validUser) {
+        setUser(validUser);
+      }
+      
+      // 2. Полная синхронизация с Supabase
+      await syncUser();
+      
+      // 3. Подписываемся на изменения аутентификации
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          syncUser();
+        } else if (event === 'SIGNED_OUT') {
           setUser(null);
+          localStorage.removeItem('sb-user');
         }
-        
-        setIsLoading(false);
-      }
-    );
-    
-    // Check for active session on load
-    const checkSession = async () => {
-      try {
-        console.log("Checking session on page load...");
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          throw error;
-        }
-        
-        if (session?.user) {
-          console.log("Found existing session:", session.user.id);
-          // Get user profile data
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (profileError) {
-            throw profileError;
-          }
-          
-          if (profileData) {
-            setUser({
-              id: session.user.id,
-              email: session.user.email || '',
-              username: profileData.username || '',
-              createdAt: new Date(profileData.created_at || ''),
-              isAdmin: profileData.is_admin || false
-            });
-          }
-        } else {
-          console.log("No active session found");
-        }
-      } catch (error) {
-        console.error("Session check failed:", error);
-      } finally {
-        setIsLoading(false);
-      }
+      });
+      
+      return () => subscription?.unsubscribe();
     };
-    
-    checkSession();
-    
-    return () => {
-      subscription.unsubscribe();
-    };
+
+    initializeAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
       
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
       
-      toast.success(`Welcome back!`);
+      await syncUser();
+      toast.success('Welcome back!');
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Login failed";
-      toast.error(message);
+      toast.error(error instanceof Error ? error.message : 'Login failed');
       throw error;
     } finally {
       setIsLoading(false);
@@ -132,26 +141,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (username: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Register user
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: {
-            username,
-            email // Include email in metadata to ensure it's available for the trigger
-          },
+          data: { username }
         }
       });
       
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
       
-      toast.success("Registration successful! Please check your email for verification.");
+      toast.success('Registration successful! Please check your email.');
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Registration failed";
-      toast.error(message);
+      toast.error(error instanceof Error ? error.message : 'Registration failed');
       throw error;
     } finally {
       setIsLoading(false);
@@ -159,18 +161,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        throw error;
-      }
-      
+      await supabase.auth.signOut();
       setUser(null);
-      toast.success("Logged out successfully");
+      localStorage.removeItem('sb-user');
     } catch (error) {
-      console.error("Logout failed:", error);
-      toast.error("Logout failed");
+      console.error('Logout error:', error);
+      toast.error('Failed to logout');
+    } finally {
+      setIsLoading(false);
     }
   };
 
