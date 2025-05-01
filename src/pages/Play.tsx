@@ -131,7 +131,9 @@ const Play = () => {
               </div>
               <div className="flex items-center gap-1">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Автор: {game.author?.username || "Неизвестно"}</span>
+                <Link to={`/user/${game.authorId}`} className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Автор: {game.author?.username || "Неизвестно"}
+                </Link>
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="h-4 w-4 text-muted-foreground" />
@@ -209,7 +211,11 @@ const Play = () => {
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground">Разработчик</h3>
-                      <p>{game.author?.username || "Неизвестно"}</p>
+                      <p>
+                        <Link to={`/user/${game.authorId}`} className="hover:text-primary transition-colors">
+                          {game.author?.username || "Неизвестно"}
+                        </Link>
+                      </p>
                     </div>
                     
                     <div>

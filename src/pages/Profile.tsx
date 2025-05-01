@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
@@ -12,19 +12,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useGames } from "@/contexts/GameContext";
 import { toast } from "sonner";
-import { 
-  User, 
-  Shield, 
-  Mail, 
-  Calendar,
-  CreditCard,
-  Settings,
-} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { User, Shield, Mail, Calendar, MessageSquare, Eye, EyeOff } from "lucide-react";
 
 const Profile = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const { getUserGames } = useGames();
+  const [username, setUsername] = useState("");
+  const [bio, setBio] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isPublicProfile, setIsPublicProfile] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
   
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -32,6 +34,35 @@ const Profile = () => {
       navigate('/login');
     }
   }, [isAuthenticated, isLoading, navigate]);
+
+  // Load initial user data
+  useEffect(() => {
+    if (user) {
+      setUsername(user.username);
+      fetchCommentCount();
+    }
+  }, [user]);
+
+  // Fetch comment count
+  const fetchCommentCount = async () => {
+    try {
+      if (!user) return;
+      
+      const { count, error } = await supabase
+        .from('comments')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+        
+      if (error) {
+        console.error("Error fetching comments count:", error);
+        return;
+      }
+      
+      setCommentCount(count || 0);
+    } catch (error) {
+      console.error("Failed to fetch comment count:", error);
+    }
+  };
 
   const userGames = getUserGames();
   const joinedDate = user ? new Date(user.createdAt).toLocaleDateString() : '';
@@ -46,9 +77,71 @@ const Profile = () => {
   
   if (!user) return null;
 
-  const handleUpdateProfile = (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Профиль успешно обновлен");
+    try {
+      if (username.trim() === "") {
+        toast.error("Имя пользователя не может быть пустым");
+        return;
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ username })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      
+      toast.success("Профиль успешно обновлен");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Не удалось обновить профиль");
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        toast.error("Заполните все поля");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        toast.error("Новые пароли не совпадают");
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+      
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      toast.success("Пароль успешно изменен");
+    } catch (error: any) {
+      toast.error(error.message || "Не удалось изменить пароль");
+    }
+  };
+
+  const handleUpdatePrivacy = async (isPublic: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_public: isPublic })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      
+      setIsPublicProfile(isPublic);
+      toast.success(`Профиль ${isPublic ? 'стал публичным' : 'стал приватным'}`);
+    } catch (error) {
+      console.error("Error updating privacy settings:", error);
+      toast.error("Не удалось обновить настройки приватности");
+    }
   };
 
   return (
@@ -120,11 +213,7 @@ const Profile = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-muted-foreground">Комментарии:</span>
-                        <span className="font-medium">0</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Подписчики:</span>
-                        <span className="font-medium">0</span>
+                        <span className="font-medium">{commentCount}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -138,7 +227,6 @@ const Profile = () => {
                 <TabsList className="mb-6">
                   <TabsTrigger value="profile">Профиль</TabsTrigger>
                   <TabsTrigger value="security">Безопасность</TabsTrigger>
-                  <TabsTrigger value="payments">Платежи</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="profile" className="space-y-6">
@@ -154,11 +242,15 @@ const Profile = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label htmlFor="username">Имя пользователя</Label>
-                            <Input id="username" defaultValue={user.username} />
+                            <Input 
+                              id="username" 
+                              value={username}
+                              onChange={e => setUsername(e.target.value)} 
+                            />
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" defaultValue={user.email} disabled />
+                            <Input id="email" type="email" value={user.email} disabled />
                             <p className="text-xs text-muted-foreground">Email нельзя изменить</p>
                           </div>
                         </div>
@@ -169,6 +261,8 @@ const Profile = () => {
                             id="bio"
                             className="min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                             placeholder="Расскажите о себе..."
+                            value={bio}
+                            onChange={e => setBio(e.target.value)}
                           />
                         </div>
                         
@@ -198,24 +292,8 @@ const Profile = () => {
                               type="checkbox"
                               id="public-profile"
                               className="peer h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                              defaultChecked
-                            />
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-0.5">
-                            <Label className="text-base">Уведомления по email</Label>
-                            <p className="text-sm text-muted-foreground">
-                              Получать уведомления о комментариях и рейтингах
-                            </p>
-                          </div>
-                          <div>
-                            <input
-                              type="checkbox"
-                              id="email-notifications"
-                              className="peer h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                              defaultChecked
+                              checked={isPublicProfile}
+                              onChange={() => handleUpdatePrivacy(!isPublicProfile)}
                             />
                           </div>
                         </div>
@@ -233,97 +311,50 @@ const Profile = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <form className="space-y-4" onSubmit={(e) => {
-                        e.preventDefault();
-                        toast.success("Пароль успешно изменен");
-                      }}>
+                      <form className="space-y-4" onSubmit={handleChangePassword}>
                         <div className="space-y-2">
                           <Label htmlFor="current-password">Текущий пароль</Label>
-                          <Input id="current-password" type="password" />
+                          <div className="relative">
+                            <Input 
+                              id="current-password" 
+                              type={showPassword ? "text" : "password"}
+                              value={currentPassword}
+                              onChange={e => setCurrentPassword(e.target.value)}
+                            />
+                            <button
+                              type="button"
+                              className="absolute right-3 top-1/2 -translate-y-1/2"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </button>
+                          </div>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="new-password">Новый пароль</Label>
-                          <Input id="new-password" type="password" />
+                          <Input 
+                            id="new-password" 
+                            type="password"
+                            value={newPassword}
+                            onChange={e => setNewPassword(e.target.value)}
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="confirm-password">Подтверждение пароля</Label>
-                          <Input id="confirm-password" type="password" />
+                          <Input 
+                            id="confirm-password" 
+                            type="password"
+                            value={confirmPassword}
+                            onChange={e => setConfirmPassword(e.target.value)}
+                          />
                         </div>
                         
                         <Button type="submit">Изменить пароль</Button>
                       </form>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Сеансы</CardTitle>
-                      <CardDescription>
-                        Управляйте активными сеансами на разных устройствах
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="rounded-md border p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium">Текущий сеанс</p>
-                              <p className="text-sm text-muted-foreground">
-                                Последняя активность: сейчас
-                              </p>
-                            </div>
-                            <Button variant="outline" size="sm">Текущее устройство</Button>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-4">
-                        <Button variant="destructive">Завершить все другие сеансы</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="payments" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="text-lg">Способы оплаты</CardTitle>
-                          <CardDescription>
-                            Управляйте вашими способами оплаты
-                          </CardDescription>
-                        </div>
-                        <Button size="sm" className="gap-1">
-                          <CreditCard className="h-4 w-4" />
-                          <span>Добавить</span>
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-center p-10 text-muted-foreground text-center">
-                        <div>
-                          <CreditCard className="mx-auto h-10 w-10 mb-2 opacity-30" />
-                          <p>У вас пока нет способов оплаты</p>
-                          <p className="text-sm">Добавьте метод оплаты для премиум функций</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">История платежей</CardTitle>
-                      <CardDescription>
-                        Просмотр истории платежей и счетов
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-center p-10 text-muted-foreground text-center">
-                        <div>
-                          <p>У вас пока нет платежей</p>
-                          <p className="text-sm">История будет отображаться здесь</p>
-                        </div>
-                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>

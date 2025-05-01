@@ -9,11 +9,8 @@ import { PageTitle } from "@/components/PageTitle";
 import { Button } from "@/components/ui/button";
 import { GameGrid } from "@/components/GameGrid";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, Upload, Settings, AlertCircle, BarChart, Bell, User } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { PlusCircle, Upload, BarChart } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 const Dashboard = () => {
   const { getUserGames, isLoading, games } = useGames();
@@ -61,10 +58,6 @@ const Dashboard = () => {
   const engagementRate = userGameCount > 0 ? 60 : 0; // Пример значения
   const dashOffset = 339.3 * (1 - engagementRate / 100);
 
-  const handleSaveSettings = (setting: string) => {
-    toast.success(`Настройка "${setting}" сохранена`);
-  };
-
   return (
     <div className="min-h-screen flex flex-col page-transition">
       <Navbar />
@@ -72,7 +65,7 @@ const Dashboard = () => {
         <div className="container mx-auto px-4">
           <PageTitle 
             title={`Добро пожаловать, ${user?.username}`}
-            description="Управляйте своими играми и настройками аккаунта"
+            description="Управляйте своими играми и просматривайте статистику"
           >
             <Link to="/upload">
               <Button className="gap-2">
@@ -83,10 +76,9 @@ const Dashboard = () => {
           </PageTitle>
           
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 max-w-md">
+            <TabsList className="grid w-full grid-cols-2 max-w-md">
               <TabsTrigger value="my-games">Мои игры</TabsTrigger>
               <TabsTrigger value="analytics">Аналитика</TabsTrigger>
-              <TabsTrigger value="settings">Настройки</TabsTrigger>
             </TabsList>
             
             <TabsContent value="my-games" className="space-y-6">
@@ -271,119 +263,6 @@ const Dashboard = () => {
                       <p className="text-xs text-muted-foreground">Процент игроков, оставляющих комментарии</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="settings" className="space-y-6">
-              <div className="glass-card p-8">
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="h-16 w-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-bold">
-                    {user?.username.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold">{user?.username}</h3>
-                    <p className="text-muted-foreground">{user?.email}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Участник с {new Date(user?.createdAt || Date.now()).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="border-t pt-6 space-y-6">
-                  <div className="flex flex-col gap-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium flex items-center gap-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          Настройки профиля
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          Обновите информацию вашего профиля
-                        </p>
-                      </div>
-                      <Link to="/profile">
-                        <Button variant="outline" size="sm" className="gap-1">
-                          <Settings className="h-4 w-4" />
-                          <span>Изменить</span>
-                        </Button>
-                      </Link>
-                    </div>
-                    
-                    <div className="flex items-center justify-between border-t pt-6">
-                      <div>
-                        <h4 className="font-medium flex items-center gap-2">
-                          <BarChart className="h-4 w-4 text-muted-foreground" />
-                          Расширенная аналитика
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          Детальные данные о производительности игр
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch id="analytics" onCheckedChange={() => handleSaveSettings("Расширенная аналитика")} />
-                        <Label htmlFor="analytics" className="text-sm font-normal cursor-pointer">Включить</Label>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between border-t pt-6">
-                      <div>
-                        <h4 className="font-medium flex items-center gap-2">
-                          <Bell className="h-4 w-4 text-muted-foreground" />
-                          Уведомления
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          Управление уведомлениями о комментариях и рейтингах
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch id="notifications" defaultChecked onCheckedChange={() => handleSaveSettings("Уведомления")} />
-                        <Label htmlFor="notifications" className="text-sm font-normal cursor-pointer">Включить</Label>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between border-t pt-6">
-                      <div>
-                        <h4 className="font-medium">Конфиденциальность</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Управление видимостью вашего профиля
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch id="privacy" onCheckedChange={() => handleSaveSettings("Конфиденциальность")} />
-                        <Label htmlFor="privacy" className="text-sm font-normal cursor-pointer">Публичный профиль</Label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="border-t mt-6 pt-6">
-                  <div className="flex items-start gap-2 p-4 rounded-md bg-muted/50">
-                    <AlertCircle className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium">Режим разработчика</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Это демонстрационное приложение. В реальном приложении эти настройки были бы полностью функциональными.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Удаление аккаунта</CardTitle>
-                  <CardDescription>
-                    Это действие нельзя отменить. Все ваши данные будут удалены навсегда.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    variant="destructive" 
-                    onClick={() => toast.error("Эта функция отключена в демо-режиме")}
-                  >
-                    Удалить аккаунт
-                  </Button>
                 </CardContent>
               </Card>
             </TabsContent>

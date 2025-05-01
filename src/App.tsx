@@ -21,6 +21,7 @@ import Upload from "./pages/Upload";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
+import PublicProfile from "./pages/PublicProfile";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
                   <Route path="/register" element={<Register />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/user/:userId" element={<PublicProfile />} />
                   <Route path="/upload" element={<Upload />} />
                   <Route path="/about" element={<About />} />
                   <Route path="*" element={<NotFound />} />
