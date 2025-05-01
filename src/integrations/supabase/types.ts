@@ -151,26 +151,32 @@ export type Database = {
       }
       profiles: {
         Row: {
+          bio: string | null
           created_at: string | null
           email: string | null
           id: string
           is_admin: boolean | null
+          is_public: boolean | null
           updated_at: string | null
           username: string
         }
         Insert: {
+          bio?: string | null
           created_at?: string | null
           email?: string | null
           id: string
           is_admin?: boolean | null
+          is_public?: boolean | null
           updated_at?: string | null
           username: string
         }
         Update: {
+          bio?: string | null
           created_at?: string | null
           email?: string | null
           id?: string
           is_admin?: boolean | null
+          is_public?: boolean | null
           updated_at?: string | null
           username?: string
         }

@@ -39,7 +39,7 @@ const PublicProfile = () => {
         // Fetch user profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('*')
+          .select('id, username, created_at, is_public, bio')
           .eq('id', userId)
           .single();
           
@@ -143,7 +143,7 @@ const PublicProfile = () => {
           </div>
           
           <PageTitle 
-            title={profile.username} 
+            title={profile?.username || ""} 
             description={`Профиль пользователя и игры`}
           />
           
@@ -153,10 +153,10 @@ const PublicProfile = () => {
                 <CardHeader>
                   <div className="flex items-center gap-4">
                     <div className="h-20 w-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-3xl font-bold">
-                      {profile.username.charAt(0).toUpperCase()}
+                      {profile?.username.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <CardTitle className="text-2xl">{profile.username}</CardTitle>
+                      <CardTitle className="text-2xl">{profile?.username}</CardTitle>
                       <CardDescription>Разработчик игр</CardDescription>
                     </div>
                   </div>
@@ -165,7 +165,7 @@ const PublicProfile = () => {
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>Участник с {new Date(profile.created_at).toLocaleDateString()}</span>
+                      <span>Участник с {profile ? new Date(profile.created_at).toLocaleDateString() : ''}</span>
                     </div>
                     
                     <div className="flex items-center gap-2">
@@ -178,7 +178,7 @@ const PublicProfile = () => {
                       <span>Комментариев: {commentCount}</span>
                     </div>
                     
-                    {profile.bio && (
+                    {profile?.bio && (
                       <>
                         <Separator />
                         <div>
@@ -197,7 +197,7 @@ const PublicProfile = () => {
                 <CardHeader>
                   <CardTitle>Игры пользователя</CardTitle>
                   <CardDescription>
-                    Игры, созданные разработчиком {profile.username}
+                    Игры, созданные разработчиком {profile?.username}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -208,7 +208,7 @@ const PublicProfile = () => {
                       <GamepadIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
                       <h3 className="text-lg font-medium mb-1">Нет созданных игр</h3>
                       <p className="text-muted-foreground text-sm">
-                        {profile.username} пока не создал ни одной игры
+                        {profile?.username} пока не создал ни одной игры
                       </p>
                     </div>
                   )}

@@ -13,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { useGames } from "@/contexts/GameContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Shield, Mail, Calendar, MessageSquare, Eye, EyeOff } from "lucide-react";
+import { User, Shield, Mail, Calendar, MessageSquare, Eye, EyeOff, Globe, Lock } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 const Profile = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -37,10 +38,32 @@ const Profile = () => {
 
   // Load initial user data
   useEffect(() => {
-    if (user) {
-      setUsername(user.username);
-      fetchCommentCount();
-    }
+    const fetchUserData = async () => {
+      if (user) {
+        setUsername(user.username);
+        
+        // Fetch user profile details
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('bio, is_public')
+          .eq('id', user.id)
+          .single();
+          
+        if (profileError) {
+          console.error("Error fetching profile data:", profileError);
+          return;
+        }
+        
+        if (profileData) {
+          setBio(profileData.bio || '');
+          setIsPublicProfile(profileData.is_public !== false); // Default to true if null
+        }
+        
+        fetchCommentCount();
+      }
+    };
+    
+    fetchUserData();
   }, [user]);
 
   // Fetch comment count
@@ -87,7 +110,10 @@ const Profile = () => {
 
       const { error } = await supabase
         .from('profiles')
-        .update({ username })
+        .update({ 
+          username,
+          bio 
+        })
         .eq('id', user.id);
 
       if (error) throw error;
@@ -127,17 +153,19 @@ const Profile = () => {
     }
   };
 
-  const handleUpdatePrivacy = async (isPublic: boolean) => {
+  const handleUpdatePrivacy = async () => {
     try {
+      const newState = !isPublicProfile;
+      
       const { error } = await supabase
         .from('profiles')
-        .update({ is_public: isPublic })
+        .update({ is_public: newState })
         .eq('id', user.id);
 
       if (error) throw error;
       
-      setIsPublicProfile(isPublic);
-      toast.success(`Профиль ${isPublic ? 'стал публичным' : 'стал приватным'}`);
+      setIsPublicProfile(newState);
+      toast.success(`Профиль ${newState ? 'стал публичным' : 'стал приватным'}`);
     } catch (error) {
       console.error("Error updating privacy settings:", error);
       toast.error("Не удалось обновить настройки приватности");
@@ -190,6 +218,15 @@ const Profile = () => {
                     <div className="flex items-center gap-2 text-sm">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span>Участник с {joinedDate}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-sm">
+                      {isPublicProfile ? (
+                        <Globe className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Lock className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <span>{isPublicProfile ? 'Публичный профиль' : 'Приватный профиль'}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -287,15 +324,10 @@ const Profile = () => {
                               Разрешить другим пользователям видеть ваш профиль
                             </p>
                           </div>
-                          <div>
-                            <input
-                              type="checkbox"
-                              id="public-profile"
-                              className="peer h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                              checked={isPublicProfile}
-                              onChange={() => handleUpdatePrivacy(!isPublicProfile)}
-                            />
-                          </div>
+                          <Switch 
+                            checked={isPublicProfile} 
+                            onCheckedChange={handleUpdatePrivacy}
+                          />
                         </div>
                       </div>
                     </CardContent>
