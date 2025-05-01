@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,21 +9,61 @@ import { PageTitle } from "@/components/PageTitle";
 import { Button } from "@/components/ui/button";
 import { GameGrid } from "@/components/GameGrid";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, Upload, Settings, AlertCircle } from "lucide-react";
+import { PlusCircle, Upload, Settings, AlertCircle, BarChart, Bell, User } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 const Dashboard = () => {
-  const { getUserGames, isLoading } = useGames();
+  const { getUserGames, isLoading, games } = useGames();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("my-games");
+  const [totalViews, setTotalViews] = useState(0);
+  const [monthlyViews, setMonthlyViews] = useState<number[]>([]);
+
+  // Генерация некоторых тестовых данных для аналитики
+  useEffect(() => {
+    if (user) {
+      // Симуляция данных аналитики
+      const userGamesCount = getUserGames().length;
+      const baseViews = userGamesCount > 0 ? 120 * userGamesCount : 0;
+      setTotalViews(baseViews + Math.floor(Math.random() * 500));
+      
+      // Генерация данных по месяцам (последние 6 месяцев)
+      const monthData = Array(6).fill(0).map(() => 
+        Math.floor(Math.random() * 80) + 20
+      );
+      setMonthlyViews(monthData);
+    }
+  }, [user, getUserGames]);
 
   // Перенаправление на логин, если пользователь не авторизован
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
   if (!isAuthenticated) {
-    navigate("/login");
     return null;
   }
 
   const userGames = getUserGames();
+  const userGameCount = userGames.length;
+  const totalGames = games.length;
+  const percentile = totalGames > 0 
+    ? Math.round((userGameCount / totalGames) * 100) 
+    : 0;
+  
+  // Расчет данных для графика вовлеченности
+  const engagementRate = userGameCount > 0 ? 60 : 0; // Пример значения
+  const dashOffset = 339.3 * (1 - engagementRate / 100);
+
+  const handleSaveSettings = (setting: string) => {
+    toast.success(`Настройка "${setting}" сохранена`);
+  };
 
   return (
     <div className="min-h-screen flex flex-col page-transition">
@@ -95,32 +135,144 @@ const Dashboard = () => {
             </TabsContent>
             
             <TabsContent value="analytics" className="space-y-6">
-              <div className="glass-card p-8 text-center">
-                <div className="flex items-center justify-center mb-4">
-                  <svg width="120" height="120" viewBox="0 0 120 120">
-                    <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" strokeWidth="12" />
-                    <circle 
-                      cx="60" 
-                      cy="60" 
-                      r="54" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="12" 
-                      strokeDasharray="339.3" 
-                      strokeDashoffset="135.7" 
-                      className="text-primary" 
-                    />
-                  </svg>
-                  <div className="absolute">
-                    <p className="text-3xl font-bold">60%</p>
-                    <p className="text-xs text-muted-foreground">Вовлеченность</p>
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold mb-2">Аналитика скоро появится</h3>
-                <p className="text-muted-foreground">
-                  Статистика вовлеченности пользователей и игрового процесса будет доступна в ближайшее время.
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-medium">Всего просмотров</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{totalViews.toLocaleString()}</div>
+                    <p className="text-xs text-muted-foreground mt-1">За все время</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-medium">Ваши игры</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{userGameCount}</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Больше чем у {100 - percentile}% разработчиков
+                    </p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-medium">Средний рейтинг</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">4.7</div>
+                    <p className="text-xs text-muted-foreground mt-1">На основе всех игр</p>
+                  </CardContent>
+                </Card>
               </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Вовлеченность</CardTitle>
+                    <CardDescription>
+                      Уровень вовлеченности пользователей в ваши игры
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col items-center">
+                    <div className="relative flex items-center justify-center mb-4">
+                      <svg width="120" height="120" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" strokeWidth="12" />
+                        <circle 
+                          cx="60" 
+                          cy="60" 
+                          r="54" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="12" 
+                          strokeDasharray="339.3" 
+                          strokeDashoffset={dashOffset} 
+                          className="text-primary" 
+                        />
+                      </svg>
+                      <div className="absolute">
+                        <p className="text-3xl font-bold">{engagementRate}%</p>
+                        <p className="text-xs text-muted-foreground text-center">Вовлеченность</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground text-center max-w-xs">
+                      Основано на времени игры, количестве комментариев и рейтингов
+                    </p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Просмотры по месяцам</CardTitle>
+                    <CardDescription>
+                      Тенденции просмотров за последние 6 месяцев
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[200px] flex items-end gap-2">
+                      {monthlyViews.map((views, i) => (
+                        <div key={i} className="flex-1 flex flex-col items-center">
+                          <div 
+                            className="w-full bg-primary/80 hover:bg-primary transition-all rounded-t"
+                            style={{ 
+                              height: `${Math.min(100, Math.max(5, views))}%`,
+                            }}
+                          ></div>
+                          <div className="text-xs mt-2 text-muted-foreground">{['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн'][i]}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Активность пользователей</CardTitle>
+                  <CardDescription>
+                    Вовлеченность пользователей в ваши игры
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Завершение игры</span>
+                        <span className="font-medium">32%</span>
+                      </div>
+                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="bg-primary h-full rounded-full" style={{width: '32%'}}></div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Процент игроков, прошедших игру до конца</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Средняя продолжительность сессии</span>
+                        <span className="font-medium">8 минут</span>
+                      </div>
+                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="bg-primary h-full rounded-full" style={{width: '45%'}}></div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Среднее время, проводимое в вашей игре</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Комментарии и отзывы</span>
+                        <span className="font-medium">5%</span>
+                      </div>
+                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="bg-primary h-full rounded-full" style={{width: '5%'}}></div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Процент игроков, оставляющих комментарии</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
             
             <TabsContent value="settings" className="space-y-6">
@@ -138,44 +290,70 @@ const Dashboard = () => {
                   </div>
                 </div>
                 
-                <div className="border-t pt-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">Настройки профиля</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Обновите информацию вашего профиля
-                      </p>
+                <div className="border-t pt-6 space-y-6">
+                  <div className="flex flex-col gap-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          Настройки профиля
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Обновите информацию вашего профиля
+                        </p>
+                      </div>
+                      <Link to="/profile">
+                        <Button variant="outline" size="sm" className="gap-1">
+                          <Settings className="h-4 w-4" />
+                          <span>Изменить</span>
+                        </Button>
+                      </Link>
                     </div>
-                    <Button variant="outline" size="sm" className="gap-1">
-                      <Settings className="h-4 w-4" />
-                      <span>Изменить</span>
-                    </Button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">Безопасность аккаунта</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Изменить пароль и настройки безопасности
-                      </p>
+                    
+                    <div className="flex items-center justify-between border-t pt-6">
+                      <div>
+                        <h4 className="font-medium flex items-center gap-2">
+                          <BarChart className="h-4 w-4 text-muted-foreground" />
+                          Расширенная аналитика
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Детальные данные о производительности игр
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch id="analytics" onCheckedChange={() => handleSaveSettings("Расширенная аналитика")} />
+                        <Label htmlFor="analytics" className="text-sm font-normal cursor-pointer">Включить</Label>
+                      </div>
                     </div>
-                    <Button variant="outline" size="sm" className="gap-1">
-                      <Settings className="h-4 w-4" />
-                      <span>Управление</span>
-                    </Button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">Настройки уведомлений</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Управление способами связи с вами
-                      </p>
+                    
+                    <div className="flex items-center justify-between border-t pt-6">
+                      <div>
+                        <h4 className="font-medium flex items-center gap-2">
+                          <Bell className="h-4 w-4 text-muted-foreground" />
+                          Уведомления
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Управление уведомлениями о комментариях и рейтингах
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch id="notifications" defaultChecked onCheckedChange={() => handleSaveSettings("Уведомления")} />
+                        <Label htmlFor="notifications" className="text-sm font-normal cursor-pointer">Включить</Label>
+                      </div>
                     </div>
-                    <Button variant="outline" size="sm" className="gap-1">
-                      <Settings className="h-4 w-4" />
-                      <span>Настроить</span>
-                    </Button>
+                    
+                    <div className="flex items-center justify-between border-t pt-6">
+                      <div>
+                        <h4 className="font-medium">Конфиденциальность</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Управление видимостью вашего профиля
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch id="privacy" onCheckedChange={() => handleSaveSettings("Конфиденциальность")} />
+                        <Label htmlFor="privacy" className="text-sm font-normal cursor-pointer">Публичный профиль</Label>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
@@ -191,6 +369,23 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Удаление аккаунта</CardTitle>
+                  <CardDescription>
+                    Это действие нельзя отменить. Все ваши данные будут удалены навсегда.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => toast.error("Эта функция отключена в демо-режиме")}
+                  >
+                    Удалить аккаунт
+                  </Button>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

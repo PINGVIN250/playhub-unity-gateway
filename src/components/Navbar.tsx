@@ -89,9 +89,9 @@ export function Navbar() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 hover:bg-accent/80 group"
                     >
-                      <User className="h-4 w-4" />
+                      <User className="h-4 w-4 group-hover:text-primary transition-colors" />
                       <span>{user?.username}</span>
                     </Button>
                   </Link>
