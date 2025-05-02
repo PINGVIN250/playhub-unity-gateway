@@ -3,32 +3,34 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRatings } from "@/contexts/RatingContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageTitle } from "@/components/PageTitle";
 import { Button } from "@/components/ui/button";
 import { GameGrid } from "@/components/GameGrid";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, Upload, BarChart } from "lucide-react";
+import { PlusCircle, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 const Dashboard = () => {
   const { getUserGames, isLoading, games } = useGames();
+  const { getAverageRating } = useRatings();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("my-games");
   const [totalViews, setTotalViews] = useState(0);
   const [monthlyViews, setMonthlyViews] = useState<number[]>([]);
 
-  // Генерация некоторых тестовых данных для аналитики
+  // Generate test data for analytics
   useEffect(() => {
     if (user) {
-      // Симуляция данных аналитики
       const userGamesCount = getUserGames().length;
+      // Generate view count based on number of games
       const baseViews = userGamesCount > 0 ? 120 * userGamesCount : 0;
       setTotalViews(baseViews + Math.floor(Math.random() * 500));
       
-      // Генерация данных по месяцам (последние 6 месяцев)
+      // Generate monthly view data (last 6 months)
       const monthData = Array(6).fill(0).map(() => 
         Math.floor(Math.random() * 80) + 20
       );
@@ -36,7 +38,7 @@ const Dashboard = () => {
     }
   }, [user, getUserGames]);
 
-  // Перенаправление на логин, если пользователь не авторизован
+  // Redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/login");
@@ -54,9 +56,21 @@ const Dashboard = () => {
     ? Math.round((userGameCount / totalGames) * 100) 
     : 0;
   
-  // Расчет данных для графика вовлеченности
-  const engagementRate = userGameCount > 0 ? 60 : 0; // Пример значения
-  const dashOffset = 339.3 * (1 - engagementRate / 100);
+  // Calculate average rating across all user games
+  const calculateAverageRating = () => {
+    if (userGames.length === 0) return 0;
+    
+    const totalRating = userGames.reduce((sum, game) => {
+      const avgRating = getAverageRating(game.id);
+      return sum + avgRating;
+    }, 0);
+    
+    return userGames.length > 0 
+      ? parseFloat((totalRating / userGames.length).toFixed(1))
+      : 0;
+  };
+  
+  const averageRating = calculateAverageRating();
 
   return (
     <div className="min-h-screen flex flex-col page-transition">
@@ -155,113 +169,32 @@ const Dashboard = () => {
                     <CardTitle className="text-base font-medium">Средний рейтинг</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold">4.7</div>
+                    <div className="text-3xl font-bold">{averageRating}</div>
                     <p className="text-xs text-muted-foreground mt-1">На основе всех игр</p>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Вовлеченность</CardTitle>
-                    <CardDescription>
-                      Уровень вовлеченности пользователей в ваши игры
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col items-center">
-                    <div className="relative flex items-center justify-center mb-4">
-                      <svg width="120" height="120" viewBox="0 0 120 120">
-                        <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" strokeWidth="12" />
-                        <circle 
-                          cx="60" 
-                          cy="60" 
-                          r="54" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="12" 
-                          strokeDasharray="339.3" 
-                          strokeDashoffset={dashOffset} 
-                          className="text-primary" 
-                        />
-                      </svg>
-                      <div className="absolute">
-                        <p className="text-3xl font-bold">{engagementRate}%</p>
-                        <p className="text-xs text-muted-foreground text-center">Вовлеченность</p>
-                      </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground text-center max-w-xs">
-                      Основано на времени игры, количестве комментариев и рейтингов
-                    </p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Просмотры по месяцам</CardTitle>
-                    <CardDescription>
-                      Тенденции просмотров за последние 6 месяцев
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[200px] flex items-end gap-2">
-                      {monthlyViews.map((views, i) => (
-                        <div key={i} className="flex-1 flex flex-col items-center">
-                          <div 
-                            className="w-full bg-primary/80 hover:bg-primary transition-all rounded-t"
-                            style={{ 
-                              height: `${Math.min(100, Math.max(5, views))}%`,
-                            }}
-                          ></div>
-                          <div className="text-xs mt-2 text-muted-foreground">{['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн'][i]}</div>
-                        </div>
-                      ))}
-                    </div>
                   </CardContent>
                 </Card>
               </div>
               
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Активность пользователей</CardTitle>
+                  <CardTitle className="text-lg">Просмотры по месяцам</CardTitle>
                   <CardDescription>
-                    Вовлеченность пользователей в ваши игры
+                    Тенденции просмотров за последние 6 месяцев
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Завершение игры</span>
-                        <span className="font-medium">32%</span>
+                  <div className="h-[200px] flex items-end gap-2">
+                    {monthlyViews.map((views, i) => (
+                      <div key={i} className="flex-1 flex flex-col items-center">
+                        <div 
+                          className="w-full bg-primary/80 hover:bg-primary transition-all rounded-t"
+                          style={{ 
+                            height: `${Math.min(100, Math.max(5, views))}%`,
+                          }}
+                        ></div>
+                        <div className="text-xs mt-2 text-muted-foreground">{['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн'][i]}</div>
                       </div>
-                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="bg-primary h-full rounded-full" style={{width: '32%'}}></div>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Процент игроков, прошедших игру до конца</p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Средняя продолжительность сессии</span>
-                        <span className="font-medium">8 минут</span>
-                      </div>
-                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="bg-primary h-full rounded-full" style={{width: '45%'}}></div>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Среднее время, проводимое в вашей игре</p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Комментарии и отзывы</span>
-                        <span className="font-medium">5%</span>
-                      </div>
-                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="bg-primary h-full rounded-full" style={{width: '5%'}}></div>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Процент игроков, оставляющих комментарии</p>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
