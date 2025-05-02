@@ -11,10 +11,10 @@ interface AnalyticsCardProps {
 
 export const AnalyticsCard = ({ title, value, description, icon }: AnalyticsCardProps) => {
   return (
-    <Card>
+    <Card className="transition-all hover:shadow-md">
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          {icon}
+          {icon && <div className="text-primary">{icon}</div>}
           {title}
         </CardTitle>
       </CardHeader>

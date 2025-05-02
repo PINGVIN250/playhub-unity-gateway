@@ -22,18 +22,37 @@ const Dashboard = () => {
   const [totalViews, setTotalViews] = useState(0);
   const [monthlyViews, setMonthlyViews] = useState<number[]>([]);
 
-  // Generate test data for analytics
+  // Generate consistent view data based on user's games
   useEffect(() => {
     if (user) {
-      const userGamesCount = getUserGames().length;
-      // Generate view count based on number of games
-      const baseViews = userGamesCount > 0 ? 120 * userGamesCount : 0;
-      setTotalViews(baseViews + Math.floor(Math.random() * 500));
+      const userGames = getUserGames();
+      const userGameCount = userGames.length;
       
-      // Generate monthly view data (last 6 months)
-      const monthData = Array(6).fill(0).map(() => 
-        Math.floor(Math.random() * 80) + 20
-      );
+      // Calculate total views based on games count and game age
+      let calculatedTotalViews = 0;
+      
+      userGames.forEach(game => {
+        // Calculate days since game creation
+        const daysSinceCreation = Math.floor((new Date().getTime() - game.createdAt.getTime()) / (1000 * 3600 * 24));
+        
+        // Base views per game (older games have more views)
+        const gameViews = Math.min(2000, 50 + (daysSinceCreation * 5) + (userGameCount * 10));
+        calculatedTotalViews += gameViews;
+      });
+      
+      // If user has no games, show zero views
+      setTotalViews(calculatedTotalViews);
+      
+      // Generate monthly view data with a growth trend
+      const monthData = Array(6).fill(0).map((_, index) => {
+        // More recent months have more views (upward trend)
+        const monthFactor = (index + 1) / 6; // 0.17 to 1.0
+        const baseMonthlyViews = calculatedTotalViews / 6; // Average views per month
+        
+        // Apply a growth factor for recent months
+        return Math.round(baseMonthlyViews * (0.5 + monthFactor));
+      });
+      
       setMonthlyViews(monthData);
     }
   }, [user, getUserGames]);
