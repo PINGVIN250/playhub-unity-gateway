@@ -150,12 +150,6 @@ const Login = () => {
                 </p>
               </form>
             </Form>
-            
-            <div className="mt-6 pt-6 border-t text-center">
-              <p className="text-xs text-muted-foreground">
-                Для демонстрации используйте <strong>admin@example.com</strong> с паролем <strong>password</strong>
-              </p>
-            </div>
           </div>
         </div>
       </main>
