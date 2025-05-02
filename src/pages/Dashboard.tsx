@@ -20,7 +20,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("my-games");
   const [totalViews, setTotalViews] = useState(0);
-  const [monthlyViews, setMonthlyViews] = useState<number[]>([]);
+  const [authUserViews, setAuthUserViews] = useState(0);
 
   // Generate consistent view data based on user's games
   useEffect(() => {
@@ -30,6 +30,7 @@ const Dashboard = () => {
       
       // Calculate total views based on games count and game age
       let calculatedTotalViews = 0;
+      let calculatedAuthUserViews = 0;
       
       userGames.forEach(game => {
         // Calculate days since game creation
@@ -38,22 +39,15 @@ const Dashboard = () => {
         // Base views per game (older games have more views)
         const gameViews = Math.min(2000, 50 + (daysSinceCreation * 5) + (userGameCount * 10));
         calculatedTotalViews += gameViews;
+        
+        // Calculate authorized user views (approximately 30-45% of total views)
+        const authViews = Math.floor(gameViews * (0.3 + (Math.random() * 0.15)));
+        calculatedAuthUserViews += authViews;
       });
       
       // If user has no games, show zero views
       setTotalViews(calculatedTotalViews);
-      
-      // Generate monthly view data with a growth trend
-      const monthData = Array(6).fill(0).map((_, index) => {
-        // More recent months have more views (upward trend)
-        const monthFactor = (index + 1) / 6; // 0.17 to 1.0
-        const baseMonthlyViews = calculatedTotalViews / 6; // Average views per month
-        
-        // Apply a growth factor for recent months
-        return Math.round(baseMonthlyViews * (0.5 + monthFactor));
-      });
-      
-      setMonthlyViews(monthData);
+      setAuthUserViews(calculatedAuthUserViews);
     }
   }, [user, getUserGames]);
 
@@ -124,7 +118,7 @@ const Dashboard = () => {
                 userGameCount={userGameCount}
                 percentile={percentile}
                 averageRating={averageRating}
-                monthlyViews={monthlyViews}
+                authUserViews={authUserViews}
               />
             </TabsContent>
           </Tabs>
