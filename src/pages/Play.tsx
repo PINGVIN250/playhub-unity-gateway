@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -40,7 +39,7 @@ const Play = () => {
       
       setRelatedGames(similar);
     }
-  }, [game, games]);
+  }, [game, games, gameId]); // Добавляем gameId в зависимости для обновления при смене игры
   
   // Отслеживание состояния полноэкранного режима
   useEffect(() => {

@@ -27,6 +27,18 @@ const Upload = () => {
           />
           
           <div className="glass-card p-6 md:p-8">
+            <div className="mb-6 p-4 border rounded-md bg-muted/30">
+              <h3 className="font-medium mb-2">Важные параметры игры</h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                <strong>Width (px)</strong> и <strong>Height (px)</strong> - это размеры области для отображения вашей Unity WebGL игры в пикселях.
+              </p>
+              <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                <li>Эти значения определяют пропорции и размер игрового окна</li>
+                <li>Рекомендуемые значения: 960×600 (соотношение 16:10) или 1280×720 (соотношение 16:9)</li>
+                <li>От этих параметров зависит как игра будет масштабироваться на различных устройствах</li>
+              </ul>
+            </div>
+            
             <UploadGameForm />
           </div>
         </div>

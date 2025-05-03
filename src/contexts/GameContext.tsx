@@ -431,6 +431,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
         throw error;
       }
 
+      // Если есть теги для обновления
+      if (data.tags) {
+        // 1. Удаляем все текущие связи между игрой и тегами
+        await supabase
+          .from('game_tags')
+          .delete()
+          .eq('game_id', id);
+        
+        // 2. Добавляем новые теги
+        for (const tagName of data.tags) {
+          await handleTagCreation(id, tagName);
+        }
+      }
+
       const updatedGame: Game = {
         ...game,
         ...data,

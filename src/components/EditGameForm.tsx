@@ -33,7 +33,8 @@ export function EditGameForm({ game }: EditGameFormProps) {
     description: game.description,
     gameUrl: game.gameUrl,
     width: game.width,
-    height: game.height
+    height: game.height,
+    tags: game.tags ? game.tags.join(", ") : ""
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,7 +46,8 @@ export function EditGameForm({ game }: EditGameFormProps) {
       formData.description !== game.description ||
       formData.gameUrl !== game.gameUrl ||
       formData.width !== game.width ||
-      formData.height !== game.height
+      formData.height !== game.height ||
+      formData.tags !== (game.tags ? game.tags.join(", ") : "")
     );
   }, [formData, game]);
   
@@ -71,7 +73,16 @@ export function EditGameForm({ game }: EditGameFormProps) {
     
     try {
       setIsSubmitting(true);
-      await updateGame(game.id, formData);
+      // Преобразуем строку тегов в массив
+      const tagsArray = formData.tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(Boolean);
+      
+      await updateGame(game.id, {
+        ...formData,
+        tags: tagsArray
+      });
     } catch (error) {
       // Error is handled by the context
     } finally {
@@ -162,6 +173,22 @@ export function EditGameForm({ game }: EditGameFormProps) {
             onChange={handleChange}
             placeholder="https://..."
           />
+        </div>
+        
+        <div className="space-y-2">
+          <label htmlFor="tags" className="text-sm font-medium">
+            Tags (comma separated)
+          </label>
+          <Input
+            id="tags"
+            name="tags"
+            value={formData.tags}
+            onChange={handleChange}
+            placeholder="adventure, puzzle, action"
+          />
+          <p className="text-xs text-muted-foreground">
+            Separate tags with commas (e.g., action, puzzle, adventure)
+          </p>
         </div>
         
         <div className="grid grid-cols-2 gap-4">
