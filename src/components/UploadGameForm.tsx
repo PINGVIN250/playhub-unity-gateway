@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -20,11 +21,9 @@ import { Upload, X, Loader2, FileUp, File as FileIcon } from "lucide-react";
 import { toast } from "sonner";
 
 const uploadFormSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters").max(50, "Title must be less than 50 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters").max(500, "Description must be less than 500 characters"),
-  coverImage: z.instanceof(File, { message: "Cover image is required" }),
-  width: z.coerce.number().int().min(300, "Width must be at least 300px").max(1920, "Width must be less than 1920px"),
-  height: z.coerce.number().int().min(200, "Height must be at least 200px").max(1080, "Height must be less than 1080px"),
+  title: z.string().min(3, "Название должно содержать минимум 3 символа").max(50, "Название должно содержать не более 50 символов"),
+  description: z.string().min(10, "Описание должно содержать минимум 10 символов").max(500, "Описание должно содержать не более 500 символов"),
+  coverImage: z.instanceof(File, { message: "Обложка обязательна" }),
   tags: z.string().transform(val => val.split(",").map(tag => tag.trim()).filter(Boolean))
 });
 
@@ -54,8 +53,6 @@ export function UploadGameForm() {
     defaultValues: {
       title: "",
       description: "",
-      width: 960,
-      height: 600,
       tags: []
     }
   });
@@ -96,18 +93,16 @@ export function UploadGameForm() {
   const onSubmit = async (data: UploadFormValues) => {
     const hasRequiredFiles = gameFiles.wasm && gameFiles.data && gameFiles.framework && gameFiles.loader;
     if (!hasRequiredFiles) {
-      toast.error("Please upload all required Unity WebGL files (at minimum: .wasm, .data, framework.js, and loader.js)");
+      toast.error("Пожалуйста, загрузите все необходимые файлы Unity WebGL (как минимум: .wasm, .data, framework.js и loader.js)");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      console.log("Starting game upload with data:", {
+      console.log("Начало загрузки игры с данными:", {
         title: data.title,
         description: data.description,
         coverImage: data.coverImage.name,
-        width: data.width,
-        height: data.height,
         tags: data.tags,
         gameFiles: {
           wasm: gameFiles.wasm?.name,
@@ -123,19 +118,19 @@ export function UploadGameForm() {
         data.description,
         data.coverImage,
         "",
-        data.width,
-        data.height,
+        960, // фиксированное разрешение по умолчанию
+        600, // фиксированное разрешение по умолчанию
         data.tags,
         gameFiles
       );
-      toast.success("Game successfully uploaded!");
+      toast.success("Игра успешно загружена!");
       navigate("/dashboard");
     } catch (error) {
-      console.error("Error uploading game:", error);
+      console.error("Ошибка загрузки игры:", error);
       if (error instanceof Error) {
-        toast.error(`Upload failed: ${error.message}`);
+        toast.error(`Ошибка загрузки: ${error.message}`);
       } else {
-        toast.error("Failed to upload game. Please try again.");
+        toast.error("Не удалось загрузить игру. Пожалуйста, попробуйте снова.");
       }
     } finally {
       setIsSubmitting(false);
@@ -183,7 +178,7 @@ export function UploadGameForm() {
               className="w-full"
               onClick={() => document.getElementById(id)?.click()}
             >
-              Select {label}
+              Выбрать {label}
             </Button>
           </div>
         )}
@@ -201,9 +196,9 @@ export function UploadGameForm() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Game Title</FormLabel>
+                  <FormLabel>Название игры</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter game title" {...field} />
+                    <Input placeholder="Введите название игры" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -215,10 +210,10 @@ export function UploadGameForm() {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Описание</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Describe your game" 
+                      placeholder="Опишите вашу игру" 
                       className="resize-none min-h-[120px]" 
                       {...field} 
                     />
@@ -228,45 +223,15 @@ export function UploadGameForm() {
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="width"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Width (px)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={300} max={1920} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="height"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Height (px)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={200} max={1080} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <FormField
               control={form.control}
               name="tags"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tags (comma separated)</FormLabel>
+                  <FormLabel>Теги (через запятую)</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="adventure, puzzle, action" 
+                      placeholder="приключения, головоломка, экшен" 
                       {...field} 
                     />
                   </FormControl>
@@ -282,14 +247,14 @@ export function UploadGameForm() {
               name="coverImage"
               render={({ field: { value, onChange, ...field } }) => (
                 <FormItem>
-                  <FormLabel>Cover Image</FormLabel>
+                  <FormLabel>Обложка игры</FormLabel>
                   <FormControl>
                     <div className="space-y-3">
                       {coverImagePreview ? (
                         <div className="relative">
                           <img 
                             src={coverImagePreview} 
-                            alt="Cover preview" 
+                            alt="Предварительный просмотр обложки" 
                             className="w-full aspect-video object-cover rounded-md" 
                           />
                           <Button
@@ -306,10 +271,10 @@ export function UploadGameForm() {
                         <div className="border-2 border-dashed border-muted-foreground/25 rounded-md p-8 text-center">
                           <Upload className="h-10 w-10 text-muted-foreground/50 mx-auto mb-2" />
                           <p className="text-sm text-muted-foreground mb-2">
-                            Drag and drop your cover image here, or click to select
+                            Перетащите обложку игры сюда или нажмите, чтобы выбрать
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Recommended size: 1280×720 (16:9 ratio)
+                            Рекомендуемый размер: 1280×720 (соотношение 16:9)
                           </p>
                           <Input
                             id="coverImage"
@@ -325,7 +290,7 @@ export function UploadGameForm() {
                             className="mt-4"
                             onClick={() => document.getElementById("coverImage")?.click()}
                           >
-                            Select Image
+                            Выбрать изображение
                           </Button>
                         </div>
                       )}
@@ -338,9 +303,9 @@ export function UploadGameForm() {
 
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-medium mb-2">Upload Unity WebGL Files</h3>
+                <h3 className="text-sm font-medium mb-2">Загрузить файлы Unity WebGL</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Upload your Unity WebGL build files directly. You'll need at minimum the following files from your Unity WebGL build folder.
+                  Загрузите файлы Unity WebGL сборки напрямую. Вам понадобятся как минимум следующие файлы из папки Unity WebGL сборки.
                 </p>
               </div>
 
@@ -349,20 +314,20 @@ export function UploadGameForm() {
                 {renderFileUpload('data', 'Data File (.data)', 'data')}
                 {renderFileUpload('framework', 'Framework JS', 'js')}
                 {renderFileUpload('loader', 'Loader JS', 'js')}
-                {renderFileUpload('index', 'Index HTML (optional)', 'html')}
+                {renderFileUpload('index', 'Index HTML (опционально)', 'html')}
               </div>
 
               <div className="p-4 bg-muted/50 rounded-md mt-2">
                 <h3 className="font-medium mb-2 flex items-center">
                   <FileUp className="h-4 w-4 mr-2" />
-                  About Unity WebGL files
+                  О файлах Unity WebGL
                 </h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li><strong>.wasm file:</strong> Contains the compiled WebAssembly code</li>
-                  <li><strong>.data file:</strong> Contains assets and resources</li>
-                  <li><strong>framework.js:</strong> Unity's WebGL framework</li>
-                  <li><strong>loader.js:</strong> Loads and initializes the Unity content</li>
-                  <li><strong>index.html:</strong> Optional, contains the HTML wrapper</li>
+                  <li><strong>Файл .wasm:</strong> Содержит скомпилированный WebAssembly код</li>
+                  <li><strong>Файл .data:</strong> Содержит ресурсы и ассеты</li>
+                  <li><strong>framework.js:</strong> WebGL фреймворк Unity</li>
+                  <li><strong>loader.js:</strong> Загружает и инициализирует контент Unity</li>
+                  <li><strong>index.html:</strong> Опционально, содержит HTML обертку</li>
                 </ul>
               </div>
             </div>
@@ -375,11 +340,11 @@ export function UploadGameForm() {
             variant="outline"
             onClick={() => navigate("/dashboard")}
           >
-            Cancel
+            Отмена
           </Button>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Upload Game
+            Загрузить игру
           </Button>
         </div>
       </form>

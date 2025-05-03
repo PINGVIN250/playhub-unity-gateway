@@ -27,7 +27,15 @@ interface GameContextType {
   getFeaturedGames: () => Game[];
   getGameById: (id: string) => Game | undefined;
   deleteGame: (id: string) => Promise<void>;
-  updateGame: (id: string, data: Partial<Omit<Game, "id" | "author" | "authorId" | "createdAt" | "updatedAt">>) => Promise<Game>;
+  updateGame: (id: string, data: Partial<Omit<Game, "id" | "author" | "authorId" | "createdAt" | "updatedAt">> & {
+    gameFiles?: {
+      wasm: File | null;
+      data: File | null;
+      framework: File | null;
+      loader: File | null;
+      index: File | null;
+    }
+  }) => Promise<Game>;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -36,12 +44,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { user } = useAuth();
+  
   useEffect(() => {
     const loadGames = async () => {
       try {
         setIsLoading(true);
         
-
         const { data, error } = await supabase
           .from('games')
           .select(`
@@ -138,10 +146,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       if (!user) {
-        throw new Error("You must be logged in to add a game");
+        throw new Error("Вы должны войти в систему, чтобы добавить игру");
       }
 
-      console.log("Starting game upload process");
+      console.log("Начало процесса загрузки игры");
       let coverImageUrl = '';
       let wasmPath = '';
       let dataPath = '';
@@ -150,7 +158,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       let indexPath = '';
 
       if (coverImage) {
-        console.log("Uploading cover image");
+        console.log("Загрузка обложки игры");
         const fileExt = coverImage.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
         const filePath = `${user.id}/${fileName}`;
@@ -163,27 +171,27 @@ export function GameProvider({ children }: { children: ReactNode }) {
           });
 
         if (uploadError) {
-          console.error("Cover image upload error:", uploadError);
+          console.error("Ошибка загрузки обложки игры:", uploadError);
           throw uploadError;
         }
 
-        console.log("Cover image uploaded successfully");
+        console.log("Обложка игры загружена успешно");
 
         const { data: urlData } = supabase.storage
           .from('game_images')
           .getPublicUrl(filePath);
 
         coverImageUrl = urlData.publicUrl;
-        console.log("Cover image URL:", coverImageUrl);
+        console.log("URL обложки игры:", coverImageUrl);
       }
 
       if (gameFiles) {
-        console.log("Starting game files upload");
+        console.log("Начало загрузки файлов игры");
         
         const uploadFile = async (file: File | null, prefix: string) => {
-          if (!file) return '';
+          if (!file) return null;
           
-          console.log(`Uploading ${prefix} file: ${file.name}`);
+          console.log(`Загрузка файла ${prefix}: ${file.name}`);
           const filePath = `${user.id}/${Math.random().toString(36).substring(2, 10)}_${file.name}`;
           
           const { error, data } = await supabase.storage
@@ -194,7 +202,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
             });
             
           if (error) {
-            console.error(`${prefix} file upload error:`, error);
+            console.error(`Ошибка загрузки файла ${prefix}:`, error);
             throw error;
           }
           
@@ -202,7 +210,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
             .from('game_files')
             .getPublicUrl(filePath);
             
-          console.log(`${prefix} file uploaded successfully: ${urlData.publicUrl}`);
+          console.log(`Файл ${prefix} успешно загружен: ${urlData.publicUrl}`);
           return urlData.publicUrl;
         };
 
@@ -221,7 +229,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         indexPath = indexResult;
       }
 
-      console.log("All files uploaded, creating game record");
+      console.log("Все файлы загружены, создание записи об игре");
       
       const { data, error } = await supabase
         .from('games')
@@ -236,20 +244,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
           loader_path: loaderPath,
           index_path: indexPath,
           author_id: user.id,
-          
-          width,
-          height
+          width: 960,
+          height: 600
         })
         .select()
         .single();
 
       if (error) {
-        console.error("Game record creation error:", error);
+        console.error("Ошибка создания записи об игре:", error);
         throw error;
       }
 
       if (data?.id && tags && tags.length > 0) {
-        console.log("Processing tags:", tags);
+        console.log("Обработка тегов:", tags);
         for (const tagName of tags) {
           await handleTagCreation(data.id, tagName);
         }
@@ -285,16 +292,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
     setGames(prevGames => {
       if (prevGames.some(g => g.id === newGame.id)) {
-        console.warn(`Duplicate game ID detected: ${newGame.id}`);
+        console.warn(`Дублирующийся ID игры обнаружен: ${newGame.id}`);
         return prevGames;
       }
       return [newGame, ...prevGames];
     });
 
-    toast.success("Game added successfully!");
+    toast.success("Игра успешно добавлена!");
     return newGame;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to add game";
+    const message = error instanceof Error ? error.message : "Не удалось добавить игру";
     toast.error(message);
     throw error;
   } finally {
@@ -307,7 +314,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const sanitizedTagName = tagName.trim().toLowerCase();
       if (!sanitizedTagName) return null;
       
-      console.log(`Processing tag: ${sanitizedTagName}`);
+      console.log(`Обработка тега: ${sanitizedTagName}`);
       
       const { data: existingTag, error: tagQueryError } = await supabase
         .from('tags')
@@ -316,14 +323,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (tagQueryError) {
-        console.error("Error checking for existing tag:", tagQueryError);
+        console.error("Ошибка проверки существующего тега:", tagQueryError);
         return null;
       }
 
       let tagId = existingTag?.id;
 
       if (!tagId) {
-        console.log(`Creating new tag: ${sanitizedTagName}`);
+        console.log(`Создание нового тега: ${sanitizedTagName}`);
         const { data: newTag, error: createTagError } = await supabase
           .from('tags')
           .insert({ name: sanitizedTagName })
@@ -331,7 +338,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           .single();
         
         if (createTagError) {
-          console.error("Error creating new tag:", createTagError);
+          console.error("Ошибка создания нового тега:", createTagError);
           return null;
         }
         
@@ -339,7 +346,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
 
       if (tagId) {
-        console.log(`Creating game-tag relationship for game ${gameId} and tag ${tagId}`);
+        console.log(`Создание связи между игрой ${gameId} и тегом ${tagId}`);
         const { error: relationshipError } = await supabase
           .from('game_tags')
           .insert({
@@ -348,13 +355,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
           });
           
         if (relationshipError) {
-          console.error("Error creating game-tag relationship:", relationshipError);
+          console.error("Ошибка создания связи между игрой и тегом:", relationshipError);
         }
       }
 
       return tagId;
     } catch (error) {
-      console.error("Error in tag processing:", error);
+      console.error("Ошибка в обработке тега:", error);
       return null;
     }
   };
@@ -362,17 +369,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const deleteGame = async (id: string): Promise<void> => {
     try {
       if (!user) {
-        throw new Error("You must be logged in to delete a game");
+        throw new Error("Вы должны войти в систему, чтобы удалить игру");
       }
 
       const game = games.find(g => g.id === id);
       
       if (!game) {
-        throw new Error("Game not found");
+        throw new Error("Игра не найдена");
       }
 
       if (game.authorId !== user.id && !user.isAdmin) {
-        throw new Error("You don't have permission to delete this game");
+        throw new Error("У вас нет прав для удаления этой игры");
       }
 
       const { error } = await supabase
@@ -385,9 +392,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
 
       setGames(prevGames => prevGames.filter(g => g.id !== id));
-      toast.success("Game deleted successfully");
+      toast.success("Игра успешно удалена");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to delete game";
+      const message = error instanceof Error ? error.message : "Не удалось удалить игру";
       toast.error(message);
       throw error;
     }
@@ -395,31 +402,103 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const updateGame = async (
     id: string, 
-    data: Partial<Omit<Game, "id" | "author" | "authorId" | "createdAt" | "updatedAt">>
+    data: Partial<Omit<Game, "id" | "author" | "authorId" | "createdAt" | "updatedAt">> & {
+      gameFiles?: {
+        wasm: File | null;
+        data: File | null;
+        framework: File | null;
+        loader: File | null;
+        index: File | null;
+      }
+    }
   ): Promise<Game> => {
     try {
       if (!user) {
-        throw new Error("You must be logged in to update a game");
+        throw new Error("Вы должны войти в систему, чтобы обновить игру");
       }
 
       const game = games.find(g => g.id === id);
       
       if (!game) {
-        throw new Error("Game not found");
+        throw new Error("Игра не найдена");
       }
 
       if (game.authorId !== user.id && !user.isAdmin) {
-        throw new Error("You don't have permission to update this game");
+        throw new Error("У вас нет прав для обновления этой игры");
       }
 
       const updateData: any = {};
       
       if (data.title) updateData.title = data.title;
       if (data.description) updateData.description = data.description;
-      if (data.gameUrl) updateData.game_url = data.gameUrl;
-      if (data.width) updateData.width = data.width;
-      if (data.height) updateData.height = data.height;
       
+      // Обрабатываем загрузку новых файлов
+      if (data.gameFiles) {
+        const gameFiles = data.gameFiles;
+        let updateGameFiles = false;
+        
+        // Функция для загрузки файла
+        const uploadFile = async (file: File | null, prefix: string) => {
+          if (!file) return null;
+          
+          console.log(`Загрузка файла ${prefix}: ${file.name}`);
+          const filePath = `${user.id}/${Math.random().toString(36).substring(2, 10)}_${file.name}`;
+          
+          const { error, data } = await supabase.storage
+            .from('game_files')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+            
+          if (error) {
+            console.error(`Ошибка загрузки файла ${prefix}:`, error);
+            throw error;
+          }
+          
+          const { data: urlData } = supabase.storage
+            .from('game_files')
+            .getPublicUrl(filePath);
+            
+          console.log(`Файл ${prefix} успешно загружен: ${urlData.publicUrl}`);
+          return urlData.publicUrl;
+        };
+
+        // Загружаем только те файлы, которые были предоставлены
+        if (gameFiles.wasm) {
+          updateGameFiles = true;
+          const wasmPath = await uploadFile(gameFiles.wasm, 'wasm');
+          if (wasmPath) updateData.wasm_path = wasmPath;
+        }
+        
+        if (gameFiles.data) {
+          updateGameFiles = true;
+          const dataPath = await uploadFile(gameFiles.data, 'data');
+          if (dataPath) updateData.data_path = dataPath;
+        }
+        
+        if (gameFiles.framework) {
+          updateGameFiles = true;
+          const frameworkPath = await uploadFile(gameFiles.framework, 'framework');
+          if (frameworkPath) updateData.framework_path = frameworkPath;
+        }
+        
+        if (gameFiles.loader) {
+          updateGameFiles = true;
+          const loaderPath = await uploadFile(gameFiles.loader, 'loader');
+          if (loaderPath) updateData.loader_path = loaderPath;
+        }
+        
+        if (gameFiles.index) {
+          updateGameFiles = true;
+          const indexPath = await uploadFile(gameFiles.index, 'index');
+          if (indexPath) {
+            updateData.index_path = indexPath;
+            updateData.game_url = indexPath; // Обновляем URL игры на новый индексный файл
+          }
+        }
+      }
+
       const { data: updatedGameData, error } = await supabase
         .from('games')
         .update(updateData)
@@ -445,9 +524,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // Обновляем объект игры в локальном состоянии
       const updatedGame: Game = {
         ...game,
         ...data,
+        gameFiles: {
+          wasmPath: updateData.wasm_path || game.gameFiles.wasmPath,
+          dataPath: updateData.data_path || game.gameFiles.dataPath,
+          frameworkPath: updateData.framework_path || game.gameFiles.frameworkPath,
+          loaderPath: updateData.loader_path || game.gameFiles.loaderPath,
+          indexPath: updateData.index_path || game.gameFiles.indexPath
+        },
+        gameUrl: updateData.game_url || game.gameUrl,
         updatedAt: new Date()
       };
 
@@ -455,10 +543,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
         prevGames.map(g => g.id === id ? updatedGame : g)
       );
 
-      toast.success("Game updated successfully");
+      toast.success("Игра успешно обновлена");
       return updatedGame;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to update game";
+      const message = error instanceof Error ? error.message : "Не удалось обновить игру";
       toast.error(message);
       throw error;
     }
@@ -494,7 +582,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 export function useGames() {
   const context = useContext(GameContext);
   if (context === undefined) {
-    throw new Error("useGames must be used within a GameProvider");
+    throw new Error("useGames должен использоваться внутри GameProvider");
   }
   return context;
 }

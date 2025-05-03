@@ -17,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { PencilIcon, Trash2Icon } from "lucide-react";
+import { PencilIcon, Trash2Icon, Upload, X, FileIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface EditGameFormProps {
@@ -31,40 +31,58 @@ export function EditGameForm({ game }: EditGameFormProps) {
   const [formData, setFormData] = useState({
     title: game.title,
     description: game.description,
-    gameUrl: game.gameUrl,
-    width: game.width,
-    height: game.height,
     tags: game.tags ? game.tags.join(", ") : ""
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [gameFiles, setGameFiles] = useState<{
+    wasm: File | null;
+    data: File | null;
+    framework: File | null;
+    loader: File | null;
+    index: File | null;
+  }>({
+    wasm: null,
+    data: null,
+    framework: null,
+    loader: null,
+    index: null
+  });
   
   useEffect(() => {
     setHasChanges(
       formData.title !== game.title ||
       formData.description !== game.description ||
-      formData.gameUrl !== game.gameUrl ||
-      formData.width !== game.width ||
-      formData.height !== game.height ||
-      formData.tags !== (game.tags ? game.tags.join(", ") : "")
+      formData.tags !== (game.tags ? game.tags.join(", ") : "") ||
+      gameFiles.wasm !== null ||
+      gameFiles.data !== null ||
+      gameFiles.framework !== null ||
+      gameFiles.loader !== null ||
+      gameFiles.index !== null
     );
-  }, [formData, game]);
+  }, [formData, game, gameFiles]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
-    // Convert width and height to numbers
-    if (name === 'width' || name === 'height') {
-      setFormData(prev => ({
-        ...prev,
-        [name]: parseInt(value) || 0
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleGameFileChange = (fileType: 'wasm' | 'data' | 'framework' | 'loader' | 'index') => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setGameFiles(prev => ({ ...prev, [fileType]: file }));
+    }
+  };
+
+  const clearGameFile = (fileType: 'wasm' | 'data' | 'framework' | 'loader' | 'index') => {
+    setGameFiles(prev => ({ ...prev, [fileType]: null }));
+    const fileInput = document.getElementById(`edit-gameFile-${fileType}`) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
     }
   };
   
@@ -81,7 +99,8 @@ export function EditGameForm({ game }: EditGameFormProps) {
       
       await updateGame(game.id, {
         ...formData,
-        tags: tagsArray
+        tags: tagsArray,
+        gameFiles
       });
     } catch (error) {
       // Error is handled by the context
@@ -93,11 +112,60 @@ export function EditGameForm({ game }: EditGameFormProps) {
   const handleDelete = async () => {
     try {
       await deleteGame(game.id);
-      toast.success("Game deleted successfully");
+      toast.success("Игра успешно удалена");
       navigate("/games");
     } catch (error) {
       // Error is handled by the context
     }
+  };
+
+  const renderFileUpload = (fileType: 'wasm' | 'data' | 'framework' | 'loader' | 'index', label: string, extension: string) => {
+    const file = gameFiles[fileType];
+    const id = `edit-gameFile-${fileType}`;
+    
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium">{label}</p>
+          {file && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2"
+              onClick={() => clearGameFile(fileType)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        {file ? (
+          <div className="flex items-center gap-2 border rounded px-3 py-2 text-sm">
+            <FileIcon className="h-4 w-4 text-muted-foreground" />
+            <span className="truncate">{file.name}</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Input
+              id={id}
+              type="file"
+              accept={`.${extension}`}
+              className="hidden"
+              onChange={handleGameFileChange(fileType)}
+            />
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm"
+              className="w-full"
+              onClick={() => document.getElementById(id)?.click()}
+            >
+              Выбрать {label}
+            </Button>
+          </div>
+        )}
+      </div>
+    );
   };
   
   return (
@@ -105,30 +173,30 @@ export function EditGameForm({ game }: EditGameFormProps) {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold flex items-center gap-2">
           <PencilIcon className="h-5 w-5" />
-          <span>Edit Game</span>
+          <span>Редактировать игру</span>
         </h2>
         
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" size="sm">
               <Trash2Icon className="h-4 w-4 mr-1" />
-              Delete Game
+              Удалить игру
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Game</AlertDialogTitle>
+              <AlertDialogTitle>Удалить игру</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete this game? This action cannot be undone.
+                Вы уверены, что хотите удалить эту игру? Это действие нельзя отменить.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>Отмена</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 onClick={handleDelete}
               >
-                Delete
+                Удалить
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -138,7 +206,7 @@ export function EditGameForm({ game }: EditGameFormProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="title" className="text-sm font-medium">
-            Game Title
+            Название игры
           </label>
           <Input
             id="title"
@@ -151,7 +219,7 @@ export function EditGameForm({ game }: EditGameFormProps) {
         
         <div className="space-y-2">
           <label htmlFor="description" className="text-sm font-medium">
-            Description
+            Описание
           </label>
           <Textarea
             id="description"
@@ -163,62 +231,33 @@ export function EditGameForm({ game }: EditGameFormProps) {
         </div>
         
         <div className="space-y-2">
-          <label htmlFor="gameUrl" className="text-sm font-medium">
-            Game URL
-          </label>
-          <Input
-            id="gameUrl"
-            name="gameUrl"
-            value={formData.gameUrl}
-            onChange={handleChange}
-            placeholder="https://..."
-          />
-        </div>
-        
-        <div className="space-y-2">
           <label htmlFor="tags" className="text-sm font-medium">
-            Tags (comma separated)
+            Теги (через запятую)
           </label>
           <Input
             id="tags"
             name="tags"
             value={formData.tags}
             onChange={handleChange}
-            placeholder="adventure, puzzle, action"
+            placeholder="приключения, головоломка, экшен"
           />
           <p className="text-xs text-muted-foreground">
-            Separate tags with commas (e.g., action, puzzle, adventure)
+            Разделяйте теги запятыми (например: экшен, головоломка, приключения)
           </p>
         </div>
         
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="width" className="text-sm font-medium">
-              Width (px)
-            </label>
-            <Input
-              id="width"
-              name="width"
-              type="number"
-              value={formData.width}
-              onChange={handleChange}
-              min={300}
-              max={1920}
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="height" className="text-sm font-medium">
-              Height (px)
-            </label>
-            <Input
-              id="height"
-              name="height"
-              type="number"
-              value={formData.height}
-              onChange={handleChange}
-              min={200}
-              max={1080}
-            />
+        <div className="space-y-4 border rounded-md p-4">
+          <h3 className="font-medium">Обновить файлы игры</h3>
+          <p className="text-sm text-muted-foreground">
+            Выберите файлы, которые хотите обновить. Оставьте поля пустыми, чтобы сохранить текущие файлы.
+          </p>
+          
+          <div className="grid gap-3">
+            {renderFileUpload('wasm', 'WebAssembly (.wasm)', 'wasm')}
+            {renderFileUpload('data', 'Data File (.data)', 'data')}
+            {renderFileUpload('framework', 'Framework JS', 'js')}
+            {renderFileUpload('loader', 'Loader JS', 'js')}
+            {renderFileUpload('index', 'Index HTML (опционально)', 'html')}
           </div>
         </div>
         
@@ -227,7 +266,7 @@ export function EditGameForm({ game }: EditGameFormProps) {
             type="submit"
             disabled={isSubmitting || !hasChanges}
           >
-            {isSubmitting ? "Saving..." : "Save Changes"}
+            {isSubmitting ? "Сохранение..." : "Сохранить изменения"}
           </Button>
         </div>
       </form>

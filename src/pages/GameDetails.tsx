@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -146,12 +147,6 @@ const GameDetails = () => {
                         Выпущена: {new Date(game.createdAt).toLocaleDateString()}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Layout className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">
-                        Разрешение: {game.width}×{game.height}
-                      </span>
-                    </div>
                   </div>
                 </div>
                 
@@ -170,6 +165,6 @@ const GameDetails = () => {
       <Footer />
     </div>
   );
-}
+};
 
 export default GameDetails;
