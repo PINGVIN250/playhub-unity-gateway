@@ -7,7 +7,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, Play, User, Calendar, Layout } from "lucide-react";
+import { ChevronLeft, Play, User, Calendar } from "lucide-react";
 import { RatingComponent } from "@/components/RatingComponent";
 import { EditGameForm } from "@/components/EditGameForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

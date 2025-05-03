@@ -97,10 +97,11 @@ export function EditGameForm({ game }: EditGameFormProps) {
         .map(tag => tag.trim())
         .filter(Boolean);
       
+      // Исправляем ошибку типа, сохраняя только gameFiles без добавления свойств wasmPath и т.д.
       await updateGame(game.id, {
         ...formData,
         tags: tagsArray,
-        gameFiles
+        gameFiles: gameFiles
       });
     } catch (error) {
       // Error is handled by the context
