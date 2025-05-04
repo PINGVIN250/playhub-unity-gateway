@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/ModeToggle";
-import { Search, Plus, Heart } from "lucide-react";
+import { Search, Plus, Heart, LayoutDashboard } from "lucide-react";
 
 export function Navbar() {
   const { user, logout } = useAuth();
@@ -73,10 +73,10 @@ export function Navbar() {
           {user ? (
             <>
               <li className="flex items-center">
-                <Link to="/games/new">
+                <Link to="/dashboard">
                   <Button size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Добавить игру
+                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    Панель разработчика
                   </Button>
                 </Link>
               </li>
