@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { Game } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,34 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
       destroyUnityInstance();
       clearContainer();
       
+      // Check if a direct game URL is provided first
+      if (game.gameUrl && game.gameUrl.trim() !== "") {
+        console.log("Using direct game URL:", game.gameUrl);
+        
+        if (containerRef.current) {
+          clearContainer();
+          
+          const iframe = document.createElement('iframe');
+          iframe.src = game.gameUrl;
+          iframe.className = "absolute inset-0 w-full h-full border-0";
+          iframe.title = game.title;
+          iframe.allow = "autoplay; fullscreen; microphone; gamepad; accelerometer; gyroscope; camera";
+          
+          const sandboxValues = "allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts";
+          iframe.setAttribute("sandbox", sandboxValues);
+          
+          iframeRef.current = iframe;
+          
+          containerRef.current.appendChild(iframe);
+          
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 2000);
+        }
+        return;
+      }
+      
+      // If no direct URL, try to load from game files
       if (game.gameFiles && (
         game.gameFiles.wasmPath || 
         game.gameFiles.dataPath || 
@@ -133,30 +162,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
           setError("Missing Unity loader script");
           setIsLoading(false);
         }
-      } else if (game.gameUrl) {
-        console.log("Using direct game URL:", game.gameUrl);
-        
-        if (containerRef.current) {
-          clearContainer();
-          
-          const iframe = document.createElement('iframe');
-          iframe.src = game.gameUrl;
-          iframe.className = "absolute inset-0 w-full h-full border-0";
-          iframe.title = game.title;
-          iframe.allow = "autoplay; fullscreen; microphone; gamepad; accelerometer; gyroscope; camera";
-          
-          const sandboxValues = "allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts";
-          iframe.setAttribute("sandbox", sandboxValues);
-          
-          iframeRef.current = iframe;
-          
-          containerRef.current.appendChild(iframe);
-          
-          setTimeout(() => {
-            setIsLoading(false);
-          }, 2000);
-        }
-      } else {
+      } else if (!game.gameUrl) {
         console.error("No game files or URL provided");
         setError("No game files or URL provided");
         setIsLoading(false);
@@ -175,6 +181,7 @@ export function UnityPlayer({ game }: UnityPlayerProps) {
       clearContainer();
     };
   }, [game.id]); // Зависимость только от game.id
+  
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
