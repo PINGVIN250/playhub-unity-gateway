@@ -7,15 +7,16 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, Play, User, Calendar } from "lucide-react";
+import { ChevronLeft, Heart, Play, User, Calendar } from "lucide-react";
 import { RatingComponent } from "@/components/RatingComponent";
 import { EditGameForm } from "@/components/EditGameForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CommentSection } from "@/components/CommentSection";
+import { toast } from "sonner";
 
 const GameDetails = () => {
   const { gameId } = useParams<{ gameId: string }>();
-  const { getGameById } = useGames();
+  const { getGameById, toggleFavorite, isFavorite } = useGames();
   const { user } = useAuth();
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
@@ -23,11 +24,23 @@ const GameDetails = () => {
   // Получаем информацию об игре по id
   const game = getGameById(gameId || "");
   const isOwner = user && game && user.id === game.authorId;
+  const isFav = game ? isFavorite(game.id) : false;
   
   // Сбрасываем состояние загрузки изображения при изменении игры
   useEffect(() => {
     setIsImageLoaded(false);
   }, [gameId]);
+  
+  const handleToggleFavorite = async () => {
+    if (!user) {
+      toast.error("Войдите в систему, чтобы добавить игру в избранное");
+      return;
+    }
+    
+    if (game) {
+      await toggleFavorite(game.id);
+    }
+  };
   
   // Если игра не найдена, показываем соответствующее сообщение
   if (!game) {
@@ -82,7 +95,18 @@ const GameDetails = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-6">
                 <div>
-                  <h1 className="text-3xl font-bold mb-2">{game.title}</h1>
+                  <div className="flex justify-between items-center mb-2">
+                    <h1 className="text-3xl font-bold">{game.title}</h1>
+                    <Button 
+                      variant={isFav ? "default" : "outline"}
+                      size="icon"
+                      className={`${isFav ? 'text-white bg-red-500 hover:bg-red-600' : 'text-red-500 hover:text-red-600'}`}
+                      onClick={handleToggleFavorite}
+                      title={isFav ? "Удалить из избранного" : "Добавить в избранное"}
+                    >
+                      <Heart className="h-5 w-5" fill={isFav ? "currentColor" : "none"} />
+                    </Button>
+                  </div>
                   <div className="flex flex-wrap items-center gap-2 mb-4">
                     <RatingComponent gameId={game.id} />
                     

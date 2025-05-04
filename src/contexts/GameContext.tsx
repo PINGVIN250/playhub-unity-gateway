@@ -25,8 +25,11 @@ interface GameContextType {
   ) => Promise<Game>;
   getUserGames: () => Game[];
   getFeaturedGames: () => Game[];
+  getFavoriteGames: () => Game[];
   getGameById: (id: string) => Game | undefined;
   deleteGame: (id: string) => Promise<void>;
+  toggleFavorite: (gameId: string) => Promise<void>;
+  isFavorite: (gameId: string) => boolean;
   updateGame: (id: string, data: Partial<Omit<Game, "id" | "author" | "authorId" | "createdAt" | "updatedAt">> & {
     gameFiles?: {
       wasm: File | null;
@@ -43,6 +46,7 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 export function GameProvider({ children }: { children: ReactNode }) {
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const { user } = useAuth();
   
   useEffect(() => {
@@ -125,7 +129,56 @@ export function GameProvider({ children }: { children: ReactNode }) {
     };
   
     loadGames();
+    
+    // Загру��аем избранные игры из локального хранилища при инициализации
+    const storedFavorites = localStorage.getItem('favGames');
+    if (storedFavorites) {
+      try {
+        setFavorites(JSON.parse(storedFavorites));
+      } catch (e) {
+        console.error("Ошибка при загрузке избранных игр:", e);
+        localStorage.removeItem('favGames');
+      }
+    }
   }, []);
+
+  // Функция для добавления/удаления игры из избранного
+  const toggleFavorite = async (gameId: string): Promise<void> => {
+    try {
+      if (!user) {
+        toast.error("Вы должны войти в систему, чтобы добавить игру в избранное");
+        return;
+      }
+
+      let newFavorites: string[];
+      
+      if (favorites.includes(gameId)) {
+        // Удаляем из избранного
+        newFavorites = favorites.filter(id => id !== gameId);
+        toast.success("Игра удалена из избранного");
+      } else {
+        // Добавляем в избранное
+        newFavorites = [...favorites, gameId];
+        toast.success("Игра добавлена в избранное");
+      }
+      
+      setFavorites(newFavorites);
+      localStorage.setItem('favGames', JSON.stringify(newFavorites));
+    } catch (error) {
+      console.error("Ошибка при изменении избранного:", error);
+      toast.error("Не удалось изменить избранное");
+    }
+  };
+
+  // Функция для проверки, находится ли игра в избранном
+  const isFavorite = (gameId: string): boolean => {
+    return favorites.includes(gameId);
+  };
+  
+  // Функция для получения избранных игр
+  const getFavoriteGames = (): Game[] => {
+    return games.filter(game => favorites.includes(game.id));
+  };
 
   const addGame = async (
     title: string,
@@ -392,6 +445,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
 
       setGames(prevGames => prevGames.filter(g => g.id !== id));
+      
+      // Удаляем игру из избранного при удалении
+      if (favorites.includes(id)) {
+        const newFavorites = favorites.filter(gameId => gameId !== id);
+        setFavorites(newFavorites);
+        localStorage.setItem('favGames', JSON.stringify(newFavorites));
+      }
+      
       toast.success("Игра успешно удалена");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Не удалось удалить игру";
@@ -431,6 +492,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       
       if (data.title) updateData.title = data.title;
       if (data.description) updateData.description = data.description;
+      if (data.gameUrl !== undefined) updateData.game_url = data.gameUrl;
       
       // Обрабатываем загрузку новых файлов
       if (data.gameFiles) {
@@ -494,7 +556,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
           const indexPath = await uploadFile(gameFiles.index, 'index');
           if (indexPath) {
             updateData.index_path = indexPath;
-            updateData.game_url = indexPath; // Обновляем URL игры на новый индексный файл
+            // Обновляем URL игры на новый индексный файл только если не указан явно gameUrl
+            if (!data.gameUrl) {
+              updateData.game_url = indexPath;
+            }
           }
         }
       }
@@ -527,7 +592,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       // Обновляем объект игры в локальном состоянии
       const updatedGame: Game = {
         ...game,
-        ...data,
+        title: data.title !== undefined ? data.title : game.title,
+        description: data.description !== undefined ? data.description : game.description,
+        gameUrl: data.gameUrl !== undefined ? data.gameUrl : game.gameUrl,
+        tags: data.tags !== undefined ? data.tags : game.tags,
         gameFiles: {
           wasmPath: updateData.wasm_path || game.gameFiles.wasmPath,
           dataPath: updateData.data_path || game.gameFiles.dataPath,
@@ -535,7 +603,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
           loaderPath: updateData.loader_path || game.gameFiles.loaderPath,
           indexPath: updateData.index_path || game.gameFiles.indexPath
         },
-        gameUrl: updateData.game_url || game.gameUrl,
         updatedAt: new Date()
       };
 
@@ -571,9 +638,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     addGame,
     getUserGames,
     getFeaturedGames,
+    getFavoriteGames,
     getGameById,
     deleteGame,
-    updateGame
+    updateGame,
+    toggleFavorite,
+    isFavorite
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

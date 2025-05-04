@@ -1,224 +1,128 @@
-
-import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Menu, X, LogIn, UserPlus, User, LogOut, Gamepad } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ModeToggle } from "@/components/ModeToggle";
+import { Search, Plus, Heart, Moon, Sun } from "lucide-react";
 
 export function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isAuthenticated, user, logout } = useAuth();
-  const location = useLocation();
+  const { user, signOut } = useAuth();
+  const { theme } = useTheme();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location]);
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim() !== "") {
+      navigate(`/games?q=${searchQuery}`);
+    }
+  };
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? "bg-background/80 backdrop-blur-md border-b py-3 shadow-sm" 
-          : "bg-transparent py-5"
-      }`}
-    >
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-2xl font-bold transition-opacity hover:opacity-80"
-          >
-            <Gamepad className="h-6 w-6" />
-            <span>UnityPlay</span>
-          </Link>
+    <nav className="bg-background sticky top-0 z-50 w-full border-b">
+      <div className="container flex items-center py-4">
+        <Link to="/" className="font-bold text-2xl mr-6">
+          Game Hub
+        </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            <Link
-              to="/"
-              className="text-sm font-medium transition-colors hover:text-primary"
+        <form onSubmit={handleSearchSubmit} className="flex-1 mr-6">
+          <div className="relative">
+            <Input
+              type="search"
+              placeholder="Поиск игр..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="pr-10"
+            />
+            <Button
+              type="submit"
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 -translate-y-1/2"
             >
-              Home
-            </Link>
-            <Link
-              to="/games"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              Games
-            </Link>
-            <Link
-              to="/about"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              About
-            </Link>
-            
-            {isAuthenticated ? (
-              <>
-                <Link
-                  to="/dashboard"
-                  className="text-sm font-medium transition-colors hover:text-primary"
-                >
-                  Dashboard
-                </Link>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={logout}
-                    className="flex items-center gap-1"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
+              <Search className="h-4 w-4" />
+            </Button>
+          </div>
+        </form>
+
+        <ul className="flex items-center gap-4">
+          <li>
+            <ModeToggle />
+          </li>
+          {user ? (
+            <>
+              <li className="flex items-center">
+                <Link to="/games/new">
+                  <Button size="sm">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Добавить игру
                   </Button>
-                  <Link to="/profile">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-1 hover:bg-accent/80 group"
-                    >
-                      <User className="h-4 w-4 group-hover:text-primary transition-colors" />
-                      <span>{user?.username}</span>
+                </Link>
+              </li>
+              <li className="flex items-center">
+                <Link to="/favorites" className="hover:text-primary transition-colors flex items-center gap-1">
+                  <Heart className="h-4 w-4" />
+                  <span>Избранное</span>
+                </Link>
+              </li>
+              <li>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.avatarUrl} />
+                        <AvatarFallback>{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
                     </Button>
-                  </Link>
-                </div>
-              </>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link to="/login">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="flex items-center gap-1"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    <span>Login</span>
-                  </Button>
-                </Link>
-                <Link to="/register">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="flex items-center gap-1"
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    <span>Register</span>
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </nav>
-
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </Button>
-        </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Мой профиль</DropdownMenuLabel>
+                    <DropdownMenuItem asChild>
+                      <Link to={`/user/${user.id}`}>Профиль</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/account">Настройки</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        signOut();
+                        navigate("/login");
+                      }}
+                    >
+                      Выйти
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </li>
+            </>
+          ) : (
+            <>
+              <li>
+                <Link to="/login">Войти</Link>
+              </li>
+              <li>
+                <Link to="/register">Регистрация</Link>
+              </li>
+            </>
+          )}
+        </ul>
       </div>
-
-      {/* Mobile Navigation */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-lg border-b shadow-md animate-fade-in">
-          <nav className="container mx-auto px-4 py-4 flex flex-col gap-4">
-            <Link
-              to="/"
-              className="text-sm font-medium py-2 transition-colors hover:text-primary"
-            >
-              Home
-            </Link>
-            <Link
-              to="/games"
-              className="text-sm font-medium py-2 transition-colors hover:text-primary"
-            >
-              Games
-            </Link>
-            <Link
-              to="/about"
-              className="text-sm font-medium py-2 transition-colors hover:text-primary"
-            >
-              About
-            </Link>
-            
-            {isAuthenticated ? (
-              <>
-                <Link
-                  to="/dashboard"
-                  className="text-sm font-medium py-2 transition-colors hover:text-primary"
-                >
-                  Dashboard
-                </Link>
-                <div className="flex flex-col gap-2 pt-2 border-t">
-                  <Link to="/profile" className="w-full">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full justify-start"
-                    >
-                      <User className="h-4 w-4 mr-2" />
-                      <span>{user?.username}</span>
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={logout}
-                    className="w-full justify-start"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    <span>Logout</span>
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col gap-2 pt-2 border-t">
-                <Link to="/login" className="w-full">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start"
-                  >
-                    <LogIn className="h-4 w-4 mr-2" />
-                    <span>Login</span>
-                  </Button>
-                </Link>
-                <Link to="/register" className="w-full">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="w-full justify-start"
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    <span>Register</span>
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </nav>
-        </div>
-      )}
-    </header>
+    </nav>
   );
 }

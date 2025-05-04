@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -8,15 +9,16 @@ import { UnityPlayer } from "@/components/UnityPlayer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ChevronLeft, Clock, Maximize2, Minimize2, User } from "lucide-react";
+import { ChevronLeft, Clock, Heart, Maximize2, Minimize2, User } from "lucide-react";
 import { CommentSection } from "@/components/CommentSection";
 import { RatingComponent } from "@/components/RatingComponent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { toast } from "sonner";
 
 const Play = () => {
   const { gameId } = useParams<{ gameId: string }>();
-  const { getGameById, games } = useGames();
+  const { getGameById, games, toggleFavorite, isFavorite } = useGames();
   const { user } = useAuth();
   const [relatedGames, setRelatedGames] = useState<typeof games>([]);
   const [activeTab, setActiveTab] = useState("about");
@@ -26,6 +28,7 @@ const Play = () => {
   // Получаем данные об игре по её идентификатору
   const game = getGameById(gameId || "");
   const isOwner = user && game && user.id === game.authorId;
+  const isFav = game ? isFavorite(game.id) : false;
   
   // Поиск похожих игр при загрузке игры
   useEffect(() => {
@@ -87,6 +90,17 @@ const Play = () => {
     }
   };
   
+  const handleToggleFavorite = async () => {
+    if (!user) {
+      toast.error("Войдите в систему, чтобы добавить игру в избранное");
+      return;
+    }
+    
+    if (game) {
+      await toggleFavorite(game.id);
+    }
+  };
+  
   // Если игра не найдена, показываем сообщение об ошибке
   if (!game) {
     return (
@@ -123,7 +137,18 @@ const Play = () => {
           </div>
           
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">{game.title}</h1>
+            <div className="flex justify-between items-center mb-2">
+              <h1 className="text-3xl font-bold">{game.title}</h1>
+              <Button 
+                variant={isFav ? "default" : "outline"}
+                size="icon"
+                className={`${isFav ? 'text-white bg-red-500 hover:bg-red-600' : 'text-red-500 hover:text-red-600'}`}
+                onClick={handleToggleFavorite}
+                title={isFav ? "Удалить из избранного" : "Добавить в избранное"}
+              >
+                <Heart className="h-5 w-5" fill={isFav ? "currentColor" : "none"} />
+              </Button>
+            </div>
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-2">
                 <RatingComponent gameId={game.id} showCount={false} />
