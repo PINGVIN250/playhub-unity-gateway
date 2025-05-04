@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Game } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -130,19 +131,40 @@ export function GameProvider({ children }: { children: ReactNode }) {
   
     loadGames();
     
-    // Загру��аем избранные игры из локального хранилища при инициализации
-    const storedFavorites = localStorage.getItem('favGames');
-    if (storedFavorites) {
-      try {
-        setFavorites(JSON.parse(storedFavorites));
-      } catch (e) {
-        console.error("Ошибка при загрузке избранных игр:", e);
-        localStorage.removeItem('favGames');
-      }
+    // Load favorites from database when user is logged in
+    if (user) {
+      loadUserFavorites();
+    } else {
+      setFavorites([]);
     }
-  }, []);
+  }, [user]);
 
-  // Функция для добавления/удаления игры из избранного
+  // Function to load user favorites from the database
+  const loadUserFavorites = async () => {
+    try {
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('game_id')
+        .eq('user_id', user.id);
+        
+      if (error) {
+        console.error("Ошибка при загрузке избранного:", error);
+        toast.error("Не удалось загрузить избранное");
+        return;
+      }
+      
+      if (data) {
+        const favoriteGameIds = data.map(fav => fav.game_id);
+        setFavorites(favoriteGameIds);
+      }
+    } catch (error) {
+      console.error("Ошибка при загрузке избранного:", error);
+    }
+  };
+
+  // Function to add/remove game from favorites
   const toggleFavorite = async (gameId: string): Promise<void> => {
     try {
       if (!user) {
@@ -150,32 +172,59 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      let newFavorites: string[];
+      const isFav = favorites.includes(gameId);
+      let newFavorites: string[] = [...favorites];
       
-      if (favorites.includes(gameId)) {
-        // Удаляем из избранного
+      if (isFav) {
+        // Remove from favorites in database
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('game_id', gameId);
+          
+        if (error) {
+          console.error("Ошибка при удалении из избранного:", error);
+          toast.error("Не удалось удалить из избранного");
+          return;
+        }
+        
+        // Update local state
         newFavorites = favorites.filter(id => id !== gameId);
         toast.success("Игра удалена из избранного");
       } else {
-        // Добавляем в избранное
+        // Add to favorites in database
+        const { error } = await supabase
+          .from('favorites')
+          .insert({
+            user_id: user.id,
+            game_id: gameId
+          });
+          
+        if (error) {
+          console.error("Ошибка при добавлении в избранное:", error);
+          toast.error("Не удалось добавить в избранное");
+          return;
+        }
+        
+        // Update local state
         newFavorites = [...favorites, gameId];
         toast.success("Игра добавлена в избранное");
       }
       
       setFavorites(newFavorites);
-      localStorage.setItem('favGames', JSON.stringify(newFavorites));
     } catch (error) {
       console.error("Ошибка при изменении избранного:", error);
       toast.error("Не удалось изменить избранное");
     }
   };
 
-  // Функция для проверки, находится ли игра в избранном
+  // Function to check if a game is in favorites
   const isFavorite = (gameId: string): boolean => {
     return favorites.includes(gameId);
   };
   
-  // Функция для получения избранных игр
+  // Function to get favorite games
   const getFavoriteGames = (): Game[] => {
     return games.filter(game => favorites.includes(game.id));
   };

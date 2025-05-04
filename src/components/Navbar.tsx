@@ -34,6 +34,9 @@ export function Navbar() {
     }
   };
 
+  // Check if we're on the home page
+  const isHomePage = window.location.pathname === "/";
+
   return (
     <nav className="bg-background sticky top-0 z-50 w-full border-b">
       <div className="container flex items-center py-4">
@@ -41,27 +44,29 @@ export function Navbar() {
           Game Hub
         </Link>
 
-        <form onSubmit={handleSearchSubmit} className="flex-1 mr-6">
-          <div className="relative">
-            <Input
-              type="search"
-              placeholder="Поиск игр..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="pr-10"
-            />
-            <Button
-              type="submit"
-              variant="ghost"
-              size="sm"
-              className="absolute right-1 top-1/2 -translate-y-1/2"
-            >
-              <Search className="h-4 w-4" />
-            </Button>
-          </div>
-        </form>
+        {!isHomePage && (
+          <form onSubmit={handleSearchSubmit} className="flex-1 mr-6">
+            <div className="relative">
+              <Input
+                type="search"
+                placeholder="Поиск игр..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="pr-10"
+              />
+              <Button
+                type="submit"
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1/2 -translate-y-1/2"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            </div>
+          </form>
+        )}
 
-        <ul className="flex items-center gap-4">
+        <ul className="flex items-center gap-4 ml-auto">
           <li>
             <ModeToggle />
           </li>
@@ -97,7 +102,7 @@ export function Navbar() {
                       <Link to={`/user/${user.id}`}>Профиль</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/account">Настройки</Link>
+                      <Link to="/profile">Настройки</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
