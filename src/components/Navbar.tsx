@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,10 +15,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/ModeToggle";
-import { Search, Plus, Heart, Moon, Sun } from "lucide-react";
+import { Search, Plus, Heart } from "lucide-react";
 
 export function Navbar() {
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,7 +86,7 @@ export function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0 rounded-full">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatarUrl} />
+                        <AvatarImage src={user.avatar || ""} />
                         <AvatarFallback>{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
                       </Avatar>
                     </Button>
@@ -101,7 +102,7 @@ export function Navbar() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => {
-                        signOut();
+                        logout();
                         navigate("/login");
                       }}
                     >

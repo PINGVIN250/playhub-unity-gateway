@@ -105,7 +105,21 @@ export function EditGameForm({ game }: EditGameFormProps) {
         description: formData.description,
         gameUrl: formData.gameUrl,
         tags: tagsArray,
-        gameFiles: gameFiles
+        // Используем существующие gameFiles и добавляем новые только если они есть
+        gameFiles: {
+          // Сохраняем существующие пути
+          wasmPath: game.gameFiles.wasmPath,
+          dataPath: game.gameFiles.dataPath,
+          frameworkPath: game.gameFiles.frameworkPath,
+          loaderPath: game.gameFiles.loaderPath,
+          indexPath: game.gameFiles.indexPath,
+          // Добавляем новые файлы
+          wasm: gameFiles.wasm,
+          data: gameFiles.data,
+          framework: gameFiles.framework,
+          loader: gameFiles.loader,
+          index: gameFiles.index
+        }
       });
     } catch (error) {
       // Error is handled by the context
