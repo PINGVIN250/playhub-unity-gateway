@@ -31,7 +31,6 @@ export function EditGameForm({ game }: EditGameFormProps) {
   const [formData, setFormData] = useState({
     title: game.title,
     description: game.description,
-    gameUrl: game.gameUrl || "",
     tags: game.tags ? game.tags.join(", ") : ""
   });
   
@@ -55,7 +54,6 @@ export function EditGameForm({ game }: EditGameFormProps) {
     setHasChanges(
       formData.title !== game.title ||
       formData.description !== game.description ||
-      formData.gameUrl !== (game.gameUrl || "") ||
       formData.tags !== (game.tags ? game.tags.join(", ") : "") ||
       gameFiles.wasm !== null ||
       gameFiles.data !== null ||
@@ -99,11 +97,10 @@ export function EditGameForm({ game }: EditGameFormProps) {
         .map(tag => tag.trim())
         .filter(Boolean);
       
-      // Исправляем ошибку типа, передавая только нужные свойства
+      // Передаем данные для обновления игры
       await updateGame(game.id, {
         title: formData.title,
         description: formData.description,
-        gameUrl: formData.gameUrl,
         tags: tagsArray,
         // Используем существующие gameFiles и добавляем новые только если они есть
         gameFiles: {
@@ -247,22 +244,6 @@ export function EditGameForm({ game }: EditGameFormProps) {
             onChange={handleChange}
             rows={5}
           />
-        </div>
-        
-        <div className="space-y-2">
-          <label htmlFor="gameUrl" className="text-sm font-medium">
-            URL игры (опционально)
-          </label>
-          <Input
-            id="gameUrl"
-            name="gameUrl"
-            value={formData.gameUrl}
-            onChange={handleChange}
-            placeholder="https://example.com/game"
-          />
-          <p className="text-xs text-muted-foreground">
-            Укажите прямую ссылку на игру, если она размещена на другом сервере
-          </p>
         </div>
         
         <div className="space-y-2">

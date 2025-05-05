@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { useGames } from "@/contexts/GameContext";
 import { useNavigate } from "react-router-dom";
-import { Upload, X, Loader2, FileUp, File as FileIcon } from "lucide-react";
+import { Upload, X, Loader2, FileUp, FileIcon } from "lucide-react";
 import { toast } from "sonner";
 
 const uploadFormSchema = z.object({
@@ -117,7 +117,7 @@ export function UploadGameForm() {
         data.title,
         data.description,
         data.coverImage,
-        "",
+        "",  // Сохраняем пустую строку вместо gameUrl
         960, // фиксированное разрешение по умолчанию
         600, // фиксированное разрешение по умолчанию
         data.tags,
