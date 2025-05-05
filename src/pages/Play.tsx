@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -16,45 +15,85 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { toast } from "sonner";
 
+/**
+ * Страница игры с возможностью её запуска
+ * Отображает игру, её детали, комментарии и похожие игры
+ */
 const Play = () => {
-  const { gameId } = useParams<{ gameId: string }>();
-  const { getGameById, games, toggleFavorite, isFavorite } = useGames();
-  const { user } = useAuth();
-  const [relatedGames, setRelatedGames] = useState<typeof games>([]);
-  const [activeTab, setActiveTab] = useState("about");
-  const [fullscreenRef, setFullscreenRef] = useState<HTMLDivElement | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const { gameId } = useParams<{ gameId: string }>(); // Получение ID игры из URL
+  const { getGameById, games, toggleFavorite, isFavorite } = useGames(); // Контекст игр
+  const { user } = useAuth(); // Данные о пользователе
+  const [relatedGames, setRelatedGames] = useState([]); // Состояние для похожих игр
+  const [activeTab, setActiveTab] = useState("about"); // Активная вкладка
+  const [fullscreenRef, setFullscreenRef] = useState(null); // Ссылка на элемент для полноэкранного режима
+  const [isFullscreen, setIsFullscreen] = useState(false); // Состояние полноэкранного режима
   
   // Получаем данные об игре по её идентификатору
   const game = getGameById(gameId || "");
-  const isOwner = user && game && user.id === game.authorId;
-  const isFav = game ? isFavorite(game.id) : false;
+  const isOwner = user && game && user.id === game.authorId; // Проверка владельца игры
+  const isFav = game ? isFavorite(game.id) : false; // Проверка на добавление в избранное
   
-  // Поиск похожих игр при загрузке игры
+  /**
+   * Поиск похожих игр при загрузке игры
+   * Теперь игры сортируются по приоритету:
+   * 1. Сначала игры с наибольшим совпадением тегов
+   * 2. Затем игры от того же автора
+   */
   useEffect(() => {
     if (game && games.length > 0) {
-      const similar = games.filter(g => 
-        g.id !== game.id && (
-          g.authorId === game.authorId ||
-          g.tags?.some(tag => game.tags?.includes(tag))
-        )
-      ).slice(0, 3);
+      // Получаем все игры, исключая текущую
+      const otherGames = games.filter(g => g.id !== game.id);
       
-      setRelatedGames(similar);
+      // Добавляем счетчик совпадающих тегов к каждой игре
+      const gamesWithTagMatches = otherGames.map(g => {
+        // Подсчет количества совпадающих тегов
+        const matchingTagsCount = game.tags?.filter(tag => g.tags?.includes(tag)).length || 0;
+        // Определяем, является ли автор этой игры тем же, что и текущей
+        const sameAuthor = g.authorId === game.authorId;
+        
+        return {
+          ...g,
+          matchingTagsCount,
+          sameAuthor
+        };
+      });
+      
+      // Сортируем игры по количеству совпадающих тегов и тому же автору
+      const sortedGames = gamesWithTagMatches.sort((a, b) => {
+        // Сначала сортируем по количеству совпадающих тегов (в порядке убывания)
+        if (b.matchingTagsCount !== a.matchingTagsCount) {
+          return b.matchingTagsCount - a.matchingTagsCount;
+        }
+        // При равном количестве тегов сортируем по тому же автору
+        if (a.sameAuthor !== b.sameAuthor) {
+          return a.sameAuthor ? -1 : 1;
+        }
+        return 0;
+      });
+      
+      // Фильтруем игры, которые имеют хотя бы один совпадающий тег или того же автора
+      const similarGames = sortedGames.filter(g => g.matchingTagsCount > 0 || g.sameAuthor);
+      
+      // Берем первые 3 игры из отсортированного списка
+      setRelatedGames(similarGames.slice(0, 3));
     }
   }, [game, games, gameId]); // Добавляем gameId в зависимости для обновления при смене игры
   
-  // Отслеживание состояния полноэкранного режима
+  /**
+   * Отслеживание состояния полноэкранного режима
+   */
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
     
+    // Добавляем обработчики событий изменения полноэкранного режима для разных браузеров
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
     document.addEventListener("mozfullscreenchange", handleFullscreenChange);
     document.addEventListener("MSFullscreenChange", handleFullscreenChange);
     
+    // Очистка обработчиков при размонтировании компонента
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
       document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
@@ -63,11 +102,15 @@ const Play = () => {
     };
   }, []);
   
-  // Управление полноэкранным режимом
+  /**
+   * Управление полноэкранным режимом
+   * Переключает игру между обычным и полноэкранным режимами
+   */
   const handleFullscreen = () => {
     if (!fullscreenRef) return;
     
     if (!document.fullscreenElement) {
+      // Запрос на переход в полноэкранный режим с учетом кросс-браузерности
       if (fullscreenRef.requestFullscreen) {
         fullscreenRef.requestFullscreen();
       } else if ((fullscreenRef as any).webkitRequestFullscreen) {
@@ -78,6 +121,7 @@ const Play = () => {
         (fullscreenRef as any).msRequestFullscreen();
       }
     } else {
+      // Выход из полноэкранного режима с учетом кросс-браузерности
       if (document.exitFullscreen) {
         document.exitFullscreen();
       } else if ((document as any).webkitExitFullscreen) {
@@ -90,6 +134,9 @@ const Play = () => {
     }
   };
   
+  /**
+   * Обработчик добавления/удаления игры из избранного
+   */
   const handleToggleFavorite = async () => {
     if (!user) {
       toast.error("Войдите в систему, чтобы добавить игру в избранное");

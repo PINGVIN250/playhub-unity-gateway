@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,61 +14,32 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/ModeToggle";
-import { Search, Plus, Heart, LayoutDashboard } from "lucide-react";
+import { Heart, LayoutDashboard } from "lucide-react";
 
+/**
+ * Компонент навигационной панели
+ * Отображает навигационные элементы и действия пользователя
+ */
 export function Navbar() {
-  const { user, logout } = useAuth();
-  const { theme } = useTheme();
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim() !== "") {
-      navigate(`/games?q=${searchQuery}`);
-    }
-  };
-
-  // Check if we're on the home page
-  const isHomePage = window.location.pathname === "/";
+  const { user, logout } = useAuth(); // Получение данных о пользователе и функции выхода
+  const { theme } = useTheme(); // Получение текущей темы
+  const navigate = useNavigate(); // Хук для навигации между страницами
 
   return (
     <nav className="bg-background sticky top-0 z-50 w-full border-b">
       <div className="container flex items-center py-4">
+        {/* Логотип и ссылка на главную страницу */}
         <Link to="/" className="font-bold text-2xl mr-6">
           Game Hub
         </Link>
 
-        {!isHomePage && (
-          <form onSubmit={handleSearchSubmit} className="flex-1 mr-6">
-            <div className="relative">
-              <Input
-                type="search"
-                placeholder="Поиск игр..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="pr-10"
-              />
-              <Button
-                type="submit"
-                variant="ghost"
-                size="sm"
-                className="absolute right-1 top-1/2 -translate-y-1/2"
-              >
-                <Search className="h-4 w-4" />
-              </Button>
-            </div>
-          </form>
-        )}
-
+        {/* Навигационные элементы и действия пользователя */}
         <ul className="flex items-center gap-4 ml-auto">
+          {/* Переключатель темы */}
           <li>
             <ModeToggle />
           </li>
+          {/* Отображение элементов для авторизованного пользователя */}
           {user ? (
             <>
               <li className="flex items-center">
@@ -119,6 +89,7 @@ export function Navbar() {
             </>
           ) : (
             <>
+              {/* Ссылки для неавторизованного пользователя */}
               <li>
                 <Link to="/login">Войти</Link>
               </li>

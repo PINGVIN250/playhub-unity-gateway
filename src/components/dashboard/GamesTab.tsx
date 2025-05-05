@@ -5,12 +5,16 @@ import { PlusCircle, Upload } from "lucide-react";
 import { GameGrid } from "@/components/GameGrid";
 import { Game } from "@/types";
 
-interface GamesTabProps {
-  isLoading: boolean;
-  userGames: Game[];
-}
-
+/**
+ * Компонент вкладки с играми для панели разработчика
+ * Отображает игры пользователя или состояние загрузки
+ * 
+ * @param {object} props - Свойства компонента
+ * @param {boolean} props.isLoading - Флаг загрузки данных
+ * @param {Game[]} props.userGames - Массив игр пользователя
+ */
 export const GamesTab = ({ isLoading, userGames }: GamesTabProps) => {
+  // Если данные загружаются, отображаем плейсхолдеры
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -32,6 +36,7 @@ export const GamesTab = ({ isLoading, userGames }: GamesTabProps) => {
     );
   }
 
+  // Если у пользователя нет игр, показываем сообщение с предложением создать игру
   if (userGames.length === 0) {
     return (
       <div className="glass-card p-8 text-center">
@@ -50,5 +55,14 @@ export const GamesTab = ({ isLoading, userGames }: GamesTabProps) => {
     );
   }
 
+  // Отображаем сетку с играми пользователя
   return <GameGrid games={userGames} columns={3} emptyMessage="Вы еще не загрузили ни одной игры." />;
 };
+
+/**
+ * Типы свойств компонента GamesTab
+ */
+interface GamesTabProps {
+  isLoading: boolean;
+  userGames: Game[];
+}
