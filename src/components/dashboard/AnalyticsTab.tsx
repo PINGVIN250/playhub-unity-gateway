@@ -4,6 +4,11 @@ import { Activity, BarChart, Star, Users } from "lucide-react";
 
 /**
  * Свойства компонента вкладки аналитики
+ * @property {number} totalViews - Общее количество просмотров
+ * @property {number} userGameCount - Количество игр пользователя
+ * @property {number} percentile - Процентиль по количеству игр
+ * @property {number} averageRating - Средний рейтинг игр
+ * @property {number} authUserViews - Количество просмотров авторизованными пользователями
  */
 interface AnalyticsTabProps {
   totalViews: number;
@@ -16,6 +21,9 @@ interface AnalyticsTabProps {
 /**
  * Компонент вкладки с аналитикой для панели разработчика
  * Отображает карточки с различными аналитическими показателями
+ * 
+ * @param {AnalyticsTabProps} props - Свойства компонента
+ * @returns {JSX.Element} - Вкладка с аналитическими данными
  */
 export const AnalyticsTab = ({ 
   totalViews, 
@@ -58,4 +66,3 @@ export const AnalyticsTab = ({
     </div>
   );
 };
-

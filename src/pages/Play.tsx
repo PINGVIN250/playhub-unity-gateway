@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -14,6 +15,7 @@ import { RatingComponent } from "@/components/RatingComponent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Страница игры с возможностью её запуска
@@ -32,6 +34,39 @@ const Play = () => {
   const game = getGameById(gameId || "");
   const isOwner = user && game && user.id === game.authorId; // Проверка владельца игры
   const isFav = game ? isFavorite(game.id) : false; // Проверка на добавление в избранное
+  
+  /**
+   * Записываем просмотр игры авторизованным пользователем
+   */
+  useEffect(() => {
+    const recordGameView = async () => {
+      // Проверяем, что пользователь авторизован и игра существует
+      if (user && game && gameId) {
+        try {
+          // Добавляем запись о просмотре в базу данных
+          // Благодаря UNIQUE(game_id, user_id) в таблице, каждый пользователь
+          // будет учтен только один раз в статистике для каждой игры
+          const { error } = await supabase
+            .from('game_views')
+            .upsert({
+              game_id: gameId,
+              user_id: user.id,
+              viewed_at: new Date().toISOString() // Обновляем дату просмотра
+            });
+
+          if (error) {
+            console.error("Ошибка при записи просмотра:", error);
+          } else {
+            console.log("Просмотр успешно записан для игры:", gameId);
+          }
+        } catch (error) {
+          console.error("Ошибка при записи просмотра:", error);
+        }
+      }
+    };
+
+    recordGameView();
+  }, [user, game, gameId]); // Зависимости для эффекта
   
   /**
    * Поиск похожих игр при загрузке игры

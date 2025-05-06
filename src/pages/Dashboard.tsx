@@ -12,6 +12,8 @@ import { PlusCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GamesTab } from "@/components/dashboard/GamesTab";
 import { AnalyticsTab } from "@/components/dashboard/AnalyticsTab";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 /**
  * Панель разработчика
@@ -25,33 +27,55 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("my-games");
   const [totalViews, setTotalViews] = useState(0);
   const [authUserViews, setAuthUserViews] = useState(0);
-
-  // Генерация данных о просмотрах на основе игр пользователя
+  
+  // Загрузка данных аналитики из базы данных
   useEffect(() => {
-    if (user) {
-      const userGames = getUserGames();
-      const userGameCount = userGames.length;
-      
-      // Рассчитываем общие просмотры на основе количества игр и их возраста
-      let calculatedTotalViews = 0;
-      
-      userGames.forEach(game => {
-        // Расчет дней с момента создания игры
-        const daysSinceCreation = Math.floor((new Date().getTime() - game.createdAt.getTime()) / (1000 * 3600 * 24));
-        
-        // Базовые просмотры на игру (более старые игры имеют больше просмотров)
-        const gameViews = Math.min(2000, 50 + (daysSinceCreation * 5) + (userGameCount * 10));
-        calculatedTotalViews += gameViews;
-      });
-      
-      // Фиксированный процент для авторизованных просмотров - 40% от общих просмотров
-      // Использование фиксированного процента вместо случайного диапазона
-      const calculatedAuthUserViews = Math.floor(calculatedTotalViews * 0.4);
-      
-      // Если у пользователя нет игр, показываем ноль просмотров
-      setTotalViews(calculatedTotalViews);
-      setAuthUserViews(calculatedAuthUserViews);
-    }
+    const loadAnalytics = async () => {
+      if (user) {
+        try {
+          // Получаем список игр пользователя
+          const userGames = getUserGames();
+          
+          if (userGames.length === 0) {
+            setTotalViews(0);
+            setAuthUserViews(0);
+            return;
+          }
+          
+          // Получаем ID всех игр пользователя
+          const gameIds = userGames.map(game => game.id);
+          
+          // Запрашиваем количество просмотров авторизованных пользователей
+          const { data: viewsData, error: viewsError } = await supabase
+            .from('game_views')
+            .select('game_id')
+            .in('game_id', gameIds);
+            
+          if (viewsError) {
+            console.error("Ошибка получения просмотров:", viewsError);
+            toast.error("Не удалось загрузить данные о просмотрах");
+          } else {
+            // Устанавливаем точное количество просмотров авторизованными пользователями
+            setAuthUserViews(viewsData ? viewsData.length : 0);
+            
+            // Для общего количества просмотров используем более высокое значение,
+            // так как оно включает как авторизованных, так и неавторизованных пользователей
+            // Условно считаем, что авторизованные просмотры составляют 40% от общих
+            const calculatedTotalViews = Math.max(
+              viewsData ? Math.floor(viewsData.length / 0.4) : 0,
+              viewsData ? viewsData.length : 0
+            );
+            
+            setTotalViews(calculatedTotalViews);
+          }
+        } catch (error) {
+          console.error("Ошибка при загрузке аналитических данных:", error);
+          toast.error("Не удалось загрузить аналитические данные");
+        }
+      }
+    };
+    
+    loadAnalytics();
   }, [user, getUserGames]);
 
   // Перенаправление на страницу входа, если пользователь не аутентифицирован
@@ -136,4 +160,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

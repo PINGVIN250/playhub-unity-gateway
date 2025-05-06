@@ -113,6 +113,35 @@ export type Database = {
           },
         ]
       }
+      game_views: {
+        Row: {
+          game_id: string
+          id: string
+          user_id: string
+          viewed_at: string | null
+        }
+        Insert: {
+          game_id: string
+          id?: string
+          user_id: string
+          viewed_at?: string | null
+        }
+        Update: {
+          game_id?: string
+          id?: string
+          user_id?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_views_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       games: {
         Row: {
           author_id: string
