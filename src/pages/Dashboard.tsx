@@ -13,6 +13,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GamesTab } from "@/components/dashboard/GamesTab";
 import { AnalyticsTab } from "@/components/dashboard/AnalyticsTab";
 
+/**
+ * Панель разработчика
+ * Отображает игры пользователя и аналитические данные
+ */
 const Dashboard = () => {
   const { getUserGames, isLoading, games } = useGames();
   const { getAverageRating } = useRatings();
@@ -22,36 +26,35 @@ const Dashboard = () => {
   const [totalViews, setTotalViews] = useState(0);
   const [authUserViews, setAuthUserViews] = useState(0);
 
-  // Generate consistent view data based on user's games
+  // Генерация данных о просмотрах на основе игр пользователя
   useEffect(() => {
     if (user) {
       const userGames = getUserGames();
       const userGameCount = userGames.length;
       
-      // Calculate total views based on games count and game age
+      // Рассчитываем общие просмотры на основе количества игр и их возраста
       let calculatedTotalViews = 0;
-      let calculatedAuthUserViews = 0;
       
       userGames.forEach(game => {
-        // Calculate days since game creation
+        // Расчет дней с момента создания игры
         const daysSinceCreation = Math.floor((new Date().getTime() - game.createdAt.getTime()) / (1000 * 3600 * 24));
         
-        // Base views per game (older games have more views)
+        // Базовые просмотры на игру (более старые игры имеют больше просмотров)
         const gameViews = Math.min(2000, 50 + (daysSinceCreation * 5) + (userGameCount * 10));
         calculatedTotalViews += gameViews;
-        
-        // Calculate authorized user views (approximately 30-45% of total views)
-        const authViews = Math.floor(gameViews * (0.3 + (Math.random() * 0.15)));
-        calculatedAuthUserViews += authViews;
       });
       
-      // If user has no games, show zero views
+      // Фиксированный процент для авторизованных просмотров - 40% от общих просмотров
+      // Использование фиксированного процента вместо случайного диапазона
+      const calculatedAuthUserViews = Math.floor(calculatedTotalViews * 0.4);
+      
+      // Если у пользователя нет игр, показываем ноль просмотров
       setTotalViews(calculatedTotalViews);
       setAuthUserViews(calculatedAuthUserViews);
     }
   }, [user, getUserGames]);
 
-  // Redirect to login if not authenticated
+  // Перенаправление на страницу входа, если пользователь не аутентифицирован
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/login");
@@ -69,7 +72,10 @@ const Dashboard = () => {
     ? Math.round((userGameCount / totalGames) * 100) 
     : 0;
   
-  // Calculate average rating across all user games
+  /**
+   * Рассчитывает средний рейтинг по всем играм пользователя
+   * @returns {number} Средний рейтинг
+   */
   const calculateAverageRating = () => {
     if (userGames.length === 0) return 0;
     
@@ -130,3 +136,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

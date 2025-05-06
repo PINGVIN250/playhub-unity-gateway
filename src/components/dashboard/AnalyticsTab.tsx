@@ -2,6 +2,9 @@
 import { AnalyticsCard } from "./AnalyticsCard";
 import { Activity, BarChart, Star, Users } from "lucide-react";
 
+/**
+ * Свойства компонента вкладки аналитики
+ */
 interface AnalyticsTabProps {
   totalViews: number;
   userGameCount: number;
@@ -10,6 +13,10 @@ interface AnalyticsTabProps {
   authUserViews: number;
 }
 
+/**
+ * Компонент вкладки с аналитикой для панели разработчика
+ * Отображает карточки с различными аналитическими показателями
+ */
 export const AnalyticsTab = ({ 
   totalViews, 
   userGameCount, 
@@ -51,3 +58,4 @@ export const AnalyticsTab = ({
     </div>
   );
 };
+

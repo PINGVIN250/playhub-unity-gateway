@@ -2,6 +2,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReactNode } from "react";
 
+/**
+ * Свойства компонента карточки аналитики
+ */
 interface AnalyticsCardProps {
   title: string;
   value: string | number;
@@ -9,6 +12,10 @@ interface AnalyticsCardProps {
   icon?: ReactNode;
 }
 
+/**
+ * Компонент карточки для отображения аналитической информации
+ * Используется на вкладке аналитики в панели разработчика
+ */
 export const AnalyticsCard = ({ title, value, description, icon }: AnalyticsCardProps) => {
   return (
     <Card className="transition-all hover:shadow-md">
@@ -27,3 +34,4 @@ export const AnalyticsCard = ({ title, value, description, icon }: AnalyticsCard
     </Card>
   );
 };
+
