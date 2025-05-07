@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -25,7 +24,6 @@ const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("my-games");
-  const [totalViews, setTotalViews] = useState(0);
   const [authUserViews, setAuthUserViews] = useState(0);
   
   // Загрузка данных аналитики из базы данных
@@ -37,7 +35,6 @@ const Dashboard = () => {
           const userGames = getUserGames();
           
           if (userGames.length === 0) {
-            setTotalViews(0);
             setAuthUserViews(0);
             return;
           }
@@ -57,16 +54,6 @@ const Dashboard = () => {
           } else {
             // Устанавливаем точное количество просмотров авторизованными пользователями
             setAuthUserViews(viewsData ? viewsData.length : 0);
-            
-            // Для общего количества просмотров используем более высокое значение,
-            // так как оно включает как авторизованных, так и неавторизованных пользователей
-            // Условно считаем, что авторизованные просмотры составляют 40% от общих
-            const calculatedTotalViews = Math.max(
-              viewsData ? Math.floor(viewsData.length / 0.4) : 0,
-              viewsData ? viewsData.length : 0
-            );
-            
-            setTotalViews(calculatedTotalViews);
           }
         } catch (error) {
           console.error("Ошибка при загрузке аналитических данных:", error);
@@ -78,7 +65,7 @@ const Dashboard = () => {
     loadAnalytics();
   }, [user, getUserGames]);
 
-  // Перенаправление на страницу входа, если пользователь не аутентифицирован
+  // Перенаправление на страницу входа, если пользо��атель не аутентифицирован
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/login");
@@ -144,7 +131,6 @@ const Dashboard = () => {
             
             <TabsContent value="analytics" className="space-y-6">
               <AnalyticsTab 
-                totalViews={totalViews}
                 userGameCount={userGameCount}
                 percentile={percentile}
                 averageRating={averageRating}

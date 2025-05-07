@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Game } from "@/types";
@@ -56,13 +55,12 @@ export function GameCard({ game, variant = "default" }: GameCardProps) {
       </CardContent>
 
       <CardFooter className={`flex justify-between gap-2 ${isFeatured ? "pt-0" : "pt-2"}`}>
-        {/* Удалили кнопку Details */}
-        <Link to={`/play/${game.id}`} className="flex-1">
+        <a href={`/play/${game.id}`} className="flex-1">
           <Button className="w-full">
             <Play className="h-4 w-4 mr-2" />
             Play
           </Button>
-        </Link>
+        </a>
       </CardFooter>
     </Card>
   );
