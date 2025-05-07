@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -145,7 +144,7 @@ const Play = () => {
     if (!fullscreenRef) return;
     
     if (!document.fullscreenElement) {
-      // Запрос на переход в полноэкранный режим с учетом кросс-браузерности
+      // Запрос на переход в полноэкранный режим с учетом кросс-браузерно��ти
       if (fullscreenRef.requestFullscreen) {
         fullscreenRef.requestFullscreen();
       } else if ((fullscreenRef as any).webkitRequestFullscreen) {
@@ -366,7 +365,7 @@ const Play = () => {
                     <div className="space-y-4">
                       {relatedGames.map(relatedGame => (
                         <div key={relatedGame.id}>
-                          <Link to={`/play/${relatedGame.id}`} className="group block">
+                          <a href={`/play/${relatedGame.id}`} className="group block">
                             <div className="flex gap-3">
                               <div className="w-20 h-12 bg-muted rounded overflow-hidden flex-shrink-0">
                                 <img 
@@ -384,7 +383,7 @@ const Play = () => {
                                 </p>
                               </div>
                             </div>
-                          </Link>
+                          </a>
                           {relatedGame !== relatedGames[relatedGames.length - 1] && (
                             <Separator className="my-4" />
                           )}

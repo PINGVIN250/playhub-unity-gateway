@@ -1,6 +1,6 @@
 
 import { AnalyticsCard } from "./AnalyticsCard";
-import { Activity, BarChart, Star, Users } from "lucide-react";
+import { BarChart, Star, Users } from "lucide-react";
 
 /**
  * Свойства компонента вкладки аналитики
