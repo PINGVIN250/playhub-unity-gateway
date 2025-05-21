@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Comment } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -34,6 +33,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
               username,
               email,
               created_at,
+              is_admin,
               is_banned
             )
           `)
@@ -56,7 +56,8 @@ export function CommentProvider({ children }: { children: ReactNode }) {
               username: comment.profiles.username,
               email: comment.profiles.email || '',
               createdAt: comment.profiles.created_at ? new Date(comment.profiles.created_at) : new Date(),
-              isBanned: comment.profiles.is_banned || false
+              isBanned: comment.profiles.is_banned || false,
+              isAdmin: comment.profiles.is_admin || false
             } : {
               id: comment.user_id,
               username: 'Пользователь удален',
@@ -102,12 +103,6 @@ export function CommentProvider({ children }: { children: ReactNode }) {
       if (profileData && profileData.is_banned) {
         throw new Error("Вы не можете оставлять комментарии, так как ваш аккаунт заблокирован");
       }
-
-      const { data: userData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
 
       const { data, error } = await supabase
         .from('comments')

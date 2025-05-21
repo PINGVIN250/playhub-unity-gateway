@@ -214,6 +214,7 @@ export type Database = {
           email: string | null
           id: string
           is_admin: boolean | null
+          is_banned: boolean | null
           is_public: boolean | null
           updated_at: string | null
           username: string
@@ -224,6 +225,7 @@ export type Database = {
           email?: string | null
           id: string
           is_admin?: boolean | null
+          is_banned?: boolean | null
           is_public?: boolean | null
           updated_at?: string | null
           username: string
@@ -234,6 +236,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_admin?: boolean | null
+          is_banned?: boolean | null
           is_public?: boolean | null
           updated_at?: string | null
           username?: string
