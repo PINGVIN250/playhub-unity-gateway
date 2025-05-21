@@ -8,10 +8,11 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageTitle } from "@/components/PageTitle";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, ShieldAlert } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GamesTab } from "@/components/dashboard/GamesTab";
 import { AnalyticsTab } from "@/components/dashboard/AnalyticsTab";
+import { AdminPanel } from "@/components/dashboard/AdminPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -43,7 +44,7 @@ const Dashboard = () => {
           // Получаем ID всех игр пользователя
           const gameIds = userGames.map(game => game.id);
           
-          // Запрашиваем количество просмотров авторизованных пользователей для игр автора
+          // Запрашиваем количество просмотров авторизованными пользователями для игр автора
           const { data: viewsData, error: viewsError } = await supabase
             .from('game_views')
             .select('game_id')
@@ -103,6 +104,15 @@ const Dashboard = () => {
   
   const averageRating = calculateAverageRating();
 
+  // Определяем доступные вкладки в зависимости от прав пользователя
+  const tabsList = (
+    <TabsList className={`grid w-full ${user?.isAdmin ? 'grid-cols-3' : 'grid-cols-2'} max-w-md`}>
+      <TabsTrigger value="my-games">Мои игры</TabsTrigger>
+      <TabsTrigger value="analytics">Аналитика</TabsTrigger>
+      {user?.isAdmin && <TabsTrigger value="admin">Админ панель</TabsTrigger>}
+    </TabsList>
+  );
+
   return (
     <div className="min-h-screen flex flex-col page-transition">
       <Navbar />
@@ -112,19 +122,25 @@ const Dashboard = () => {
             title={`Добро пожаловать, ${user?.username}`}
             description="Управляйте своими играми и просматривайте статистику"
           >
-            <Link to="/upload">
-              <Button className="gap-2">
-                <PlusCircle className="h-4 w-4" />
-                <span>Добавить новую игру</span>
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link to="/upload">
+                <Button className="gap-2">
+                  <PlusCircle className="h-4 w-4" />
+                  <span>Добавить новую игру</span>
+                </Button>
+              </Link>
+              
+              {user?.isAdmin && (
+                <Button variant="outline" className="gap-2 border-red-500 text-red-500 hover:bg-red-50">
+                  <ShieldAlert className="h-4 w-4" />
+                  <span>Режим администратора</span>
+                </Button>
+              )}
+            </div>
           </PageTitle>
           
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 max-w-md">
-              <TabsTrigger value="my-games">Мои игры</TabsTrigger>
-              <TabsTrigger value="analytics">Аналитика</TabsTrigger>
-            </TabsList>
+            {tabsList}
             
             <TabsContent value="my-games" className="space-y-6">
               <GamesTab isLoading={isLoading} userGames={userGames} />
@@ -138,6 +154,12 @@ const Dashboard = () => {
                 authUserViews={authUserViews}
               />
             </TabsContent>
+            
+            {user?.isAdmin && (
+              <TabsContent value="admin" className="space-y-6">
+                <AdminPanel />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </main>

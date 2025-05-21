@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User } from "@/types";
 import { toast } from "sonner";
@@ -43,7 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: session.user.email || '',
           username: profile?.username || '',
           createdAt: profile?.created_at ? new Date(profile.created_at) : new Date(),
-          isAdmin: profile?.is_admin || false
+          isAdmin: profile?.is_admin || false,
+          isBanned: profile?.is_banned || false
         };
         
         setUser(userData);
@@ -130,7 +130,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       
       await syncUser();
-      toast.success('Welcome back!');
+      
+      // Проверка на блокировку после входа
+      const storedUser = localStorage.getItem('sb-user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        if (userData.isBanned) {
+          toast.error('Ваш аккаунт заблокирован администратором');
+        } else {
+          toast.success('Welcome back!');
+        }
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Login failed');
       throw error;

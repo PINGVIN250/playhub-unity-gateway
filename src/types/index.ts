@@ -1,9 +1,10 @@
 export interface User {
   id: string;
-  username: string;
   email: string;
+  username: string;
   createdAt: Date;
   isAdmin?: boolean;
+  isBanned?: boolean;
 }
 
 export interface Game {
@@ -33,10 +34,10 @@ export interface Comment {
   id: string;
   gameId: string;
   userId: string;
-  user?: User;
   content: string;
   createdAt: Date;
   updatedAt: Date;
+  user?: User;
 }
 
 export interface Rating {

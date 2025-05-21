@@ -33,7 +33,8 @@ export function CommentProvider({ children }: { children: ReactNode }) {
               id,
               username,
               email,
-              created_at
+              created_at,
+              is_banned
             )
           `)
           .order('created_at', { ascending: false });
@@ -54,12 +55,14 @@ export function CommentProvider({ children }: { children: ReactNode }) {
               id: comment.profiles.id,
               username: comment.profiles.username,
               email: comment.profiles.email || '',
-              createdAt: comment.profiles.created_at ? new Date(comment.profiles.created_at) : new Date()
+              createdAt: comment.profiles.created_at ? new Date(comment.profiles.created_at) : new Date(),
+              isBanned: comment.profiles.is_banned || false
             } : {
               id: comment.user_id,
               username: 'Пользователь удален',
               email: '',
-              createdAt: new Date()
+              createdAt: new Date(),
+              isBanned: false
             }
           }));
 
@@ -83,6 +86,21 @@ export function CommentProvider({ children }: { children: ReactNode }) {
     try {
       if (!user) {
         throw new Error("Вы должны войти в систему, чтобы добавить комментарий");
+      }
+      
+      // Проверка на блокировку пользователя
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_banned')
+        .eq('id', user.id)
+        .single();
+        
+      if (profileError) {
+        throw profileError;
+      }
+      
+      if (profileData && profileData.is_banned) {
+        throw new Error("Вы не можете оставлять комментарии, так как ваш аккаунт заблокирован");
       }
 
       const { data: userData } = await supabase
@@ -159,6 +177,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
         throw new Error("Комментарий не найден");
       }
 
+      // Администраторы могут удалять любые комментарии
       if (comment.userId !== user.id && !user.isAdmin) {
         throw new Error("У вас нет прав для удаления этого комментария");
       }
@@ -185,6 +204,21 @@ export function CommentProvider({ children }: { children: ReactNode }) {
     try {
       if (!user) {
         throw new Error("Вы должны войти в систему, чтобы обновить комментарий");
+      }
+      
+      // Проверка на блокировку пользователя
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_banned')
+        .eq('id', user.id)
+        .single();
+        
+      if (profileError) {
+        throw profileError;
+      }
+      
+      if (profileData && profileData.is_banned) {
+        throw new Error("Вы не можете редактировать комментарии, так как ваш аккаунт заблокирован");
       }
 
       const comment = comments.find(c => c.id === commentId);

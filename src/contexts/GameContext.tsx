@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Game } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -59,7 +58,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           .from('games')
           .select(`
             *,
-            profiles!author_id (id, username, email, created_at, is_admin)
+            profiles!author_id (id, username, email, created_at, is_admin, is_banned)
           `);
 
         if (data) {
@@ -109,7 +108,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
               username: game.profiles.username,
               email: game.profiles.email || '',
               createdAt: new Date(game.profiles.created_at),
-              isAdmin: game.profiles.is_admin || false
+              isAdmin: game.profiles.is_admin || false,
+              isBanned: game.profiles.is_banned || false
             } : undefined,
             width: game.width || 960,
             height: game.height || 600,
@@ -249,6 +249,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
     try {
       if (!user) {
         throw new Error("Вы должны войти в систему, чтобы добавить игру");
+      }
+      
+      // Проверка на блокировку пользователя
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_banned')
+        .eq('id', user.id)
+        .single();
+        
+      if (profileError) {
+        throw profileError;
+      }
+      
+      if (profileData && profileData.is_banned) {
+        throw new Error("Вы не можете добавить игру, так как ваш аккаунт заблокирован");
       }
 
       console.log("Начало процесса загрузки игры");
@@ -480,6 +495,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         throw new Error("Игра не найдена");
       }
 
+      // Администраторы могут удалять любые игры
       if (game.authorId !== user.id && !user.isAdmin) {
         throw new Error("У вас нет прав для удаления этой игры");
       }
@@ -526,6 +542,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!user) {
         throw new Error("Вы должны войти в систему, чтобы обновить игру");
       }
+      
+      // Проверка на блокировку пользователя
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_banned')
+        .eq('id', user.id)
+        .single();
+        
+      if (profileError) {
+        throw profileError;
+      }
+      
+      if (profileData && profileData.is_banned) {
+        throw new Error("Вы не можете обновить игру, так как ваш аккаунт заблокирован");
+      }
 
       const game = games.find(g => g.id === id);
       
@@ -533,6 +564,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         throw new Error("Игра не найдена");
       }
 
+      // Администраторы могут обновлять любые игры
       if (game.authorId !== user.id && !user.isAdmin) {
         throw new Error("У вас нет прав для обновления этой игры");
       }
