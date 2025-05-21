@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useGames } from "@/contexts/GameContext";
@@ -42,7 +43,7 @@ const Dashboard = () => {
           // Получаем ID всех игр пользователя
           const gameIds = userGames.map(game => game.id);
           
-          // Запрашиваем количество просмотров авторизованных пользователей
+          // Запрашиваем количество просмотров авторизованных пользователей для игр автора
           const { data: viewsData, error: viewsError } = await supabase
             .from('game_views')
             .select('game_id')
@@ -65,7 +66,7 @@ const Dashboard = () => {
     loadAnalytics();
   }, [user, getUserGames]);
 
-  // Перенаправление на страницу входа, если пользо��атель не аутентифицирован
+  // Перенаправление на страницу входа, если пользователь не аутентифицирован
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/login");
