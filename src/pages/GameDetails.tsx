@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -19,16 +20,12 @@ const GameDetails = () => {
   const navigate = useNavigate();
   const { getGameById, toggleFavorite, isFavorite } = useGames();
   const { user } = useAuth();
-  const { getAverageRating } = useRatings();
-  const [averageRating, setAverageRating] = useState(0);
   const [favorite, setFavorite] = useState(false);
   
   const game = gameId ? getGameById(gameId) : undefined;
   
   useEffect(() => {
     if (gameId) {
-      setAverageRating(getAverageRating(gameId));
-      
       if (user) {
         setFavorite(isFavorite(gameId));
       }
@@ -85,7 +82,7 @@ const GameDetails = () => {
       
       recordGameView();
     }
-  }, [gameId, getAverageRating, isFavorite, user]);
+  }, [gameId, isFavorite, user]);
   
   const handleFavoriteToggle = async () => {
     if (!gameId) return;
@@ -144,7 +141,8 @@ const GameDetails = () => {
                   </Badge>
                 </div>
                 
-                <RatingComponent rating={averageRating} />
+                {/* Fixed: Pass gameId instead of rating */}
+                <RatingComponent gameId={gameId} />
               </div>
               
               <div className="space-y-4">
