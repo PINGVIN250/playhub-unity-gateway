@@ -45,17 +45,17 @@ const Dashboard = () => {
           const gameIds = userGames.map(game => game.id);
           
           // Запрашиваем количество просмотров авторизованными пользователями для игр автора
-          const { data: viewsData, error: viewsError } = await supabase
+          const { count, error: countError } = await supabase
             .from('game_views')
-            .select('game_id')
+            .select('*', { count: 'exact', head: true })
             .in('game_id', gameIds);
             
-          if (viewsError) {
-            console.error("Ошибка получения просмотров:", viewsError);
+          if (countError) {
+            console.error("Ошибка получения просмотров:", countError);
             toast.error("Не удалось загрузить данные о просмотрах");
           } else {
             // Устанавливаем точное количество просмотров авторизованными пользователями
-            setAuthUserViews(viewsData ? viewsData.length : 0);
+            setAuthUserViews(count || 0);
           }
         } catch (error) {
           console.error("Ошибка при загрузке аналитических данных:", error);

@@ -1,189 +1,175 @@
-
-import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { useGames } from "@/contexts/GameContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, Heart, Play, User, Calendar } from "lucide-react";
-import { RatingComponent } from "@/components/RatingComponent";
-import { EditGameForm } from "@/components/EditGameForm";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CommentSection } from "@/components/CommentSection";
-import { toast } from "sonner";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useGames } from '@/contexts/GameContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRatings } from '@/contexts/RatingContext';
+import { Navbar } from '@/components/Navbar';
+import { Footer } from '@/components/Footer';
+import { PageTitle } from '@/components/PageTitle';
+import { CommentSection } from '@/components/CommentSection';
+import { RatingComponent } from '@/components/RatingComponent';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import { Heart, Play, Calendar, Clock } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const GameDetails = () => {
   const { gameId } = useParams<{ gameId: string }>();
+  const navigate = useNavigate();
   const { getGameById, toggleFavorite, isFavorite } = useGames();
   const { user } = useAuth();
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
-  const [activeTab, setActiveTab] = useState("details");
+  const { getAverageRating } = useRatings();
+  const [averageRating, setAverageRating] = useState(0);
+  const [favorite, setFavorite] = useState(false);
   
-  // Получаем информацию об игре по id
-  const game = getGameById(gameId || "");
-  const isOwner = user && game && user.id === game.authorId;
-  const isFav = game ? isFavorite(game.id) : false;
+  const game = gameId ? getGameById(gameId) : undefined;
   
-  // Сбрасываем состояние загрузки изображения при изменении игры
   useEffect(() => {
-    setIsImageLoaded(false);
-  }, [gameId]);
-  
-  const handleToggleFavorite = async () => {
-    if (!user) {
-      toast.error("Войдите в систему, чтобы добавить игру в избранное");
-      return;
+    if (gameId) {
+      setAverageRating(getAverageRating(gameId));
+      
+      if (user) {
+        setFavorite(isFavorite(gameId));
+      }
+      
+      // Запись просмотра игры
+      const recordGameView = async () => {
+        try {
+          // Если пользователь авторизован, записываем просмотр
+          if (user) {
+            console.log("Регистрация просмотра для авторизованного пользователя", user.id);
+            
+            // Проверяем, просматривал ли пользователь игру ранее
+            const { data: existingView } = await supabase
+              .from('game_views')
+              .select('id')
+              .eq('user_id', user.id)
+              .eq('game_id', gameId)
+              .single();
+              
+            // Если пользователь не просматривал игру раньше, добавляем запись
+            if (!existingView) {
+              console.log("Новый просмотр, добавление записи");
+              const { error } = await supabase
+                .from('game_views')
+                .insert({
+                  user_id: user.id,
+                  game_id: gameId,
+                  viewed_at: new Date().toISOString()
+                });
+                
+              if (error) {
+                console.error("Ошибка при записи просмотра:", error);
+              }
+            } else {
+              console.log("Повторный просмотр, обновление времени");
+              // Обновляем время просмотра
+              const { error } = await supabase
+                .from('game_views')
+                .update({ viewed_at: new Date().toISOString() })
+                .eq('id', existingView.id);
+                
+              if (error) {
+                console.error("Ошибка при обновлении просмотра:", error);
+              }
+            }
+          } else {
+            console.log("Анонимный просмотр, статистика не сохраняется");
+            // Для анонимных пользователей не записываем просмотр
+          }
+        } catch (error) {
+          console.error("Ошибка при записи просмотра:", error);
+        }
+      };
+      
+      recordGameView();
     }
-    
-    if (game) {
-      await toggleFavorite(game.id);
+  }, [gameId, getAverageRating, isFavorite, user]);
+  
+  const handleFavoriteToggle = async () => {
+    if (!gameId) return;
+    try {
+      await toggleFavorite(gameId);
+      setFavorite(!favorite);
+    } catch (error) {
+      console.error("Failed to toggle favorite:", error);
+      toast.error("Failed to update favorites");
     }
   };
   
-  // Если игра не найдена, показываем соответствующее сообщение
   if (!game) {
     return (
-      <div className="min-h-screen flex flex-col page-transition">
+      <div className="min-h-screen flex flex-col">
         <Navbar />
-        <main className="flex-1 py-24 flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold mb-4">Игра не найдена</h1>
-            <p className="text-muted-foreground mb-6">
-              Игра, которую вы ищете, не существует или была удалена.
-            </p>
-            <Link to="/games">
-              <Button>Просмотр игр</Button>
-            </Link>
+        <main className="flex-1 py-24">
+          <div className="container mx-auto px-4">
+            <PageTitle title="Игра не найдена" description="Запрашиваемая игра не существует или была удалена." />
+            <Button onClick={() => navigate('/games')}>Вернуться к списку игр</Button>
           </div>
         </main>
         <Footer />
       </div>
     );
   }
-
-  // Получаем имя разработчика или используем "Неизвестно" с более надежной проверкой
-  const developerName = game.author?.username || "Неизвестно";
   
   return (
-    <div className="min-h-screen flex flex-col page-transition">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 pt-24 pb-16">
-        <div className="relative h-96 mb-8 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background z-10"></div>
-          <div className={`absolute inset-0 bg-muted/50 ${isImageLoaded ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}></div>
-          <img 
-            src={game.coverImage} 
-            alt={game.title}
-            className={`object-cover w-full h-full ${isImageLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}
-            onLoad={() => setIsImageLoaded(true)}
-          />
-        </div>
-        
+      <main className="flex-1 py-12">
         <div className="container mx-auto px-4">
-          <div className="mb-6">
-            <Link to="/games">
-              <Button variant="ghost" size="sm" className="gap-1">
-                <ChevronLeft className="h-4 w-4" />
-                <span>Назад к играм</span>
-              </Button>
-            </Link>
-          </div>
+          <PageTitle title={game.title} description={game.description} />
           
-          <div className="glass-card p-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-6">
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <h1 className="text-3xl font-bold">{game.title}</h1>
-                    <Button 
-                      variant={isFav ? "default" : "outline"}
-                      size="icon"
-                      className={`${isFav ? 'text-white bg-red-500 hover:bg-red-600' : 'text-red-500 hover:text-red-600'}`}
-                      onClick={handleToggleFavorite}
-                      title={isFav ? "Удалить из избранного" : "Добавить в избранное"}
-                    >
-                      <Heart className="h-5 w-5" fill={isFav ? "currentColor" : "none"} />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 mb-4">
-                    <RatingComponent gameId={game.id} />
-                    
-                    <div className="ml-1 flex flex-wrap gap-2">
-                      {game.tags?.map(tag => (
-                        <Badge key={tag} className="capitalize">
-                          {tag}
-                        </Badge>
-                      ))}
-                      {game.featured && (
-                        <Badge variant="secondary">Избранное</Badge>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground">
-                    {game.description}
-                  </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Game Cover Image */}
+            <div className="md:order-1">
+              <img 
+                src={game.coverImage} 
+                alt={game.title} 
+                className="w-full rounded-md shadow-md" 
+              />
+            </div>
+            
+            {/* Game Details */}
+            <div className="md:order-2">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    {new Date(game.createdAt).toLocaleDateString()}
+                  </Badge>
+                  <Badge variant="secondary">
+                    <Clock className="h-4 w-4 mr-1" />
+                    Обновлено {new Date(game.updatedAt).toLocaleDateString()}
+                  </Badge>
                 </div>
                 
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link to={`/play/${game.id}`} className="flex-1">
-                    <Button className="w-full gap-2">
-                      <Play className="h-4 w-4" />
-                      <span>Играть сейчас</span>
-                    </Button>
-                  </Link>
-                </div>
-                
-                {isOwner && (
-                  <div className="mt-8">
-                    <Tabs value={activeTab} onValueChange={setActiveTab}>
-                      <TabsList className="mb-4">
-                        <TabsTrigger value="details">Детали</TabsTrigger>
-                        <TabsTrigger value="edit">Редактировать игру</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="details">
-                        {/* Контент отображается по умолчанию */}
-                      </TabsContent>
-                      <TabsContent value="edit">
-                        <EditGameForm game={game} />
-                      </TabsContent>
-                    </Tabs>
-                  </div>
-                )}
-                
-                <div className="mt-8">
-                  <CommentSection gameId={game.id} />
-                </div>
+                <RatingComponent rating={averageRating} />
               </div>
               
-              <div className="space-y-6">
-                <div className="rounded-md border p-4">
-                  <h3 className="font-semibold mb-3">Информация об игре</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">Разработчик: {developerName}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">
-                        Выпущена: {new Date(game.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+              <div className="space-y-4">
+                <Button onClick={() => navigate(`/play/${gameId}`)} className="w-full gap-2">
+                  <Play className="h-4 w-4" />
+                  Играть сейчас
+                </Button>
                 
-                <div className="rounded-md border p-4">
-                  <h3 className="font-semibold mb-3">Как играть</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Эта игра запускается прямо в вашем браузере с использованием Unity WebGL. Загрузка не требуется.
-                    Нажмите "Играть сейчас", чтобы начать игру немедленно.
-                  </p>
+                <Button 
+                  variant={favorite ? "destructive" : "outline"}
+                  onClick={handleFavoriteToggle}
+                  className="w-full gap-2"
+                >
+                  <Heart className="h-4 w-4" />
+                  {favorite ? 'Удалить из избранного' : 'Добавить в избранное'}
+                </Button>
+                
+                <div className="prose dark:prose-invert max-w-none">
+                  <p>{game.description}</p>
                 </div>
               </div>
             </div>
           </div>
+          
+          <CommentSection gameId={gameId} />
         </div>
       </main>
       <Footer />

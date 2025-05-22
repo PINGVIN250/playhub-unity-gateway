@@ -89,7 +89,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
         throw new Error("Вы должны войти в систему, чтобы добавить комментарий");
       }
       
-      // Проверка на блокировку пользователя
+      // Проверка на блокировку пользователя - получаем актуальные данные из базы
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('is_banned')
@@ -201,7 +201,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
         throw new Error("Вы должны войти в систему, чтобы обновить комментарий");
       }
       
-      // Проверка на блокировку пользователя
+      // Проверка на блокировку пользователя - получаем актуальные данные из базы
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('is_banned')

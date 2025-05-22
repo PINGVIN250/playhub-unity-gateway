@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User } from "@/types";
 import { toast } from "sonner";
@@ -132,14 +133,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await syncUser();
       
       // Проверка на блокировку после входа
-      const storedUser = localStorage.getItem('sb-user');
-      if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        if (userData.isBanned) {
-          toast.error('Ваш аккаунт заблокирован администратором');
-        } else {
-          toast.success('Welcome back!');
-        }
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_banned')
+        .eq('id', (await supabase.auth.getUser()).data.user?.id || '')
+        .single();
+      
+      if (profileError) {
+        console.error('Error checking ban status:', profileError);
+      } else if (profileData?.is_banned) {
+        toast.error('Ваш аккаунт заблокирован администратором');
+      } else {
+        toast.success('Добро пожаловать!');
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Login failed');

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -146,6 +147,10 @@ export const AdminPanel = () => {
       setUsers(users.map(u => 
         u.id === userId ? { ...u, isBanned: true } : u
       ));
+      
+      // Принудительно разлогиниваем пользователя при блокировке
+      // Это потребует от пользователя повторного входа, где он увидит сообщение о блокировке
+      await supabase.auth.admin.signOut(userId);
     } catch (error) {
       console.error("Ошибка при блокировке пользователя:", error);
       toast.error("Не удалось заблокировать пользователя");
