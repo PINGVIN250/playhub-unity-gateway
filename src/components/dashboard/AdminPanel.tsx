@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -134,23 +133,26 @@ export const AdminPanel = () => {
   // Функция для бана пользователя
   const banUser = async (userId: string) => {
     try {
+      console.log('Блокируем пользователя:', userId);
+      
       const { error } = await supabase
         .from('profiles')
         .update({ is_banned: true })
         .eq('id', userId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Ошибка при блокировке пользователя:', error);
+        throw error;
+      }
       
+      console.log('Пользователь успешно заблокирован в БД');
       toast.success("Пользователь заблокирован");
       
-      // Обновляем список пользователей
+      // Обновляем локальное состояние
       setUsers(users.map(u => 
         u.id === userId ? { ...u, isBanned: true } : u
       ));
       
-      // Принудительно разлогиниваем пользователя при блокировке
-      // Это потребует от пользователя повторного входа, где он увидит сообщение о блокировке
-      await supabase.auth.admin.signOut(userId);
     } catch (error) {
       console.error("Ошибка при блокировке пользователя:", error);
       toast.error("Не удалось заблокировать пользователя");
@@ -160,19 +162,26 @@ export const AdminPanel = () => {
   // Функция для разбана пользователя
   const unbanUser = async (userId: string) => {
     try {
+      console.log('Разблокируем пользователя:', userId);
+      
       const { error } = await supabase
         .from('profiles')
         .update({ is_banned: false })
         .eq('id', userId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Ошибка при разблокировке пользователя:', error);
+        throw error;
+      }
       
+      console.log('Пользователь успешно разблокирован в БД');
       toast.success("Пользователь разблокирован");
       
-      // Обновляем список пользователей
+      // Обновляем локальное состояние
       setUsers(users.map(u => 
         u.id === userId ? { ...u, isBanned: false } : u
       ));
+      
     } catch (error) {
       console.error("Ошибка при разблокировке пользователя:", error);
       toast.error("Не удалось разблокировать пользователя");
@@ -306,7 +315,10 @@ export const AdminPanel = () => {
                       <div>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm">
+                            <Button 
+                              variant={user.isBanned ? "outline" : "destructive"} 
+                              size="sm"
+                            >
                               {user.isBanned ? (
                                 <>Разблокировать</>
                               ) : (
@@ -325,14 +337,14 @@ export const AdminPanel = () => {
                               <AlertDialogDescription>
                                 {user.isBanned
                                   ? `Вы уверены, что хотите разблокировать пользователя ${user.username}?`
-                                  : `Вы уверены, что хотите заблокировать пользователя ${user.username}? Пользователь не сможет публиковать комментарии или загружать игры.`
+                                  : `Вы уверены, что хотите заблокировать пользователя ${user.username}? Пользователь не сможет войти в систему.`
                                 }
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Отмена</AlertDialogCancel>
                               <AlertDialogAction
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                className={user.isBanned ? "bg-green-600 hover:bg-green-700" : "bg-destructive text-destructive-foreground hover:bg-destructive/90"}
                                 onClick={() => user.isBanned ? unbanUser(user.id) : banUser(user.id)}
                               >
                                 {user.isBanned ? "Разблокировать" : "Заблокировать"}
