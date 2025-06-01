@@ -14,10 +14,11 @@ import {
   FormLabel,
   FormMessage
 } from "@/components/ui/form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Loader2, Gamepad } from "lucide-react";
+import { Loader2, Gamepad, ShieldX } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Неверный формат email"),
@@ -27,7 +28,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { login, isAuthenticated, isLoading: authLoading, isBanned } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -82,6 +83,17 @@ const Login = () => {
               </p>
             </div>
             
+            {isBanned && (
+              <Alert className="mb-6 border-destructive">
+                <ShieldX className="h-4 w-4" />
+                <AlertDescription className="text-destructive">
+                  <strong>Ваш аккаунт заблокирован</strong><br />
+                  Ваш аккаунт был заблокирован за нарушение правил сообщества. 
+                  Для получения дополнительной информации обратитесь к администрации.
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -131,7 +143,7 @@ const Login = () => {
                 <Button 
                   type="submit" 
                   className="w-full"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isBanned}
                 >
                   {isSubmitting && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />

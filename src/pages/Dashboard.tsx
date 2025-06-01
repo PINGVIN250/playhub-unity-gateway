@@ -13,8 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GamesTab } from "@/components/dashboard/GamesTab";
 import { AnalyticsTab } from "@/components/dashboard/AnalyticsTab";
 import { AdminPanel } from "@/components/dashboard/AdminPanel";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 /**
  * Панель разработчика
@@ -26,46 +24,6 @@ const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("my-games");
-  const [authUserViews, setAuthUserViews] = useState(0);
-  
-  // Загрузка данных аналитики из базы данных
-  useEffect(() => {
-    const loadAnalytics = async () => {
-      if (user) {
-        try {
-          // Получаем список игр пользователя
-          const userGames = getUserGames();
-          
-          if (userGames.length === 0) {
-            setAuthUserViews(0);
-            return;
-          }
-          
-          // Получаем ID всех игр пользователя
-          const gameIds = userGames.map(game => game.id);
-          
-          // Запрашиваем количество просмотров авторизованными пользователями для игр автора
-          const { count, error: countError } = await supabase
-            .from('game_views')
-            .select('*', { count: 'exact', head: true })
-            .in('game_id', gameIds);
-            
-          if (countError) {
-            console.error("Ошибка получения просмотров:", countError);
-            toast.error("Не удалось загрузить данные о просмотрах");
-          } else {
-            // Устанавливаем точное количество просмотров авторизованными пользователями
-            setAuthUserViews(count || 0);
-          }
-        } catch (error) {
-          console.error("Ошибка при загрузке аналитических данных:", error);
-          toast.error("Не удалось загрузить аналитические данные");
-        }
-      }
-    };
-    
-    loadAnalytics();
-  }, [user, getUserGames]);
 
   // Перенаправление на страницу входа, если пользователь не аутентифицирован
   useEffect(() => {
@@ -151,7 +109,7 @@ const Dashboard = () => {
                 userGameCount={userGameCount}
                 percentile={percentile}
                 averageRating={averageRating}
-                authUserViews={authUserViews}
+                authUserViews={0}
               />
             </TabsContent>
             

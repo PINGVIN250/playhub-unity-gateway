@@ -21,7 +21,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
-import About from "./pages/About";
+import CommunityRules from "./pages/CommunityRules";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import PublicProfile from "./pages/PublicProfile";
@@ -53,7 +53,7 @@ const App = () => (
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/user/:userId" element={<PublicProfile />} />
                     <Route path="/upload" element={<Upload />} />
-                    <Route path="/about" element={<About />} />
+                    <Route path="/community-rules" element={<CommunityRules />} />
                     <Route path="/favorites" element={<Favorites />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>

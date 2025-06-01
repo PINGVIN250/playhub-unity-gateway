@@ -12,6 +12,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   isAuthenticated: boolean;
+  isBanned: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isBanned, setIsBanned] = useState<boolean>(false);
 
   // Полная синхронизация пользователя с Supabase
   const syncUser = async () => {
@@ -38,6 +40,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (profileError) throw profileError;
         
+        // Проверяем статус блокировки
+        if (profile?.is_banned) {
+          setIsBanned(true);
+          await supabase.auth.signOut();
+          setUser(null);
+          localStorage.removeItem('sb-user');
+          return;
+        }
+        
         const userData = {
           id: session.user.id,
           email: session.user.email || '',
@@ -48,18 +59,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
         
         setUser(userData);
+        setIsBanned(false);
         localStorage.setItem('sb-user', JSON.stringify({
           ...userData,
-          // Добавляем токен для проверки актуальности
           _token: session.access_token
         }));
       } else {
         setUser(null);
+        setIsBanned(false);
         localStorage.removeItem('sb-user');
       }
     } catch (error) {
       console.error('Auth sync error:', error);
       setUser(null);
+      setIsBanned(false);
       localStorage.removeItem('sb-user');
     } finally {
       setIsLoading(false);
@@ -110,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           syncUser();
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
+          setIsBanned(false);
           localStorage.removeItem('sb-user');
         }
       });
@@ -130,24 +144,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (error) throw error;
       
-      await syncUser();
-      
-      // Проверка на блокировку после входа
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('is_banned')
-        .eq('id', (await supabase.auth.getUser()).data.user?.id || '')
-        .single();
-      
-      if (profileError) {
-        console.error('Error checking ban status:', profileError);
-      } else if (profileData?.is_banned) {
-        toast.error('Ваш аккаунт заблокирован администратором');
-      } else {
-        toast.success('Добро пожаловать!');
+      // Проверяем статус блокировки после входа
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_banned')
+          .eq('id', authUser.id)
+          .single();
+        
+        if (profileError) {
+          console.error('Error checking ban status:', profileError);
+        } else if (profileData?.is_banned) {
+          setIsBanned(true);
+          await supabase.auth.signOut();
+          throw new Error('Ваш аккаунт заблокирован за нарушение правил сообщества');
+        }
       }
+      
+      await syncUser();
+      toast.success('Добро пожаловать!');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Login failed');
+      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      toast.error(errorMessage);
       throw error;
     } finally {
       setIsLoading(false);
@@ -198,6 +217,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await supabase.auth.signOut();
       setUser(null);
+      setIsBanned(false);
       localStorage.removeItem('sb-user');
     } catch (error) {
       console.error('Logout error:', error);
@@ -215,6 +235,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     resetPassword,
     isAuthenticated: !!user,
+    isBanned,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

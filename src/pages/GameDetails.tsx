@@ -4,7 +4,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useGames } from '@/contexts/GameContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRatings } from '@/contexts/RatingContext';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PageTitle } from '@/components/PageTitle';
@@ -13,7 +12,6 @@ import { RatingComponent } from '@/components/RatingComponent';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Heart, Play, Calendar, Clock } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 
 const GameDetails = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -25,62 +23,8 @@ const GameDetails = () => {
   const game = gameId ? getGameById(gameId) : undefined;
   
   useEffect(() => {
-    if (gameId) {
-      if (user) {
-        setFavorite(isFavorite(gameId));
-      }
-      
-      // Запись просмотра игры
-      const recordGameView = async () => {
-        try {
-          // Если пользователь авторизован, записываем просмотр
-          if (user) {
-            console.log("Регистрация просмотра для авторизованного пользователя", user.id);
-            
-            // Проверяем, просматривал ли пользователь игру ранее
-            const { data: existingView } = await supabase
-              .from('game_views')
-              .select('id')
-              .eq('user_id', user.id)
-              .eq('game_id', gameId)
-              .single();
-              
-            // Если пользователь не просматривал игру раньше, добавляем запись
-            if (!existingView) {
-              console.log("Новый просмотр, добавление записи");
-              const { error } = await supabase
-                .from('game_views')
-                .insert({
-                  user_id: user.id,
-                  game_id: gameId,
-                  viewed_at: new Date().toISOString()
-                });
-                
-              if (error) {
-                console.error("Ошибка при записи просмотра:", error);
-              }
-            } else {
-              console.log("Повторный просмотр, обновление времени");
-              // Обновляем время просмотра
-              const { error } = await supabase
-                .from('game_views')
-                .update({ viewed_at: new Date().toISOString() })
-                .eq('id', existingView.id);
-                
-              if (error) {
-                console.error("Ошибка при обновлении просмотра:", error);
-              }
-            }
-          } else {
-            console.log("Анонимный просмотр, статистика не сохраняется");
-            // Для анонимных пользователей не записываем просмотр
-          }
-        } catch (error) {
-          console.error("Ошибка при записи просмотра:", error);
-        }
-      };
-      
-      recordGameView();
+    if (gameId && user) {
+      setFavorite(isFavorite(gameId));
     }
   }, [gameId, isFavorite, user]);
   
@@ -141,7 +85,6 @@ const GameDetails = () => {
                   </Badge>
                 </div>
                 
-                {/* Fixed: Pass gameId instead of rating */}
                 <RatingComponent gameId={gameId} />
               </div>
               
