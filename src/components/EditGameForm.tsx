@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useGames } from "@/contexts/GameContext";
 import { Game } from "@/types";
@@ -101,15 +100,7 @@ export function EditGameForm({ game }: EditGameFormProps) {
         .map(tag => tag.trim())
         .filter(Boolean);
       
-      const updateData: Partial<Game> & {
-        gameFiles?: {
-          wasm: File | null;
-          data: File | null;
-          framework: File | null;
-          loader: File | null;
-          index: File | null;
-        }
-      } = {
+      const updateData: Partial<Game> = {
         title: formData.title,
         description: formData.description,
         tags: tagsArray
@@ -118,7 +109,11 @@ export function EditGameForm({ game }: EditGameFormProps) {
       // Проверяем, есть ли новые файлы для загрузки
       const hasNewFiles = Object.values(gameFiles).some(file => file !== null);
       if (hasNewFiles) {
-        updateData.gameFiles = gameFiles;
+        // Создаем объект с файлами для обновления
+        const gameFilesUpdate = {
+          gameFiles: gameFiles
+        };
+        Object.assign(updateData, gameFilesUpdate);
       }
       
       await updateGame(game.id, updateData);
