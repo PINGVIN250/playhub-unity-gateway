@@ -115,6 +115,7 @@ export function EditGameForm({ game }: EditGameFormProps) {
         tags: tagsArray
       };
       
+      // Проверяем, есть ли новые файлы для загрузки
       const hasNewFiles = Object.values(gameFiles).some(file => file !== null);
       if (hasNewFiles) {
         updateData.gameFiles = gameFiles;
