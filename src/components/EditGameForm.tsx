@@ -91,34 +91,40 @@ export function EditGameForm({ game }: EditGameFormProps) {
     
     try {
       setIsSubmitting(true);
+      
       // Преобразуем строку тегов в массив
       const tagsArray = formData.tags
         .split(',')
         .map(tag => tag.trim())
         .filter(Boolean);
       
-      // Передаем данные для обновления игры
-      await updateGame(game.id, {
+      // Подготавливаем данные для обновления
+      const updateData: Partial<Game> & {
+        gameFiles?: {
+          wasm: File | null;
+          data: File | null;
+          framework: File | null;
+          loader: File | null;
+          index: File | null;
+        }
+      } = {
         title: formData.title,
         description: formData.description,
-        tags: tagsArray,
-        // Используем существующие gameFiles и добавляем новые только если они есть
-        gameFiles: {
-          // Сохраняем существующие пути
-          wasmPath: game.gameFiles.wasmPath,
-          dataPath: game.gameFiles.dataPath,
-          frameworkPath: game.gameFiles.frameworkPath,
-          loaderPath: game.gameFiles.loaderPath,
-          indexPath: game.gameFiles.indexPath,
-          // Добавляем новые файлы
-          wasm: gameFiles.wasm,
-          data: gameFiles.data,
-          framework: gameFiles.framework,
-          loader: gameFiles.loader,
-          index: gameFiles.index
-        }
-      });
+        tags: tagsArray
+      };
+      
+      // Добавляем файлы только если они есть
+      const hasNewFiles = Object.values(gameFiles).some(file => file !== null);
+      if (hasNewFiles) {
+        updateData.gameFiles = gameFiles;
+      }
+      
+      await updateGame(game.id, updateData);
+      
+      toast.success("Игра успешно обновлена");
+      navigate("/dashboard");
     } catch (error) {
+      console.error("Ошибка при обновлении игры:", error);
       // Error is handled by the context
     } finally {
       setIsSubmitting(false);
@@ -131,6 +137,7 @@ export function EditGameForm({ game }: EditGameFormProps) {
       toast.success("Игра успешно удалена");
       navigate("/games");
     } catch (error) {
+      console.error("Ошибка при удалении игры:", error);
       // Error is handled by the context
     }
   };

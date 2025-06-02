@@ -1,16 +1,14 @@
 
 import { AnalyticsCard } from "./AnalyticsCard";
-import { BarChart, Star, Users } from "lucide-react";
+import { BarChart, Star } from "lucide-react";
 
 /**
  * Свойства компонента вкладки аналитики
- * @property {number} authUserViews - Количество просмотров авторизованными пользователями
  * @property {number} userGameCount - Количество игр пользователя
  * @property {number} percentile - Процентиль по количеству игр
  * @property {number} averageRating - Средний рейтинг игр
  */
 interface AnalyticsTabProps {
-  authUserViews: number;
   userGameCount: number;
   percentile: number;
   averageRating: number;
@@ -26,19 +24,11 @@ interface AnalyticsTabProps {
 export const AnalyticsTab = ({ 
   userGameCount, 
   percentile, 
-  averageRating,
-  authUserViews
+  averageRating
 }: AnalyticsTabProps) => {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AnalyticsCard 
-          title="Авторизованные просмотры"
-          value={authUserViews.toLocaleString()}
-          description="Просмотры авторизованными пользователями"
-          icon={<Users className="h-4 w-4" />}
-        />
-        
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <AnalyticsCard 
           title="Ваши игры"
           value={userGameCount}

@@ -109,7 +109,6 @@ const Dashboard = () => {
                 userGameCount={userGameCount}
                 percentile={percentile}
                 averageRating={averageRating}
-                authUserViews={0}
               />
             </TabsContent>
             
