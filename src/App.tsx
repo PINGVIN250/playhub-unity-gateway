@@ -26,6 +26,7 @@ import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import PublicProfile from "./pages/PublicProfile";
 import Favorites from "./pages/Favorites";
+import Documentation from "./pages/Documentation";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
                     <Route path="/upload" element={<Upload />} />
                     <Route path="/community-rules" element={<CommunityRules />} />
                     <Route path="/favorites" element={<Favorites />} />
+                    <Route path="/documentation" element={<Documentation />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
