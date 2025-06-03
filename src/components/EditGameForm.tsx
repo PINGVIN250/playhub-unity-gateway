@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { useGame } from '@/contexts/GameContext';
+import { useGames } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,15 +17,15 @@ interface EditGameFormProps {
 export const EditGameForm = ({ game, onSuccess }: EditGameFormProps) => {
   const [title, setTitle] = useState(game.title);
   const [description, setDescription] = useState(game.description);
-    const [category, setCategory] = useState(game.category);
-  const { updateGame } = useGame();
+  const [tags, setTags] = useState(game.tags.join(', '));
+  const { updateGame } = useGames();
   const { toast } = useToast();
 
   useEffect(() => {
     if (game) {
       setTitle(game.title);
       setDescription(game.description);
-            setCategory(game.category);
+      setTags(game.tags.join(', '));
     }
   }, [game]);
 
@@ -35,7 +36,7 @@ export const EditGameForm = ({ game, onSuccess }: EditGameFormProps) => {
       const gameData = {
         title,
         description,
-        category
+        tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
       };
       
       await updateGame(game.id, gameData);
@@ -78,15 +79,15 @@ export const EditGameForm = ({ game, onSuccess }: EditGameFormProps) => {
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
-                    <div>
-                        <Label htmlFor="category">Категория</Label>
-                        <Input
-                            id="category"
-                            type="text"
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                        />
-                    </div>
+          <div>
+            <Label htmlFor="tags">Теги (через запятую)</Label>
+            <Input
+              id="tags"
+              type="text"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+            />
+          </div>
           <Button type="submit">Обновить игру</Button>
         </form>
       </CardContent>

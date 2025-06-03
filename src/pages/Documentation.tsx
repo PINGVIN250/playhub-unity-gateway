@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -198,79 +197,224 @@ const Documentation = () => {
     }
   ];
 
-  const gameClassProperties = [
+  // Расширенные свойства для всех классов приложения
+  const allClassProperties = [
+    // User/Profile Properties
     {
-      name: "Title",
+      name: "id",
+      type: "String",
+      access: "Только чтение",
+      readMethod: "Прямое обращение к внутреннему полю _id",
+      writeMethod: "Не предусмотрено"
+    },
+    {
+      name: "email",
+      type: "String",
+      access: "Чтение/запись",
+      readMethod: "Геттер get_email()",
+      writeMethod: "Сеттер set_email() с валидацией"
+    },
+    {
+      name: "username",
+      type: "String",
+      access: "Чтение/запись",
+      readMethod: "Геттер get_username()",
+      writeMethod: "Сеттер set_username() с проверкой уникальности"
+    },
+    {
+      name: "isAdmin",
+      type: "Boolean",
+      access: "Только чтение",
+      readMethod: "Проверка роли в БД",
+      writeMethod: "Изменение через административную панель"
+    },
+    {
+      name: "isBanned",
+      type: "Boolean",
+      access: "Только чтение",
+      readMethod: "Проверка статуса в БД",
+      writeMethod: "Изменение через модераторскую панель"
+    },
+    // Game Properties
+    {
+      name: "title",
       type: "String",
       access: "Чтение/запись",
       readMethod: "Прямое обращение к внутреннему полю _title",
-      writeMethod: "Прямая запись через метод set"
+      writeMethod: "Прямая запись через метод set с валидацией"
     },
     {
-      name: "Description",
+      name: "description",
       type: "String", 
       access: "Чтение/запись",
       readMethod: "Прямое обращение к внутреннему полю _description",
       writeMethod: "Прямая запись через метод set"
     },
     {
-      name: "AuthorId",
+      name: "coverImage",
       type: "String",
       access: "Чтение/запись",
-      readMethod: "Прямое обращение к внутреннему полю _authorId",
-      writeMethod: "Прямая запись через метод set"
+      readMethod: "Геттер get_coverImage()",
+      writeMethod: "Загрузка через файловый менеджер"
     },
     {
-      name: "CoverImageUrl",
+      name: "gameUrl",
       type: "String",
       access: "Чтение/запись",
-      readMethod: "Прямое обращение к внутреннему полю _coverImageUrl",
-      writeMethod: "Прямая запись через метод set"
+      readMethod: "Формирование URL на основе файлов",
+      writeMethod: "Автоматическая генерация при загрузке"
     },
     {
-      name: "Category",
+      name: "tags",
+      type: "Array<String>",
+      access: "Чтение/запись",
+      readMethod: "Получение списка через join с таблицей тегов",
+      writeMethod: "Обновление связей в промежуточной таблице"
+    },
+    {
+      name: "featured",
+      type: "Boolean",
+      access: "Чтение/запись",
+      readMethod: "Прямое обращение к полю featured",
+      writeMethod: "Изменение через административную панель"
+    },
+    // Comment Properties
+    {
+      name: "content",
       type: "String",
       access: "Чтение/запись",
-      readMethod: "Прямое обращение к внутреннему полю _category",
-      writeMethod: "Прямая запись через метод set"
+      readMethod: "Прямое обращение к внутреннему полю _content",
+      writeMethod: "Запись с модерацией и проверкой на спам"
     },
     {
-      name: "Rating",
+      name: "gameId",
+      type: "String",
+      access: "Только чтение",
+      readMethod: "Внешний ключ на игру",
+      writeMethod: "Устанавливается при создании"
+    },
+    {
+      name: "userId",
+      type: "String",
+      access: "Только чтение",
+      readMethod: "Внешний ключ на пользователя",
+      writeMethod: "Устанавливается при создании"
+    },
+    // Rating Properties
+    {
+      name: "score",
+      type: "Number",
+      access: "Чтение/запись",
+      readMethod: "Прямое обращение к полю score",
+      writeMethod: "Валидация диапазона 1-5, обновление среднего"
+    },
+    {
+      name: "averageRating",
       type: "Number",
       access: "Только чтение",
-      readMethod: "Вычисление среднего значения из массива оценок",
-      writeMethod: "Не предусмотрено"
+      readMethod: "Вычисление среднего значения из всех оценок",
+      writeMethod: "Автоматический пересчет при изменении оценок"
     }
   ];
 
-  const gameClassEvents = [
+  // Расширенные события для всех классов приложения
+  const allClassEvents = [
+    // User Events
+    {
+      name: "OnUserLogin",
+      type: "EventHandler<UserLoginEventArgs>",
+      access: "Добавление/удаление",
+      addMethod: "addEventListener('login', handler)",
+      removeMethod: "removeEventListener('login', handler)"
+    },
+    {
+      name: "OnUserLogout",
+      type: "EventHandler<UserLogoutEventArgs>",
+      access: "Добавление/удаление",
+      addMethod: "addEventListener('logout', handler)",
+      removeMethod: "removeEventListener('logout', handler)"
+    },
+    {
+      name: "OnProfileUpdate",
+      type: "EventHandler<ProfileUpdateEventArgs>",
+      access: "Добавление/удаление",
+      addMethod: "Подписка через context subscription",
+      removeMethod: "Отписка через context unsubscribe"
+    },
+    // Game Events
     {
       name: "OnGameLoad",
       type: "EventHandler<GameLoadEventArgs>",
       access: "Добавление/удаление",
-      addMethod: "Добавление делегата к событию",
-      removeMethod: "Удаление делегата из события"
+      addMethod: "Добавление делегата к событию Unity",
+      removeMethod: "Удаление делегата из события Unity"
     },
     {
       name: "OnGameStart",
       type: "EventHandler<GameStartEventArgs>",
       access: "Добавление/удаление", 
-      addMethod: "Добавление делегата к событию",
-      removeMethod: "Удаление делегата из события"
+      addMethod: "Регистрация через игровой движок",
+      removeMethod: "Дерегистрация через игровой движок"
     },
     {
       name: "OnGameEnd",
       type: "EventHandler<GameEndEventArgs>",
       access: "Добавление/удаление",
-      addMethod: "Добавление делегата к событию",
-      removeMethod: "Удаление делегата из события"
+      addMethod: "Подписка на завершение игры",
+      removeMethod: "Отписка от события завершения"
     },
+    {
+      name: "OnGameUpload",
+      type: "EventHandler<GameUploadEventArgs>",
+      access: "Добавление/удаление",
+      addMethod: "Подписка на событие загрузки файлов",
+      removeMethod: "Отписка от события загрузки"
+    },
+    // Rating Events
     {
       name: "OnRatingChanged",
       type: "EventHandler<RatingChangedEventArgs>",
       access: "Добавление/удаление",
-      addMethod: "Добавление делегата к событию",
-      removeMethod: "Удаление делегата из события"
+      addMethod: "Подписка через RatingContext",
+      removeMethod: "Отписка через RatingContext"
+    },
+    {
+      name: "OnRatingSubmitted",
+      type: "EventHandler<RatingSubmittedEventArgs>",
+      access: "Добавление/удаление",
+      addMethod: "addEventListener('ratingSubmit', handler)",
+      removeMethod: "removeEventListener('ratingSubmit', handler)"
+    },
+    // Comment Events
+    {
+      name: "OnCommentAdded",
+      type: "EventHandler<CommentAddedEventArgs>",
+      access: "Добавление/удаление",
+      addMethod: "Подписка через CommentContext",
+      removeMethod: "Отписка через CommentContext"
+    },
+    {
+      name: "OnCommentDeleted",
+      type: "EventHandler<CommentDeletedEventArgs>",
+      access: "Добавление/удаление",
+      addMethod: "addEventListener('commentDelete', handler)",
+      removeMethod: "removeEventListener('commentDelete', handler)"
+    },
+    // Search Events
+    {
+      name: "OnSearchQueryChanged",
+      type: "EventHandler<SearchQueryEventArgs>",
+      access: "Добавление/удаление",
+      addMethod: "Подписка на изменение поискового запроса",
+      removeMethod: "Отписка от изменения поискового запроса"
+    },
+    // Navigation Events
+    {
+      name: "OnRouteChanged",
+      type: "EventHandler<RouteChangedEventArgs>",
+      access: "Добавление/удаление",
+      addMethod: "Подписка через react-router навигацию",
+      removeMethod: "Отписка от навигационных событий"
     }
   ];
 
@@ -334,16 +478,16 @@ const Documentation = () => {
         {/* App Structure */}
         <AppStructureSphere />
 
-        {/* Class Properties Table */}
+        {/* Class Properties Table - Updated with all application classes */}
         <ClassPropertiesTable 
-          className="Game" 
-          properties={gameClassProperties} 
+          className="Application (User, Game, Comment, Rating)" 
+          properties={allClassProperties} 
         />
 
-        {/* Class Events Table */}
+        {/* Class Events Table - Updated with all application classes */}
         <ClassEventsTable 
-          className="Game" 
-          events={gameClassEvents} 
+          className="Application (User, Game, Comment, Rating, Search, Navigation)" 
+          events={allClassEvents} 
         />
 
         {/* Flowcharts */}
