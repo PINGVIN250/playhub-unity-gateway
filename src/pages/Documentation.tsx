@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -128,25 +129,36 @@ const Documentation = () => {
       </CardHeader>
       <CardContent>
         <div className="flex justify-center items-center min-h-96 relative">
-          <div className="w-64 h-64 bg-black rounded-full flex items-center justify-center text-white font-bold text-lg relative">
-            Ядро приложения
-            <div className="absolute -top-8 -left-8 w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold">
-              UI
+          <div className="w-80 h-80 bg-black rounded-full flex items-center justify-center text-white font-bold text-lg relative">
+            <div className="text-center">
+              <div>Ядро приложения</div>
+              <div className="text-sm mt-2">React + TypeScript</div>
             </div>
-            <div className="absolute -top-8 -right-8 w-16 h-16 bg-green-600 rounded-full flex items-center justify-center text-xs font-bold">
-              API
+            
+            {/* Core modules around the sphere */}
+            <div className="absolute -top-10 -left-10 w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold text-center">
+              React Router
             </div>
-            <div className="absolute -bottom-8 -left-8 w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-xs font-bold">
-              DB
+            <div className="absolute -top-10 -right-10 w-20 h-20 bg-green-600 rounded-full flex items-center justify-center text-xs font-bold text-center">
+              Supabase API
             </div>
-            <div className="absolute -bottom-8 -right-8 w-16 h-16 bg-yellow-600 rounded-full flex items-center justify-center text-xs font-bold">
-              Auth
+            <div className="absolute -bottom-10 -left-10 w-20 h-20 bg-red-600 rounded-full flex items-center justify-center text-xs font-bold text-center">
+              PostgreSQL DB
             </div>
-            <div className="absolute top-1/2 -left-12 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold">
-              Utils
+            <div className="absolute -bottom-10 -right-10 w-20 h-20 bg-yellow-600 rounded-full flex items-center justify-center text-xs font-bold text-center">
+              Auth System
             </div>
-            <div className="absolute top-1/2 -right-12 w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center text-xs font-bold">
-              Games
+            <div className="absolute top-1/2 -left-16 w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-center">
+              Contexts
+            </div>
+            <div className="absolute top-1/2 -right-16 w-16 h-16 bg-orange-600 rounded-full flex items-center justify-center text-xs font-bold text-center">
+              Unity Games
+            </div>
+            <div className="absolute top-8 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-pink-600 rounded-full flex items-center justify-center text-xs font-bold text-center">
+              UI Kit
+            </div>
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center text-xs font-bold text-center">
+              File Storage
             </div>
           </div>
         </div>
@@ -154,292 +166,479 @@ const Documentation = () => {
     </Card>
   );
 
-  const algorithms = [
+  // Comprehensive properties from all application components
+  const comprehensiveProperties = [
+    // User Management Properties
     {
-      title: "Рисунок 3.1 - Алгоритм инициализации игры",
-      steps: ["Начало", "Загрузка конфигурации", "Проверка браузера", "Инициализация Unity", "Загрузка ассетов", "Запуск игры", "Конец"]
-    },
-    {
-      title: "Рисунок 3.2 - Алгоритм аутентификации пользователя",
-      steps: ["Начало", "Ввод данных", "Проверка формата", "Отправка на сервер", "Получение токена", "Сохранение сессии", "Перенаправление", "Конец"]
-    },
-    {
-      title: "Рисунок 3.3 - Алгоритм загрузки игры",
-      steps: ["Начало", "Выбор файлов", "Валидация файлов", "Создание превью", "Загрузка на сервер", "Обновление БД", "Уведомление", "Конец"]
-    },
-    {
-      title: "Рисунок 3.4 - Алгоритм поиска игр",
-      steps: ["Начало", "Ввод запроса", "Формирование фильтров", "Запрос к БД", "Обработка результатов", "Отображение", "Конец"]
-    },
-    {
-      title: "Рисунок 3.5 - Алгоритм оценки игры",
-      steps: ["Начало", "Проверка авторизации", "Получение текущей оценки", "Обновление рейтинга", "Сохранение в БД", "Обновление UI", "Конец"]
-    },
-    {
-      title: "Рисунок 3.6 - Алгоритм добавления комментария",
-      steps: ["Начало", "Проверка авторизации", "Валидация текста", "Проверка на спам", "Сохранение комментария", "Обновление списка", "Конец"]
-    },
-    {
-      title: "Рисунок 3.7 - Алгоритм модерации контента",
-      steps: ["Начало", "Получение жалобы", "Проверка прав модератора", "Анализ контента", "Принятие решения", "Применение действия", "Уведомление", "Конец"]
-    },
-    {
-      title: "Рисунок 3.8 - Алгоритм резервного копирования",
-      steps: ["Начало", "Проверка расписания", "Создание снимка БД", "Архивирование файлов", "Загрузка в облако", "Проверка целостности", "Очистка старых копий", "Конец"]
-    },
-    {
-      title: "Рисунок 3.9 - Алгоритм обновления статистики",
-      steps: ["Начало", "Сбор метрик", "Агрегация данных", "Расчет показателей", "Обновление кэша", "Генерация отчетов", "Конец"]
-    },
-    {
-      title: "Рисунок 3.10 - Алгоритм восстановления пароля",
-      steps: ["Начало", "Ввод email", "Проверка в БД", "Генерация токена", "Отправка письма", "Переход по ссылке", "Смена пароля", "Конец"]
-    }
-  ];
-
-  // Расширенные свойства для всех классов приложения
-  const allClassProperties = [
-    // User/Profile Properties
-    {
-      name: "id",
-      type: "String",
+      name: "user.id",
+      type: "String (UUID)",
       access: "Только чтение",
-      readMethod: "Прямое обращение к внутреннему полю _id",
-      writeMethod: "Не предусмотрено"
+      readMethod: "useAuth().user.id",
+      writeMethod: "Устанавливается при регистрации"
     },
     {
-      name: "email",
+      name: "user.email",
       type: "String",
       access: "Чтение/запись",
-      readMethod: "Геттер get_email()",
-      writeMethod: "Сеттер set_email() с валидацией"
+      readMethod: "useAuth().user.email",
+      writeMethod: "updateProfile() с валидацией email"
     },
     {
-      name: "username",
+      name: "user.username",
       type: "String",
       access: "Чтение/запись",
-      readMethod: "Геттер get_username()",
-      writeMethod: "Сеттер set_username() с проверкой уникальности"
+      readMethod: "useAuth().user.username",
+      writeMethod: "updateProfile() с проверкой уникальности"
     },
     {
-      name: "isAdmin",
+      name: "user.isAdmin",
       type: "Boolean",
       access: "Только чтение",
-      readMethod: "Проверка роли в БД",
-      writeMethod: "Изменение через административную панель"
+      readMethod: "Проверка роли в profiles таблице",
+      writeMethod: "Изменение через SQL или админ-панель"
     },
     {
-      name: "isBanned",
+      name: "user.isBanned",
       type: "Boolean",
       access: "Только чтение",
-      readMethod: "Проверка статуса в БД",
-      writeMethod: "Изменение через модераторскую панель"
+      readMethod: "Проверка is_banned в profiles",
+      writeMethod: "Модерация через админ-интерфейс"
     },
+    {
+      name: "user.createdAt",
+      type: "Date",
+      access: "Только чтение",
+      readMethod: "Прямое обращение к полю created_at",
+      writeMethod: "Автоматически при создании профиля"
+    },
+    
     // Game Properties
     {
-      name: "title",
+      name: "game.title",
       type: "String",
       access: "Чтение/запись",
-      readMethod: "Прямое обращение к внутреннему полю _title",
-      writeMethod: "Прямая запись через метод set с валидацией"
+      readMethod: "useGames().games[index].title",
+      writeMethod: "updateGame(id, {title}) с валидацией"
     },
     {
-      name: "description",
-      type: "String", 
-      access: "Чтение/запись",
-      readMethod: "Прямое обращение к внутреннему полю _description",
-      writeMethod: "Прямая запись через метод set"
-    },
-    {
-      name: "coverImage",
+      name: "game.description",
       type: "String",
       access: "Чтение/запись",
-      readMethod: "Геттер get_coverImage()",
-      writeMethod: "Загрузка через файловый менеджер"
+      readMethod: "Прямое обращение к полю description",
+      writeMethod: "updateGame() с проверкой длины текста"
     },
     {
-      name: "gameUrl",
-      type: "String",
+      name: "game.coverImage",
+      type: "String (URL)",
       access: "Чтение/запись",
-      readMethod: "Формирование URL на основе файлов",
-      writeMethod: "Автоматическая генерация при загрузке"
+      readMethod: "Получение URL из Supabase Storage",
+      writeMethod: "Загрузка через FileUpload компонент"
     },
     {
-      name: "tags",
+      name: "game.gameUrl",
+      type: "String (URL)",
+      access: "Только чтение",
+      readMethod: "Генерация на основе game.id",
+      writeMethod: "Автоматическая генерация при создании"
+    },
+    {
+      name: "game.gameFiles",
+      type: "Object",
+      access: "Только чтение",
+      readMethod: "Получение путей файлов из Storage",
+      writeMethod: "Загрузка через UploadGameForm"
+    },
+    {
+      name: "game.tags",
       type: "Array<String>",
       access: "Чтение/запись",
-      readMethod: "Получение списка через join с таблицей тегов",
-      writeMethod: "Обновление связей в промежуточной таблице"
+      readMethod: "JOIN с game_tags таблицей",
+      writeMethod: "Обновление связей через updateGameTags()"
     },
     {
-      name: "featured",
+      name: "game.featured",
       type: "Boolean",
       access: "Чтение/запись",
       readMethod: "Прямое обращение к полю featured",
-      writeMethod: "Изменение через административную панель"
+      writeMethod: "Изменение через админ-панель или API"
     },
+    {
+      name: "game.width",
+      type: "Number",
+      access: "Чтение/запись",
+      readMethod: "Получение из метаданных игры",
+      writeMethod: "Установка при загрузке игры"
+    },
+    {
+      name: "game.height",
+      type: "Number",
+      access: "Чтение/запись",
+      readMethod: "Получение из метаданных игры",
+      writeMethod: "Установка при загрузке игры"
+    },
+
     // Comment Properties
     {
-      name: "content",
+      name: "comment.content",
       type: "String",
       access: "Чтение/запись",
-      readMethod: "Прямое обращение к внутреннему полю _content",
-      writeMethod: "Запись с модерацией и проверкой на спам"
+      readMethod: "useComments().comments[index].content",
+      writeMethod: "addComment() с модерацией контента"
     },
     {
-      name: "gameId",
-      type: "String",
+      name: "comment.gameId",
+      type: "String (UUID)",
       access: "Только чтение",
-      readMethod: "Внешний ключ на игру",
-      writeMethod: "Устанавливается при создании"
+      readMethod: "Внешний ключ на games.id",
+      writeMethod: "Устанавливается при создании комментария"
     },
     {
-      name: "userId",
-      type: "String",
+      name: "comment.userId",
+      type: "String (UUID)",
       access: "Только чтение",
-      readMethod: "Внешний ключ на пользователя",
-      writeMethod: "Устанавливается при создании"
+      readMethod: "Связь с auth.users через profiles",
+      writeMethod: "Берется из текущей сессии пользователя"
     },
+    {
+      name: "comment.createdAt",
+      type: "Date",
+      access: "Только чтение",
+      readMethod: "Сортировка по убыванию даты",
+      writeMethod: "Автоматически через NOW() в БД"
+    },
+
     // Rating Properties
     {
-      name: "score",
-      type: "Number",
+      name: "rating.score",
+      type: "Number (1-5)",
       access: "Чтение/запись",
-      readMethod: "Прямое обращение к полю score",
-      writeMethod: "Валидация диапазона 1-5, обновление среднего"
+      readMethod: "useRatings().getUserRating(gameId)",
+      writeMethod: "rateGame(gameId, score) с валидацией"
     },
     {
-      name: "averageRating",
+      name: "rating.averageRating",
       type: "Number",
       access: "Только чтение",
-      readMethod: "Вычисление среднего значения из всех оценок",
-      writeMethod: "Автоматический пересчет при изменении оценок"
+      readMethod: "getAverageRating(gameId) - агрегация",
+      writeMethod: "Автоматический пересчет при изменении"
+    },
+    {
+      name: "rating.gameId",
+      type: "String (UUID)",
+      access: "Только чтение",
+      readMethod: "Фильтрация рейтингов по игре",
+      writeMethod: "Устанавливается при создании рейтинга"
+    },
+
+    // UI State Properties
+    {
+      name: "theme.mode",
+      type: "String (light|dark)",
+      access: "Чтение/запись",
+      readMethod: "useTheme().theme",
+      writeMethod: "setTheme() с сохранением в localStorage"
+    },
+    {
+      name: "search.query",
+      type: "String",
+      access: "Чтение/запись",
+      readMethod: "useState hook в SearchComponent",
+      writeMethod: "setSearchQuery() с debounce"
+    },
+    {
+      name: "search.filters",
+      type: "Object",
+      access: "Чтение/запись",
+      readMethod: "Получение из URL параметров",
+      writeMethod: "updateFilters() с обновлением URL"
+    },
+    {
+      name: "upload.progress",
+      type: "Number (0-100)",
+      access: "Только чтение",
+      readMethod: "Отслеживание через Supabase upload",
+      writeMethod: "Обновляется автоматически при загрузке"
+    },
+    {
+      name: "navigation.currentRoute",
+      type: "String",
+      access: "Только чтение",
+      readMethod: "useLocation().pathname",
+      writeMethod: "navigate() из react-router-dom"
     }
   ];
 
-  // Расширенные события для всех классов приложения
-  const allClassEvents = [
-    // User Events
+  // Comprehensive events from all application components
+  const comprehensiveEvents = [
+    // Authentication Events
     {
-      name: "OnUserLogin",
-      type: "EventHandler<UserLoginEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "addEventListener('login', handler)",
-      removeMethod: "removeEventListener('login', handler)"
+      name: "onUserLogin",
+      type: "AuthEvent<LoginData>",
+      access: "Подписка/отписка",
+      addMethod: "useAuth() context subscription",
+      removeMethod: "Автоматическая отписка при unmount"
     },
     {
-      name: "OnUserLogout",
-      type: "EventHandler<UserLogoutEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "addEventListener('logout', handler)",
-      removeMethod: "removeEventListener('logout', handler)"
+      name: "onUserLogout",
+      type: "AuthEvent<void>",
+      access: "Подписка/отписка",
+      addMethod: "Слушатель изменения auth.user",
+      removeMethod: "useEffect cleanup function"
     },
     {
-      name: "OnProfileUpdate",
-      type: "EventHandler<ProfileUpdateEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка через context subscription",
-      removeMethod: "Отписка через context unsubscribe"
+      name: "onUserRegister",
+      type: "AuthEvent<RegisterData>",
+      access: "Подписка/отписка",
+      addMethod: "Обработка успешной регистрации",
+      removeMethod: "Компонент unmount"
     },
+    {
+      name: "onPasswordReset",
+      type: "AuthEvent<ResetData>",
+      access: "Подписка/отписка",
+      addMethod: "Слушатель email отправки",
+      removeMethod: "Таймаут или компонент unmount"
+    },
+
     // Game Events
     {
-      name: "OnGameLoad",
-      type: "EventHandler<GameLoadEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Добавление делегата к событию Unity",
-      removeMethod: "Удаление делегата из события Unity"
+      name: "onGameLoad",
+      type: "GameEvent<Game>",
+      access: "Подписка/отписка",
+      addMethod: "useGames().loadGame() callback",
+      removeMethod: "Завершение загрузки или ошибка"
     },
     {
-      name: "OnGameStart",
-      type: "EventHandler<GameStartEventArgs>",
-      access: "Добавление/удаление", 
-      addMethod: "Регистрация через игровой движок",
-      removeMethod: "Дерегистрация через игровой движок"
+      name: "onGameStart",
+      type: "UnityEvent<GameStartData>",
+      access: "Подписка/отписка",
+      addMethod: "Unity WebGL instance callback",
+      removeMethod: "Game stop или component unmount"
     },
     {
-      name: "OnGameEnd",
-      type: "EventHandler<GameEndEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка на завершение игры",
-      removeMethod: "Отписка от события завершения"
+      name: "onGameEnd",
+      type: "UnityEvent<GameEndData>",
+      access: "Подписка/отписка",
+      addMethod: "Unity game completion listener",
+      removeMethod: "Автоматически при новой игре"
     },
     {
-      name: "OnGameUpload",
-      type: "EventHandler<GameUploadEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка на событие загрузки файлов",
-      removeMethod: "Отписка от события загрузки"
-    },
-    // Rating Events
-    {
-      name: "OnRatingChanged",
-      type: "EventHandler<RatingChangedEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка через RatingContext",
-      removeMethod: "Отписка через RatingContext"
+      name: "onGameUpload",
+      type: "UploadEvent<FileData>",
+      access: "Подписка/отписка",
+      addMethod: "FileUpload progress tracking",
+      removeMethod: "Upload complete или cancel"
     },
     {
-      name: "OnRatingSubmitted",
-      type: "EventHandler<RatingSubmittedEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "addEventListener('ratingSubmit', handler)",
-      removeMethod: "removeEventListener('ratingSubmit', handler)"
-    },
-    // Comment Events
-    {
-      name: "OnCommentAdded",
-      type: "EventHandler<CommentAddedEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка через CommentContext",
-      removeMethod: "Отписка через CommentContext"
+      name: "onGameUpdate",
+      type: "GameEvent<UpdateData>",
+      access: "Подписка/отписка",
+      addMethod: "useGames().updateGame() listener",
+      removeMethod: "Update complete или error"
     },
     {
-      name: "OnCommentDeleted",
-      type: "EventHandler<CommentDeletedEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "addEventListener('commentDelete', handler)",
-      removeMethod: "removeEventListener('commentDelete', handler)"
+      name: "onGameDelete",
+      type: "GameEvent<DeleteData>",
+      access: "Подписка/отписка",
+      addMethod: "Delete confirmation listener",
+      removeMethod: "Operation complete"
     },
-    // Search Events
+
+    // Rating & Comments Events
     {
-      name: "OnSearchQueryChanged",
-      type: "EventHandler<SearchQueryEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка на изменение поискового запроса",
-      removeMethod: "Отписка от изменения поискового запроса"
+      name: "onRatingSubmit",
+      type: "RatingEvent<RatingData>",
+      access: "Подписка/отписка",
+      addMethod: "useRatings().rateGame() callback",
+      removeMethod: "Rating saved или error"
     },
+    {
+      name: "onRatingChange",
+      type: "RatingEvent<ChangeData>",
+      access: "Подписка/отписка",
+      addMethod: "Rating component onChange",
+      removeMethod: "Component unmount"
+    },
+    {
+      name: "onCommentAdd",
+      type: "CommentEvent<CommentData>",
+      access: "Подписка/отписка",
+      addMethod: "useComments().addComment() listener",
+      removeMethod: "Comment posted или error"
+    },
+    {
+      name: "onCommentDelete",
+      type: "CommentEvent<DeleteData>",
+      access: "Подписка/отписка",
+      addMethod: "Comment deletion confirmation",
+      removeMethod: "Deletion complete"
+    },
+    {
+      name: "onCommentEdit",
+      type: "CommentEvent<EditData>",
+      access: "Подписка/отписка",
+      addMethod: "Edit mode activation",
+      removeMethod: "Edit save или cancel"
+    },
+
     // Navigation Events
     {
-      name: "OnRouteChanged",
-      type: "EventHandler<RouteChangedEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка через react-router навигацию",
-      removeMethod: "Отписка от навигационных событий"
+      name: "onRouteChange",
+      type: "NavigationEvent<RouteData>",
+      access: "Подписка/отписка",
+      addMethod: "useLocation() hook subscription",
+      removeMethod: "Component unmount или navigate"
+    },
+    {
+      name: "onPageLoad",
+      type: "NavigationEvent<PageData>",
+      access: "Подписка/отписка",
+      addMethod: "useEffect с dependency array",
+      removeMethod: "Page change или unmount"
+    },
+
+    // Search & Filter Events
+    {
+      name: "onSearchQuery",
+      type: "SearchEvent<QueryData>",
+      access: "Подписка/отписка",
+      addMethod: "Input onChange с debounce",
+      removeMethod: "Component unmount или clear"
+    },
+    {
+      name: "onFilterChange",
+      type: "FilterEvent<FilterData>",
+      access: "Подписка/отписка",
+      addMethod: "Filter component onChange",
+      removeMethod: "Reset filters или unmount"
+    },
+
+    // File Upload Events
+    {
+      name: "onFileSelect",
+      type: "FileEvent<FileData>",
+      access: "Подписка/отписка",
+      addMethod: "File input onChange event",
+      removeMethod: "File clear или new selection"
+    },
+    {
+      name: "onUploadProgress",
+      type: "ProgressEvent<ProgressData>",
+      access: "Подписка/отписка",
+      addMethod: "Supabase upload progress callback",
+      removeMethod: "Upload complete или error"
+    },
+    {
+      name: "onUploadComplete",
+      type: "UploadEvent<CompleteData>",
+      access: "Подписка/отписка",
+      addMethod: "Successful upload callback",
+      removeMethod: "Автоматически после обработки"
+    },
+
+    // Theme & UI Events
+    {
+      name: "onThemeChange",
+      type: "ThemeEvent<ThemeData>",
+      access: "Подписка/отписка",
+      addMethod: "useTheme() context listener",
+      removeMethod: "Component unmount"
+    },
+    {
+      name: "onModalOpen",
+      type: "UIEvent<ModalData>",
+      access: "Подписка/отписка",
+      addMethod: "Modal state change listener",
+      removeMethod: "Modal close или unmount"
+    },
+    {
+      name: "onToastShow",
+      type: "NotificationEvent<ToastData>",
+      access: "Подписка/отписка",
+      addMethod: "toast() function call",
+      removeMethod: "Toast timeout или dismiss"
+    }
+  ];
+
+  const algorithms = [
+    {
+      title: "Рисунок 3.1 - Алгоритм инициализации приложения",
+      steps: ["Начало", "Проверка сессии", "Загрузка конфигурации", "Инициализация Supabase", "Проверка аутентификации", "Загрузка пользовательских данных", "Рендер интерфейса", "Конец"]
+    },
+    {
+      title: "Рисунок 3.2 - Алгоритм аутентификации пользователя",
+      steps: ["Начало", "Ввод email/пароль", "Валидация формы", "Отправка в Supabase Auth", "Проверка блокировки", "Создание сессии", "Обновление контекста", "Перенаправление", "Конец"]
+    },
+    {
+      title: "Рисунок 3.3 - Алгоритм загрузки Unity игры",
+      steps: ["Начало", "Выбор файлов игры", "Проверка форматов", "Валидация размеров", "Загрузка в Storage", "Создание записи в БД", "Генерация превью", "Публикация", "Конец"]
+    },
+    {
+      title: "Рисунок 3.4 - Алгоритм поиска и фильтрации игр",
+      steps: ["Начало", "Ввод поискового запроса", "Применение фильтров", "Формирование SQL запроса", "Выполнение поиска", "Сортировка результатов", "Отображение списка", "Конец"]
+    },
+    {
+      title: "Рисунок 3.5 - Алгоритм оценки игры пользователем",
+      steps: ["Начало", "Проверка авторизации", "Получение текущей оценки", "Валидация нового рейтинга", "Обновление в БД", "Пересчет среднего", "Обновление UI", "Конец"]
+    },
+    {
+      title: "Рисунок 3.6 - Алгоритм добавления комментария",
+      steps: ["Начало", "Проверка авторизации", "Ввод текста комментария", "Проверка на спам", "Модерация контента", "Сохранение в БД", "Обновление списка", "Уведомление", "Конец"]
+    },
+    {
+      title: "Рисунок 3.7 - Алгоритм модерации контента",
+      steps: ["Начало", "Получение жалобы", "Проверка прав модератора", "Анализ контента", "Классификация нарушения", "Применение санкций", "Уведомление пользователя", "Логирование", "Конец"]
+    },
+    {
+      title: "Рисунок 3.8 - Алгоритм управления файлами",
+      steps: ["Начало", "Выбор операции", "Проверка разрешений", "Валидация файлов", "Операция с Storage", "Обновление метаданных", "Очистка временных файлов", "Конец"]
+    },
+    {
+      title: "Рисунок 3.9 - Алгоритм обновления статистики",
+      steps: ["Начало", "Сбор событий", "Агрегация данных", "Расчет метрик", "Обновление кэша", "Генерация отчетов", "Отправка уведомлений", "Конец"]
+    },
+    {
+      title: "Рисунок 3.10 - Алгоритм восстановления пароля",
+      steps: ["Начало", "Ввод email", "Проверка в БД", "Генерация токена", "Отправка письма", "Переход по ссылке", "Валидация токена", "Смена пароля", "Конец"]
+    },
+    {
+      title: "Рисунок 3.11 - Алгоритм синхронизации данных",
+      steps: ["Начало", "Проверка соединения", "Получение изменений", "Разрешение конфликтов", "Применение обновлений", "Валидация целостности", "Уведомление клиентов", "Конец"]
+    },
+    {
+      title: "Рисунок 3.12 - Алгоритм обработки ошибок",
+      steps: ["Начало", "Перехват ошибки", "Классификация типа", "Логирование", "Уведомление пользователя", "Попытка восстановления", "Эскалация при необходимости", "Конец"]
     }
   ];
 
   return (
     <div className="min-h-screen bg-white print:bg-white">
-      <style jsx>{`
-        @media print {
-          .no-print {
-            display: none !important;
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @media print {
+            .no-print {
+              display: none !important;
+            }
+            .print\\:shadow-none {
+              box-shadow: none !important;
+            }
+            .print\\:border-2 {
+              border: 2px solid #000 !important;
+            }
+            .print\\:break-inside-avoid {
+              break-inside: avoid !important;
+            }
+            body {
+              -webkit-print-color-adjust: exact !important;
+              color-adjust: exact !important;
+            }
+            @page {
+              margin: 2cm;
+              size: A4;
+            }
           }
-          .print\\:shadow-none {
-            box-shadow: none !important;
-          }
-          .print\\:border-2 {
-            border: 2px solid #000 !important;
-          }
-          .print\\:break-inside-avoid {
-            break-inside: avoid !important;
-          }
-          body {
-            -webkit-print-color-adjust: exact !important;
-            color-adjust: exact !important;
-          }
-        }
-      `}</style>
+        `
+      }} />
       
       <div className="container mx-auto px-4 py-8 print:px-0 print:py-4">
         <div className="mb-6 no-print">
@@ -471,34 +670,48 @@ const Documentation = () => {
             ТЕХНИЧЕСКАЯ ДОКУМЕНТАЦИЯ
           </h1>
           <h2 className="text-xl font-semibold mb-6 print:text-2xl">
-            Система управления играми
+            Система управления играми на базе React + Supabase
           </h2>
         </div>
 
         {/* App Structure */}
         <AppStructureSphere />
 
-        {/* Class Properties Table - Updated with all application classes */}
+        {/* Comprehensive Class Properties Table */}
         <ClassPropertiesTable 
-          className="Application (User, Game, Comment, Rating)" 
-          properties={allClassProperties} 
+          className="Приложения (User, Game, Comment, Rating, UI, Navigation)" 
+          properties={comprehensiveProperties} 
         />
 
-        {/* Class Events Table - Updated with all application classes */}
+        {/* Comprehensive Class Events Table */}
         <ClassEventsTable 
-          className="Application (User, Game, Comment, Rating, Search, Navigation)" 
-          events={allClassEvents} 
+          className="Приложения (Auth, Game, Rating, Comment, Navigation, Upload, UI)" 
+          events={comprehensiveEvents} 
         />
 
         {/* Flowcharts */}
         <h2 className="text-2xl font-bold text-gray-900 mb-6 print:text-center">
-          БЛОК-СХЕМЫ АЛГОРИТМОВ
+          БЛОК-СХЕМЫ АЛГОРИТМОВ СИСТЕМЫ
         </h2>
         
         <div className="space-y-6">
           {algorithms.map((algorithm, index) => (
             <FlowchartBlock key={index} {...algorithm} />
           ))}
+        </div>
+
+        <div className="mt-12 print:text-center">
+          <h3 className="text-lg font-bold mb-4">
+            АРХИТЕКТУРНЫЕ РЕШЕНИЯ
+          </h3>
+          <div className="text-sm space-y-2">
+            <p><strong>Frontend:</strong> React 18 + TypeScript + Vite</p>
+            <p><strong>UI Framework:</strong> Tailwind CSS + shadcn/ui</p>
+            <p><strong>Backend:</strong> Supabase (PostgreSQL + Auth + Storage)</p>
+            <p><strong>State Management:</strong> React Context + React Query</p>
+            <p><strong>Routing:</strong> React Router DOM v6</p>
+            <p><strong>Game Engine:</strong> Unity WebGL</p>
+          </div>
         </div>
       </div>
     </div>
