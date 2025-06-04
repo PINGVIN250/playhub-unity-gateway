@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,134 +20,117 @@ const Documentation = () => {
     window.print();
   };
 
-  const ClassPropertiesTable = ({ className, properties }: { className: string, properties: any[] }) => (
+  const MathematicalModel = () => (
     <Card className="mb-8 print:shadow-none print:border-2">
       <CardHeader>
-        <CardTitle className="text-lg font-bold">
-          Таблица 2.1 - Свойства класса {className}
-        </CardTitle>
+        <CardTitle className="text-xl font-bold">2.1 Математическая модель системы управления играми</CardTitle>
       </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="border font-bold">Имя свойства</TableHead>
-              <TableHead className="border font-bold">Тип данных</TableHead>
-              <TableHead className="border font-bold">Тип доступа</TableHead>
-              <TableHead className="border font-bold">Метод доступа на чтение</TableHead>
-              <TableHead className="border font-bold">Метод доступа на запись</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {properties.map((prop, index) => (
-              <TableRow key={index}>
-                <TableCell className="border">{prop.name}</TableCell>
-                <TableCell className="border">{prop.type}</TableCell>
-                <TableCell className="border">{prop.access}</TableCell>
-                <TableCell className="border">{prop.readMethod}</TableCell>
-                <TableCell className="border">{prop.writeMethod}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  );
-
-  const ClassEventsTable = ({ className, events }: { className: string, events: any[] }) => (
-    <Card className="mb-8 print:shadow-none print:border-2">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold">
-          Таблица 2.2 - События класса {className}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="border font-bold">Имя события</TableHead>
-              <TableHead className="border font-bold">Тип данных</TableHead>
-              <TableHead className="border font-bold">Тип доступа</TableHead>
-              <TableHead className="border font-bold">Метод доступа на добавление</TableHead>
-              <TableHead className="border font-bold">Метод доступа на удаление</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {events.map((event, index) => (
-              <TableRow key={index}>
-                <TableCell className="border">{event.name}</TableCell>
-                <TableCell className="border">{event.type}</TableCell>
-                <TableCell className="border">{event.access}</TableCell>
-                <TableCell className="border">{event.addMethod}</TableCell>
-                <TableCell className="border">{event.removeMethod}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  );
-
-  const FlowchartBlock = ({ title, steps }: { title: string, steps: string[] }) => (
-    <Card className="mb-8 print:shadow-none print:border-2 print:break-inside-avoid">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col items-center space-y-3">
-          {steps.map((step, index) => (
-            <div key={index} className="flex flex-col items-center">
-              {index === 0 && (
-                <div className="w-24 h-12 border-2 border-black rounded-full flex items-center justify-center text-sm font-semibold bg-white">
-                  {step}
-                </div>
-              )}
-              {index > 0 && index < steps.length - 1 && (
-                <div className="w-32 h-16 border-2 border-black flex items-center justify-center text-sm font-medium bg-white text-center p-2">
-                  {step}
-                </div>
-              )}
-              {index === steps.length - 1 && index > 0 && (
-                <div className="w-24 h-12 border-2 border-black rounded-full flex items-center justify-center text-sm font-semibold bg-white">
-                  {step}
-                </div>
-              )}
-              {index < steps.length - 1 && (
-                <div className="w-0.5 h-6 bg-black"></div>
-              )}
-            </div>
-          ))}
+      <CardContent className="space-y-4 text-sm leading-6">
+        <p>
+          Система демонстрации игр представляет собой веб-платформу для загрузки, хранения и воспроизведения Unity WebGL игр. 
+          Основные компоненты системы включают модуль аутентификации пользователей, файловую систему для хранения игровых ассетов, 
+          базу данных метаинформации и Unity WebGL плеер для воспроизведения игр.
+        </p>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Математическое описание основных процессов:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>1. Процесс загрузки игры:</strong></p>
+            <p className="pl-4">
+              G = f(F<sub>wasm</sub>, F<sub>data</sub>, F<sub>framework</sub>, F<sub>loader</sub>, M)
+            </p>
+            <p className="pl-4 text-xs">
+              где G - готовая к запуску игра, F - файлы компонентов Unity, M - метаданные
+            </p>
+            
+            <p><strong>2. Система рейтингов:</strong></p>
+            <p className="pl-4">
+              R<sub>avg</sub> = (Σ R<sub>i</sub>) / n, где i ∈ [1, n]
+            </p>
+            <p className="pl-4 text-xs">
+              где R<sub>avg</sub> - средний рейтинг, R<sub>i</sub> - индивидуальная оценка, n - количество оценок
+            </p>
+            
+            <p><strong>3. Алгоритм поиска:</strong></p>
+            <p className="pl-4">
+              S = {g ∈ G | (title(g) ⊇ query) ∨ (tags(g) ∩ query ≠ ∅)}
+            </p>
+            <p className="pl-4 text-xs">
+              где S - результат поиска, G - множество всех игр, query - поисковый запрос
+            </p>
+          </div>
         </div>
+        
+        <p>
+          Основная сложность системы заключается в обеспечении совместимости различных версий Unity WebGL сборок, 
+          управлении большими файлами игр (до 100MB+) и обеспечении плавного воспроизведения в веб-браузере. 
+          Система должна автоматически определять тип загружаемых файлов и корректно инициализировать Unity движок.
+        </p>
       </CardContent>
     </Card>
   );
 
-  const AppStructureSphere = () => (
+  const BlackSphereBasic = () => (
     <Card className="mb-8 print:shadow-none print:border-2">
       <CardHeader>
-        <CardTitle className="text-lg font-bold">Рисунок 2.1 - Структура приложения</CardTitle>
+        <CardTitle className="text-lg font-bold">Рисунок 2.1 - Модель «Черная сфера»</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-center items-center min-h-96 relative">
-          <div className="w-64 h-64 bg-black rounded-full flex items-center justify-center text-white font-bold text-lg relative">
-            Ядро приложения
-            <div className="absolute -top-8 -left-8 w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold">
-              UI
+        <div className="flex justify-center items-center min-h-64 relative">
+          <div className="w-48 h-48 bg-black rounded-full flex items-center justify-center text-white font-bold text-sm relative">
+            <div className="text-center">
+              Система<br/>демонстрации<br/>игр
             </div>
-            <div className="absolute -top-8 -right-8 w-16 h-16 bg-green-600 rounded-full flex items-center justify-center text-xs font-bold">
-              API
+            
+            {/* Input arrows */}
+            <div className="absolute -left-32 top-1/2 transform -translate-y-1/2 text-black text-xs">
+              <div className="flex items-center">
+                <span className="mr-2">Файлы Unity WebGL</span>
+                <div className="w-8 h-0.5 bg-black"></div>
+                <div className="w-0 h-0 border-l-8 border-l-black border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
+              </div>
             </div>
-            <div className="absolute -bottom-8 -left-8 w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-xs font-bold">
-              DB
+            
+            <div className="absolute -left-32 top-1/3 transform -translate-y-1/2 text-black text-xs">
+              <div className="flex items-center">
+                <span className="mr-2">Пользовательский ввод</span>
+                <div className="w-8 h-0.5 bg-black"></div>
+                <div className="w-0 h-0 border-l-8 border-l-black border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
+              </div>
             </div>
-            <div className="absolute -bottom-8 -right-8 w-16 h-16 bg-yellow-600 rounded-full flex items-center justify-center text-xs font-bold">
-              Auth
+            
+            <div className="absolute -left-32 bottom-1/3 transform translate-y-1/2 text-black text-xs">
+              <div className="flex items-center">
+                <span className="mr-2">Метаданные игр</span>
+                <div className="w-8 h-0.5 bg-black"></div>
+                <div className="w-0 h-0 border-l-8 border-l-black border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
+              </div>
             </div>
-            <div className="absolute top-1/2 -left-12 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold">
-              Utils
+            
+            {/* Output arrows */}
+            <div className="absolute -right-32 top-1/2 transform -translate-y-1/2 text-black text-xs">
+              <div className="flex items-center">
+                <div className="w-0 h-0 border-r-8 border-r-black border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
+                <div className="w-8 h-0.5 bg-black"></div>
+                <span className="ml-2">Готовая игра</span>
+              </div>
             </div>
-            <div className="absolute top-1/2 -right-12 w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center text-xs font-bold">
-              Games
+            
+            <div className="absolute -right-32 top-1/3 transform -translate-y-1/2 text-black text-xs">
+              <div className="flex items-center">
+                <div className="w-0 h-0 border-r-8 border-r-black border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
+                <div className="w-8 h-0.5 bg-black"></div>
+                <span className="ml-2">Интерфейс пользователя</span>
+              </div>
+            </div>
+            
+            <div className="absolute -right-32 bottom-1/3 transform translate-y-1/2 text-black text-xs">
+              <div className="flex items-center">
+                <div className="w-0 h-0 border-r-8 border-r-black border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
+                <div className="w-8 h-0.5 bg-black"></div>
+                <span className="ml-2">Уведомления</span>
+              </div>
             </div>
           </div>
         </div>
@@ -154,273 +138,463 @@ const Documentation = () => {
     </Card>
   );
 
-  const algorithms = [
-    {
-      title: "Рисунок 3.1 - Алгоритм инициализации игры",
-      steps: ["Начало", "Загрузка конфигурации", "Проверка браузера", "Инициализация Unity", "Загрузка ассетов", "Запуск игры", "Конец"]
-    },
-    {
-      title: "Рисунок 3.2 - Алгоритм аутентификации пользователя",
-      steps: ["Начало", "Ввод данных", "Проверка формата", "Отправка на сервер", "Получение токена", "Сохранение сессии", "Перенаправление", "Конец"]
-    },
-    {
-      title: "Рисунок 3.3 - Алгоритм загрузки игры",
-      steps: ["Начало", "Выбор файлов", "Валидация файлов", "Создание превью", "Загрузка на сервер", "Обновление БД", "Уведомление", "Конец"]
-    },
-    {
-      title: "Рисунок 3.4 - Алгоритм поиска игр",
-      steps: ["Начало", "Ввод запроса", "Формирование фильтров", "Запрос к БД", "Обработка результатов", "Отображение", "Конец"]
-    },
-    {
-      title: "Рисунок 3.5 - Алгоритм оценки игры",
-      steps: ["Начало", "Проверка авторизации", "Получение текущей оценки", "Обновление рейтинга", "Сохранение в БД", "Обновление UI", "Конец"]
-    },
-    {
-      title: "Рисунок 3.6 - Алгоритм добавления комментария",
-      steps: ["Начало", "Проверка авторизации", "Валидация текста", "Проверка на спам", "Сохранение комментария", "Обновление списка", "Конец"]
-    },
-    {
-      title: "Рисунок 3.7 - Алгоритм модерации контента",
-      steps: ["Начало", "Получение жалобы", "Проверка прав модератора", "Анализ контента", "Принятие решения", "Применение действия", "Уведомление", "Конец"]
-    },
-    {
-      title: "Рисунок 3.8 - Алгоритм резервного копирования",
-      steps: ["Начало", "Проверка расписания", "Создание снимка БД", "Архивирование файлов", "Загрузка в облако", "Проверка целостности", "Очистка старых копий", "Конец"]
-    },
-    {
-      title: "Рисунок 3.9 - Алгоритм обновления статистики",
-      steps: ["Начало", "Сбор метрик", "Агрегация данных", "Расчет показателей", "Обновление кэша", "Генерация отчетов", "Конец"]
-    },
-    {
-      title: "Рисунок 3.10 - Алгоритм восстановления пароля",
-      steps: ["Начало", "Ввод email", "Проверка в БД", "Генерация токена", "Отправка письма", "Переход по ссылке", "Смена пароля", "Конец"]
-    }
-  ];
+  const BlackSphereDetailed = () => (
+    <Card className="mb-8 print:shadow-none print:border-2">
+      <CardHeader>
+        <CardTitle className="text-lg font-bold">Рисунок 2.2 - Черная сфера с параметрами</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-center items-center min-h-80 relative">
+          <div className="w-56 h-56 bg-black rounded-full flex items-center justify-center text-white font-bold text-sm relative">
+            <div className="text-center">
+              Система<br/>демонстрации<br/>игр
+            </div>
+            
+            {/* Detailed inputs */}
+            <div className="absolute -left-40 top-12 text-black text-xs">
+              <div className="flex items-center mb-1">
+                <span className="mr-2">game.wasm</span>
+                <div className="w-6 h-0.5 bg-black"></div>
+                <div className="w-0 h-0 border-l-6 border-l-black border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+              </div>
+            </div>
+            
+            <div className="absolute -left-40 top-20 text-black text-xs">
+              <div className="flex items-center mb-1">
+                <span className="mr-2">game.data</span>
+                <div className="w-6 h-0.5 bg-black"></div>
+                <div className="w-0 h-0 border-l-6 border-l-black border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+              </div>
+            </div>
+            
+            <div className="absolute -left-40 top-28 text-black text-xs">
+              <div className="flex items-center mb-1">
+                <span className="mr-2">game.framework.js</span>
+                <div className="w-6 h-0.5 bg-black"></div>
+                <div className="w-0 h-0 border-l-6 border-l-black border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+              </div>
+            </div>
+            
+            <div className="absolute -left-40 top-36 text-black text-xs">
+              <div className="flex items-center mb-1">
+                <span className="mr-2">game.loader.js</span>
+                <div className="w-6 h-0.5 bg-black"></div>
+                <div className="w-0 h-0 border-l-6 border-l-black border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+              </div>
+            </div>
+            
+            <div className="absolute -left-40 bottom-20 text-black text-xs">
+              <div className="flex items-center mb-1">
+                <span className="mr-2">user.actions</span>
+                <div className="w-6 h-0.5 bg-black"></div>
+                <div className="w-0 h-0 border-l-6 border-l-black border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+              </div>
+            </div>
+            
+            <div className="absolute -left-40 bottom-12 text-black text-xs">
+              <div className="flex items-center mb-1">
+                <span className="mr-2">metadata</span>
+                <div className="w-6 h-0.5 bg-black"></div>
+                <div className="w-0 h-0 border-l-6 border-l-black border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+              </div>
+            </div>
+            
+            {/* Detailed outputs */}
+            <div className="absolute -right-40 top-16 text-black text-xs">
+              <div className="flex items-center mb-1">
+                <div className="w-0 h-0 border-r-6 border-r-black border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+                <div className="w-6 h-0.5 bg-black"></div>
+                <span className="ml-2">Unity Canvas</span>
+              </div>
+            </div>
+            
+            <div className="absolute -right-40 top-24 text-black text-xs">
+              <div className="flex items-center mb-1">
+                <div className="w-0 h-0 border-r-6 border-r-black border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+                <div className="w-6 h-0.5 bg-black"></div>
+                <span className="ml-2">Game Controls</span>
+              </div>
+            </div>
+            
+            <div className="absolute -right-40 top-32 text-black text-xs">
+              <div className="flex items-center mb-1">
+                <div className="w-0 h-0 border-r-6 border-r-black border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+                <div className="w-6 h-0.5 bg-black"></div>
+                <span className="ml-2">Loading Progress</span>
+              </div>
+            </div>
+            
+            <div className="absolute -right-40 bottom-24 text-black text-xs">
+              <div className="flex items-center mb-1">
+                <div className="w-0 h-0 border-r-6 border-r-black border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+                <div className="w-6 h-0.5 bg-black"></div>
+                <span className="ml-2">Error Messages</span>
+              </div>
+            </div>
+            
+            <div className="absolute -right-40 bottom-16 text-black text-xs">
+              <div className="flex items-center mb-1">
+                <div className="w-0 h-0 border-r-6 border-r-black border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+                <div className="w-6 h-0.5 bg-black"></div>
+                <span className="ml-2">Game State</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
-  // Расширенные свойства для всех классов приложения
-  const allClassProperties = [
-    // User/Profile Properties
-    {
-      name: "id",
-      type: "String",
-      access: "Только чтение",
-      readMethod: "Прямое обращение к внутреннему полю _id",
-      writeMethod: "Не предусмотрено"
-    },
-    {
-      name: "email",
-      type: "String",
-      access: "Чтение/запись",
-      readMethod: "Геттер get_email()",
-      writeMethod: "Сеттер set_email() с валидацией"
-    },
-    {
-      name: "username",
-      type: "String",
-      access: "Чтение/запись",
-      readMethod: "Геттер get_username()",
-      writeMethod: "Сеттер set_username() с проверкой уникальности"
-    },
-    {
-      name: "isAdmin",
-      type: "Boolean",
-      access: "Только чтение",
-      readMethod: "Проверка роли в БД",
-      writeMethod: "Изменение через административную панель"
-    },
-    {
-      name: "isBanned",
-      type: "Boolean",
-      access: "Только чтение",
-      readMethod: "Проверка статуса в БД",
-      writeMethod: "Изменение через модераторскую панель"
-    },
-    // Game Properties
-    {
-      name: "title",
-      type: "String",
-      access: "Чтение/запись",
-      readMethod: "Прямое обращение к внутреннему полю _title",
-      writeMethod: "Прямая запись через метод set с валидацией"
-    },
-    {
-      name: "description",
-      type: "String", 
-      access: "Чтение/запись",
-      readMethod: "Прямое обращение к внутреннему полю _description",
-      writeMethod: "Прямая запись через метод set"
-    },
-    {
-      name: "coverImage",
-      type: "String",
-      access: "Чтение/запись",
-      readMethod: "Геттер get_coverImage()",
-      writeMethod: "Загрузка через файловый менеджер"
-    },
-    {
-      name: "gameUrl",
-      type: "String",
-      access: "Чтение/запись",
-      readMethod: "Формирование URL на основе файлов",
-      writeMethod: "Автоматическая генерация при загрузке"
-    },
-    {
-      name: "tags",
-      type: "Array<String>",
-      access: "Чтение/запись",
-      readMethod: "Получение списка через join с таблицей тегов",
-      writeMethod: "Обновление связей в промежуточной таблице"
-    },
-    {
-      name: "featured",
-      type: "Boolean",
-      access: "Чтение/запись",
-      readMethod: "Прямое обращение к полю featured",
-      writeMethod: "Изменение через административную панель"
-    },
-    // Comment Properties
-    {
-      name: "content",
-      type: "String",
-      access: "Чтение/запись",
-      readMethod: "Прямое обращение к внутреннему полю _content",
-      writeMethod: "Запись с модерацией и проверкой на спам"
-    },
-    {
-      name: "gameId",
-      type: "String",
-      access: "Только чтение",
-      readMethod: "Внешний ключ на игру",
-      writeMethod: "Устанавливается при создании"
-    },
-    {
-      name: "userId",
-      type: "String",
-      access: "Только чтение",
-      readMethod: "Внешний ключ на пользователя",
-      writeMethod: "Устанавливается при создании"
-    },
-    // Rating Properties
-    {
-      name: "score",
-      type: "Number",
-      access: "Чтение/запись",
-      readMethod: "Прямое обращение к полю score",
-      writeMethod: "Валидация диапазона 1-5, обновление среднего"
-    },
-    {
-      name: "averageRating",
-      type: "Number",
-      access: "Только чтение",
-      readMethod: "Вычисление среднего значения из всех оценок",
-      writeMethod: "Автоматический пересчет при изменении оценок"
-    }
-  ];
+  const DecompositionFirst = () => (
+    <Card className="mb-8 print:shadow-none print:border-2">
+      <CardHeader>
+        <CardTitle className="text-lg font-bold">Рисунок 2.3 - Декомпозиция первого этапа</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-center items-center min-h-96">
+          <div className="grid grid-cols-4 gap-8 items-center">
+            {/* Inputs */}
+            <div className="space-y-4">
+              <div className="w-24 h-16 border-2 border-gray-600 rounded bg-blue-100 flex items-center justify-center text-xs font-medium text-center p-1">
+                Unity файлы
+              </div>
+              <div className="w-24 h-16 border-2 border-gray-600 rounded bg-green-100 flex items-center justify-center text-xs font-medium text-center p-1">
+                Пользователь-ский ввод
+              </div>
+              <div className="w-24 h-16 border-2 border-gray-600 rounded bg-yellow-100 flex items-center justify-center text-xs font-medium text-center p-1">
+                Метаданные
+              </div>
+            </div>
+            
+            {/* Processing modules */}
+            <div className="space-y-4">
+              <div className="w-24 h-16 border-2 border-gray-800 rounded bg-gray-200 flex items-center justify-center text-xs font-medium text-center p-1">
+                Валидация файлов
+              </div>
+              <div className="w-24 h-16 border-2 border-gray-800 rounded bg-gray-200 flex items-center justify-center text-xs font-medium text-center p-1">
+                Обработка событий
+              </div>
+              <div className="w-24 h-16 border-2 border-gray-800 rounded bg-gray-200 flex items-center justify-center text-xs font-medium text-center p-1">
+                Управление состоянием
+              </div>
+            </div>
+            
+            {/* Core processing */}
+            <div className="flex justify-center">
+              <div className="w-32 h-32 bg-black rounded-full flex items-center justify-center text-white font-bold text-xs text-center">
+                Unity WebGL<br/>Engine<br/>Integration
+              </div>
+            </div>
+            
+            {/* Outputs */}
+            <div className="space-y-4">
+              <div className="w-24 h-16 border-2 border-gray-600 rounded bg-purple-100 flex items-center justify-center text-xs font-medium text-center p-1">
+                Игровой Canvas
+              </div>
+              <div className="w-24 h-16 border-2 border-gray-600 rounded bg-orange-100 flex items-center justify-center text-xs font-medium text-center p-1">
+                UI компоненты
+              </div>
+              <div className="w-24 h-16 border-2 border-gray-600 rounded bg-red-100 flex items-center justify-center text-xs font-medium text-center p-1">
+                Обратная связь
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
-  // Расширенные события для всех классов приложения
-  const allClassEvents = [
-    // User Events
-    {
-      name: "OnUserLogin",
-      type: "EventHandler<UserLoginEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "addEventListener('login', handler)",
-      removeMethod: "removeEventListener('login', handler)"
-    },
-    {
-      name: "OnUserLogout",
-      type: "EventHandler<UserLogoutEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "addEventListener('logout', handler)",
-      removeMethod: "removeEventListener('logout', handler)"
-    },
-    {
-      name: "OnProfileUpdate",
-      type: "EventHandler<ProfileUpdateEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка через context subscription",
-      removeMethod: "Отписка через context unsubscribe"
-    },
-    // Game Events
-    {
-      name: "OnGameLoad",
-      type: "EventHandler<GameLoadEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Добавление делегата к событию Unity",
-      removeMethod: "Удаление делегата из события Unity"
-    },
-    {
-      name: "OnGameStart",
-      type: "EventHandler<GameStartEventArgs>",
-      access: "Добавление/удаление", 
-      addMethod: "Регистрация через игровой движок",
-      removeMethod: "Дерегистрация через игровой движок"
-    },
-    {
-      name: "OnGameEnd",
-      type: "EventHandler<GameEndEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка на завершение игры",
-      removeMethod: "Отписка от события завершения"
-    },
-    {
-      name: "OnGameUpload",
-      type: "EventHandler<GameUploadEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка на событие загрузки файлов",
-      removeMethod: "Отписка от события загрузки"
-    },
-    // Rating Events
-    {
-      name: "OnRatingChanged",
-      type: "EventHandler<RatingChangedEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка через RatingContext",
-      removeMethod: "Отписка через RatingContext"
-    },
-    {
-      name: "OnRatingSubmitted",
-      type: "EventHandler<RatingSubmittedEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "addEventListener('ratingSubmit', handler)",
-      removeMethod: "removeEventListener('ratingSubmit', handler)"
-    },
-    // Comment Events
-    {
-      name: "OnCommentAdded",
-      type: "EventHandler<CommentAddedEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка через CommentContext",
-      removeMethod: "Отписка через CommentContext"
-    },
-    {
-      name: "OnCommentDeleted",
-      type: "EventHandler<CommentDeletedEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "addEventListener('commentDelete', handler)",
-      removeMethod: "removeEventListener('commentDelete', handler)"
-    },
-    // Search Events
-    {
-      name: "OnSearchQueryChanged",
-      type: "EventHandler<SearchQueryEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка на изменение поискового запроса",
-      removeMethod: "Отписка от изменения поискового запроса"
-    },
-    // Navigation Events
-    {
-      name: "OnRouteChanged",
-      type: "EventHandler<RouteChangedEventArgs>",
-      access: "Добавление/удаление",
-      addMethod: "Подписка через react-router навигацию",
-      removeMethod: "Отписка от навигационных событий"
-    }
-  ];
+  const DecompositionSecond = () => (
+    <Card className="mb-8 print:shadow-none print:border-2 print:break-inside-avoid">
+      <CardHeader>
+        <CardTitle className="text-lg font-bold">Рисунок 2.4 - Результат второго этапа декомпозиции</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-6">
+          {/* Authentication Layer */}
+          <div className="border-2 border-blue-300 rounded-lg p-4 bg-blue-50">
+            <h4 className="font-semibold text-center mb-3 text-blue-800">Слой аутентификации</h4>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="w-20 h-12 border border-blue-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                Login Form
+              </div>
+              <div className="w-20 h-12 border border-blue-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                JWT Tokens
+              </div>
+              <div className="w-20 h-12 border border-blue-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                User Context
+              </div>
+            </div>
+          </div>
+          
+          {/* File Management Layer */}
+          <div className="border-2 border-green-300 rounded-lg p-4 bg-green-50">
+            <h4 className="font-semibold text-center mb-3 text-green-800">Слой управления файлами</h4>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="w-18 h-12 border border-green-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                File Upload
+              </div>
+              <div className="w-18 h-12 border border-green-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                Validation
+              </div>
+              <div className="w-18 h-12 border border-green-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                Storage
+              </div>
+              <div className="w-18 h-12 border border-green-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                Metadata
+              </div>
+            </div>
+          </div>
+          
+          {/* Unity Integration Layer */}
+          <div className="border-2 border-purple-300 rounded-lg p-4 bg-purple-50">
+            <h4 className="font-semibold text-center mb-3 text-purple-800">Слой интеграции Unity</h4>
+            <div className="grid grid-cols-5 gap-2">
+              <div className="w-16 h-12 border border-purple-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                Loader Init
+              </div>
+              <div className="w-16 h-12 border border-purple-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                Canvas Create
+              </div>
+              <div className="w-16 h-12 border border-purple-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                Instance Mgmt
+              </div>
+              <div className="w-16 h-12 border border-purple-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                Event Handle
+              </div>
+              <div className="w-16 h-12 border border-purple-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                Cleanup
+              </div>
+            </div>
+          </div>
+          
+          {/* UI Layer */}
+          <div className="border-2 border-orange-300 rounded-lg p-4 bg-orange-50">
+            <h4 className="font-semibold text-center mb-3 text-orange-800">Слой пользовательского интерфейса</h4>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="w-18 h-12 border border-orange-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                Game Cards
+              </div>
+              <div className="w-18 h-12 border border-orange-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                Controls
+              </div>
+              <div className="w-18 h-12 border border-orange-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                Feedback
+              </div>
+              <div className="w-18 h-12 border border-orange-400 rounded bg-white flex items-center justify-center text-xs text-center p-1">
+                Navigation
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const GraphicalInterface = () => (
+    <Card className="mb-8 print:shadow-none print:border-2">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold">2.3 Разработка графического интерфейса компонента</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm leading-6">
+        <p>
+          Графический интерфейс системы демонстрации игр построен на основе современных веб-технологий 
+          с использованием React framework и библиотеки компонентов Shadcn/UI. Система использует 
+          адаптивный дизайн на базе Tailwind CSS для обеспечения корректного отображения на различных устройствах.
+        </p>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Основные компоненты интерфейса:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>1. Главная страница (Index):</strong></p>
+            <p className="pl-4">
+              - Hero-секция с призывом к действию<br/>
+              - Блок рекомендуемых игр с анимированным появлением<br/>
+              - Информационные карточки о возможностях платформы<br/>
+              - Навигационное меню с темной/светлой темой
+            </p>
+            
+            <p><strong>2. Unity Player компонент:</strong></p>
+            <p className="pl-4">
+              - Canvas для отображения Unity игры<br/>
+              - Кнопка запуска игры с loading анимацией<br/>
+              - Прогресс-бар загрузки файлов<br/>
+              - Кнопки управления: полный экран, перезагрузка<br/>
+              - Обработка ошибок с информативными сообщениями
+            </p>
+            
+            <p><strong>3. Сетка игр (GameGrid):</strong></p>
+            <p className="pl-4">
+              - Адаптивная сетка: 1 колонка (мобильные) → 2-3 колонки (планшеты) → 4 колонки (десктоп)<br/>
+              - Карточки игр с hover-эффектами и анимациями масштабирования<br/>
+              - Система тегов с цветовой индикацией<br/>
+              - Плавные переходы между состояниями
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Технические особенности реализации:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>CSS Framework:</strong> Tailwind CSS с кастомными анимациями</p>
+            <p><strong>Компонентная библиотека:</strong> Shadcn/UI для консистентного дизайна</p>
+            <p><strong>Анимации:</strong> CSS transitions и keyframes для плавных переходов</p>
+            <p><strong>Адаптивность:</strong> Mobile-first подход с breakpoints</p>
+            <p><strong>Доступность:</strong> ARIA-labels, семантическая разметка, клавиатурная навигация</p>
+          </div>
+        </div>
+        
+        <p>
+          Интерфейс спроектирован с учетом принципов Material Design и обеспечивает интуитивное 
+          взаимодействие пользователя с системой. Все интерактивные элементы имеют визуальную 
+          обратную связь, а критичные действия сопровождаются подтверждающими диалогами.
+        </p>
+      </CardContent>
+    </Card>
+  );
+
+  const AlgorithmFlowcharts = () => {
+    const algorithms = [
+      {
+        title: "Рисунок 2.5 - Алгоритм инициализации Unity игры",
+        steps: [
+          "Начало",
+          "Проверка поддержки WebGL",
+          "Загрузка Unity Loader",
+          "Создание Canvas элемента",
+          "Инициализация Unity Instance",
+          "Загрузка игровых ассетов",
+          "Запуск игрового цикла",
+          "Конец"
+        ]
+      },
+      {
+        title: "Рисунок 2.6 - Алгоритм аутентификации пользователя",
+        steps: [
+          "Начало",
+          "Ввод email и пароля",
+          "Валидация формы",
+          "Отправка на Supabase Auth",
+          "Проверка учетных данных",
+          "Получение JWT токена",
+          "Сохранение в localStorage",
+          "Редирект в личный кабинет",
+          "Конец"
+        ]
+      },
+      {
+        title: "Рисунок 2.7 - Алгоритм загрузки игры разработчиком",
+        steps: [
+          "Начало",
+          "Проверка авторизации",
+          "Выбор Unity файлов",
+          "Валидация файлов",
+          "Заполнение метаданных",
+          "Загрузка в Supabase Storage",
+          "Создание записи в БД",
+          "Генерация превью",
+          "Публикация игры",
+          "Конец"
+        ]
+      },
+      {
+        title: "Рисунок 2.8 - Алгоритм системы комментариев",
+        steps: [
+          "Начало",
+          "Проверка авторизации",
+          "Ввод текста комментария",
+          "Валидация контента",
+          "Проверка на спам",
+          "Сохранение в БД",
+          "Обновление списка",
+          "Уведомление автора",
+          "Конец"
+        ]
+      },
+      {
+        title: "Рисунок 2.9 - Алгоритм системы рейтингов",
+        steps: [
+          "Начало",
+          "Проверка авторизации",
+          "Выбор оценки (1-5)",
+          "Проверка предыдущих оценок",
+          "Обновление/создание рейтинга",
+          "Пересчет среднего балла",
+          "Обновление в БД",
+          "Обновление UI",
+          "Конец"
+        ]
+      },
+      {
+        title: "Рисунок 2.10 - Алгоритм поиска игр",
+        steps: [
+          "Начало",
+          "Ввод поискового запроса",
+          "Анализ ключевых слов",
+          "Поиск по названию",
+          "Поиск по тегам",
+          "Фильтрация результатов",
+          "Сортировка по релевантности",
+          "Отображение результатов",
+          "Конец"
+        ]
+      }
+    ];
+
+    const FlowchartBlock = ({ title, steps }: { title: string, steps: string[] }) => (
+      <Card className="mb-8 print:shadow-none print:border-2 print:break-inside-avoid">
+        <CardHeader>
+          <CardTitle className="text-lg font-bold">{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center space-y-3">
+            {steps.map((step, index) => (
+              <div key={index} className="flex flex-col items-center">
+                {index === 0 && (
+                  <div className="w-24 h-12 border-2 border-black rounded-full flex items-center justify-center text-sm font-semibold bg-white">
+                    {step}
+                  </div>
+                )}
+                {index > 0 && index < steps.length - 1 && (
+                  <div className="w-32 h-16 border-2 border-black flex items-center justify-center text-sm font-medium bg-white text-center p-2">
+                    {step}
+                  </div>
+                )}
+                {index === steps.length - 1 && index > 0 && (
+                  <div className="w-24 h-12 border-2 border-black rounded-full flex items-center justify-center text-sm font-semibold bg-white">
+                    {step}
+                  </div>
+                )}
+                {index < steps.length - 1 && (
+                  <div className="w-0.5 h-6 bg-black"></div>
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+
+    return (
+      <div>
+        <h2 className="text-xl font-bold text-gray-900 mb-6 print:text-center">
+          2.4 Алгоритмы основных процессов системы
+        </h2>
+        
+        <div className="space-y-6">
+          {algorithms.map((algorithm, index) => (
+            <FlowchartBlock key={index} {...algorithm} />
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-white print:bg-white">
-      <style jsx>{`
+      <style>{`
         @media print {
           .no-print {
             display: none !important;
@@ -437,6 +611,10 @@ const Documentation = () => {
           body {
             -webkit-print-color-adjust: exact !important;
             color-adjust: exact !important;
+          }
+          @page {
+            margin: 2cm;
+            size: A4;
           }
         }
       `}</style>
@@ -459,47 +637,88 @@ const Documentation = () => {
             Экспорт в Word
           </Button>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Техническая документация
+            Конструкторский раздел
           </h1>
           <p className="text-gray-600">
-            Блок-схемы алгоритмов, структура приложения и спецификации классов
+            Создание сайта для демонстрации игр - техническая документация
           </p>
         </div>
 
         <div className="print:text-center mb-8">
           <h1 className="text-2xl font-bold mb-4 print:text-3xl">
-            ТЕХНИЧЕСКАЯ ДОКУМЕНТАЦИЯ
+            КОНСТРУКТОРСКИЙ РАЗДЕЛ
           </h1>
           <h2 className="text-xl font-semibold mb-6 print:text-2xl">
-            Система управления играми
+            Создание сайта для демонстрации игр
           </h2>
         </div>
 
-        {/* App Structure */}
-        <AppStructureSphere />
+        {/* Mathematical Model */}
+        <MathematicalModel />
 
-        {/* Class Properties Table - Updated with all application classes */}
-        <ClassPropertiesTable 
-          className="Application (User, Game, Comment, Rating)" 
-          properties={allClassProperties} 
-        />
+        {/* Component Structure Development */}
+        <Card className="mb-8 print:shadow-none print:border-2">
+          <CardHeader>
+            <CardTitle className="text-xl font-bold">2.2 Разработка структуры компонента</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm leading-6">
+            <p>
+              Перед реализацией системы демонстрации игр необходимо представить будущий компонент в виде схемы. 
+              Для начального представления используется модель «Черная сфера».
+            </p>
+            <p>
+              «Чёрная сфера» — это сегмент программы или набор алгоритмов, которые выполняют определенные функции, 
+              но их внутреннее устройство недоступно пользователю. При этом возможно получить информацию о входных 
+              данных и результате выполнения.
+            </p>
+          </CardContent>
+        </Card>
 
-        {/* Class Events Table - Updated with all application classes */}
-        <ClassEventsTable 
-          className="Application (User, Game, Comment, Rating, Search, Navigation)" 
-          events={allClassEvents} 
-        />
-
-        {/* Flowcharts */}
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 print:text-center">
-          БЛОК-СХЕМЫ АЛГОРИТМОВ
-        </h2>
+        <BlackSphereBasic />
         
-        <div className="space-y-6">
-          {algorithms.map((algorithm, index) => (
-            <FlowchartBlock key={index} {...algorithm} />
-          ))}
-        </div>
+        <Card className="mb-8 print:shadow-none print:border-2">
+          <CardContent className="space-y-4 text-sm leading-6 pt-6">
+            <p>
+              Входными данными являются файлы Unity WebGL сборки (wasm, data, framework, loader), 
+              пользовательский ввод (клики, формы, навигация) и метаданные игр (название, описание, теги). 
+              Выходными данными будут готовая к воспроизведению игра, пользовательский интерфейс и системные уведомления.
+            </p>
+          </CardContent>
+        </Card>
+
+        <BlackSphereDetailed />
+        
+        <Card className="mb-8 print:shadow-none print:border-2">
+          <CardContent className="space-y-4 text-sm leading-6 pt-6">
+            <p>
+              Для полного понимания работы системы модели черной сферы недостаточно, поэтому необходимо 
+              провести декомпозицию. Декомпозиция – разделение большого и сложного на небольшие простые части.
+            </p>
+          </CardContent>
+        </Card>
+
+        <DecompositionFirst />
+        
+        <Card className="mb-8 print:shadow-none print:border-2">
+          <CardContent className="space-y-4 text-sm leading-6 pt-6">
+            <p>
+              Unity файлы и метаданные используются при формировании игрового контента, а затем передаются 
+              в Unity WebGL Engine для создания игрового экземпляра. После пользовательских действий эти 
+              события обрабатываются в системе управления состоянием, координаты и команды проверяются и 
+              передаются в игровой движок.
+            </p>
+            <p>
+              Поскольку декомпозиция первого этапа недостаточно детальна для корректного представления работы 
+              всей системы, была составлена декомпозиция второго этапа с разделением на функциональные слои.
+            </p>
+          </CardContent>
+        </Card>
+
+        <DecompositionSecond />
+
+        <GraphicalInterface />
+
+        <AlgorithmFlowcharts />
       </div>
     </div>
   );
