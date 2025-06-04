@@ -4,14 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
 const Documentation = () => {
   const navigate = useNavigate();
@@ -54,7 +46,7 @@ const Documentation = () => {
             
             <p><strong>3. Алгоритм поиска:</strong></p>
             <p className="pl-4">
-              S = {g ∈ G | (title(g) ⊇ query) ∨ (tags(g) ∩ query ≠ ∅)}
+              S = {`{g ∈ G | (title(g) ⊇ query) ∨ (tags(g) ∩ query ≠ ∅)}`}
             </p>
             <p className="pl-4 text-xs">
               где S - результат поиска, G - множество всех игр, query - поисковый запрос
