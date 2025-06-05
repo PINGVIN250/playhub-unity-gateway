@@ -699,10 +699,835 @@ const Documentation = () => {
     );
   };
 
+  const DatabaseEntities = () => (
+    <Card className="mb-8 print:shadow-none print:border-2">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold">2.5 Разработка сущностей базы данных</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm leading-6">
+        <p>
+          В результате тщательного изучения и анализа раздела "разработка схемы базы данных" была успешно создана 
+          схема базы данных, которая является неотъемлемой частью полноценной работы приложения. Для удобства, все сущности, 
+          необходимые для правильной функционирования приложения, были компактно представлены в табличной форме. 
+          Полный перечень сущностей данной схемы базы данных приведен в таблице 2.3.
+        </p>
+        
+        <div className="mt-6">
+          <h4 className="font-semibold mb-4 text-center">Таблица 2.3 – Сущности схемы базы данных</h4>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-400 text-xs">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-gray-400 p-2 text-left font-semibold">Имя сущности</th>
+                  <th className="border border-gray-400 p-2 text-left font-semibold">Назначение сущности</th>
+                  <th className="border border-gray-400 p-2 text-left font-semibold">Типы данных</th>
+                  <th className="border border-gray-400 p-2 text-left font-semibold">Подчиняющиеся сущности</th>
+                  <th className="border border-gray-400 p-2 text-left font-semibold">Родительские сущности</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">games</td>
+                  <td className="border border-gray-400 p-2">Содержит данные об играх и их метаинформации</td>
+                  <td className="border border-gray-400 p-2">uuid, text, boolean, integer, timestamp</td>
+                  <td className="border border-gray-400 p-2">comments, ratings, favorites, game_tags</td>
+                  <td className="border border-gray-400 p-2">profiles</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">profiles</td>
+                  <td className="border border-gray-400 p-2">Содержит данные о пользователях системы</td>
+                  <td className="border border-gray-400 p-2">uuid, text, boolean, timestamp</td>
+                  <td className="border border-gray-400 p-2">games, comments, ratings, favorites</td>
+                  <td className="border border-gray-400 p-2">-</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">comments</td>
+                  <td className="border border-gray-400 p-2">Содержит информацию о комментариях к играм</td>
+                  <td className="border border-gray-400 p-2">uuid, text, timestamp</td>
+                  <td className="border border-gray-400 p-2">-</td>
+                  <td className="border border-gray-400 p-2">games, profiles</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">ratings</td>
+                  <td className="border border-gray-400 p-2">Содержит данные о рейтингах игр пользователями</td>
+                  <td className="border border-gray-400 p-2">uuid, integer, timestamp</td>
+                  <td className="border border-gray-400 p-2">-</td>
+                  <td className="border border-gray-400 p-2">games, profiles</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">favorites</td>
+                  <td className="border border-gray-400 p-2">Содержит список избранных игр пользователей</td>
+                  <td className="border border-gray-400 p-2">uuid, timestamp</td>
+                  <td className="border border-gray-400 p-2">-</td>
+                  <td className="border border-gray-400 p-2">games, profiles</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">tags</td>
+                  <td className="border border-gray-400 p-2">Содержит данные о тегах для категоризации игр</td>
+                  <td className="border border-gray-400 p-2">uuid, text</td>
+                  <td className="border border-gray-400 p-2">game_tags</td>
+                  <td className="border border-gray-400 p-2">-</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">game_tags</td>
+                  <td className="border border-gray-400 p-2">Связующая таблица между играми и тегами</td>
+                  <td className="border border-gray-400 p-2">uuid</td>
+                  <td className="border border-gray-400 p-2">-</td>
+                  <td className="border border-gray-400 p-2">games, tags</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div className="mt-6 space-y-3">
+          <h4 className="font-semibold">Ключевые особенности схемы базы данных:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>Нормализация:</strong> Схема соответствует третьей нормальной форме (3NF), что обеспечивает минимизацию избыточности данных</p>
+            <p><strong>Связи:</strong> Реализованы все необходимые связи один-ко-многим и многие-ко-многим через промежуточные таблицы</p>
+            <p><strong>Безопасность:</strong> Все таблицы защищены Row Level Security (RLS) политиками для разграничения доступа</p>
+            <p><strong>Производительность:</strong> Созданы индексы для оптимизации запросов по часто используемым полям</p>
+            <p><strong>Масштабируемость:</strong> Структура позволяет легко добавлять новые функциональности без изменения существующих таблиц</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const SecuritySystem = () => (
+    <Card className="mb-8 print:shadow-none print:border-2">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold">2.6 Система безопасности</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm leading-6">
+        <p>
+          Система безопасности платформы демонстрации игр построена на основе многоуровневой архитектуры защиты, 
+          обеспечивающей конфиденциальность, целостность и доступность данных пользователей. Основой системы 
+          безопасности является Supabase Auth в сочетании с Row Level Security (RLS) PostgreSQL.
+        </p>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Основные компоненты системы безопасности:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>1. Аутентификация (Authentication):</strong></p>
+            <p className="pl-4">
+              - JWT (JSON Web Tokens) для управления сессиями пользователей<br/>
+              - Безопасное хранение токенов в localStorage с автоматическим обновлением<br/>
+              - Поддержка email/password аутентификации с валидацией email адресов<br/>
+              - Защита от атак типа CSRF через SameSite cookie политики<br/>
+              - Автоматическое истечение сессий и принудительное переподключение
+            </p>
+            
+            <p><strong>2. Авторизация (Authorization):</strong></p>
+            <p className="pl-4">
+              - Row Level Security (RLS) на уровне базы данных PostgreSQL<br/>
+              - Динамические политики доступа, основанные на идентификаторе пользователя<br/>
+              - Разграничение прав между обычными пользователями и администраторами<br/>
+              - Контроль доступа к файлам через Supabase Storage buckets<br/>
+              - Изоляция данных пользователей на уровне строк таблиц
+            </p>
+            
+            <p><strong>3. Защита данных:</strong></p>
+            <p className="pl-4">
+              - Шифрование всех соединений через HTTPS/TLS 1.3<br/>
+              - Хеширование паролей с использованием bcrypt алгоритма<br/>
+              - Валидация и санитизация всех пользовательских входных данных<br/>
+              - Защита от SQL-инъекций через параметризованные запросы<br/>
+              - XSS защита через Content Security Policy (CSP) заголовки
+            </p>
+            
+            <p><strong>4. Мониторинг и аудит:</strong></p>
+            <p className="pl-4">
+              - Логирование всех критичных операций (вход, загрузка файлов, изменения)<br/>
+              - Отслеживание подозрительной активности и автоматические уведомления<br/>
+              - Регулярное резервное копирование данных с шифрованием<br/>
+              - Мониторинг производительности и доступности системы<br/>
+              - Анализ логов безопасности для выявления угроз
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Политики Row Level Security (RLS):</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>Таблица games:</strong> Пользователи могут просматривать все опубликованные игры, но редактировать только свои собственные</p>
+            <p><strong>Таблица profiles:</strong> Пользователи имеют полный доступ только к своему профилю</p>
+            <p><strong>Таблица comments:</strong> Пользователи могут создавать комментарии и редактировать только свои</p>
+            <p><strong>Таблица ratings:</strong> Пользователи могут создавать и изменять только свои оценки игр</p>
+            <p><strong>Таблица favorites:</strong> Доступ только к собственному списку избранного</p>
+          </div>
+        </div>
+        
+        <p>
+          Данная архитектура безопасности обеспечивает комплексную защиту системы от современных угроз 
+          информационной безопасности, соответствует требованиям GDPR и обеспечивает высокий уровень 
+          доверия пользователей к платформе.
+        </p>
+      </CardContent>
+    </Card>
+  );
+
+  const ApiConnections = () => (
+    <Card className="mb-8 print:shadow-none print:border-2">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold">2.7 API и подключения</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm leading-6">
+        <p>
+          Система API платформы демонстрации игр построена на основе RESTful архитектуры с использованием 
+          автоматически генерируемого API от Supabase. Это обеспечивает стандартизированный, масштабируемый 
+          и безопасный доступ к данным приложения.
+        </p>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Архитектура API:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>Базовый URL:</strong> https://epdikyzqkywtwzsoplio.supabase.co/rest/v1/</p>
+            <p><strong>Аутентификация:</strong> Bearer токены (JWT) в заголовке Authorization</p>
+            <p><strong>Формат данных:</strong> JSON для всех запросов и ответов</p>
+            <p><strong>Методы HTTP:</strong> GET, POST, PATCH, DELETE для CRUD операций</p>
+            <p><strong>Версионирование:</strong> Версия API указывается в URL (/rest/v1/)</p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Основные API эндпоинты:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>GET /games</strong> - Получение списка игр с пагинацией и фильтрацией</p>
+            <p><strong>POST /games</strong> - Создание новой игры (требует авторизации)</p>
+            <p><strong>PATCH /games/{id}</strong> - Обновление информации об игре</p>
+            <p><strong>DELETE /games/{id}</strong> - Удаление игры (только автор или администратор)</p>
+            <p><strong>GET /profiles/{id}</strong> - Получение профиля пользователя</p>
+            <p><strong>POST /comments</strong> - Создание комментария к игре</p>
+            <p><strong>POST /ratings</strong> - Добавление или обновление рейтинга игры</p>
+            <p><strong>GET /favorites</strong> - Получение списка избранных игр пользователя</p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Supabase Client SDK:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>Конфигурация клиента:</strong></p>
+            <div className="bg-gray-100 p-3 rounded text-xs font-mono">
+              <pre>{`const supabase = createClient(
+  'https://epdikyzqkywtwzsoplio.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      storageKey: 'supabase-auth'
+    }
+  }
+);`}</pre>
+            </div>
+            
+            <p><strong>Автоматические возможности:</strong></p>
+            <p className="pl-4">
+              - Автоматическая аутентификация для всех запросов<br/>
+              - Применение RLS политик на стороне сервера<br/>
+              - Real-time подписки на изменения данных<br/>
+              - Автоматическая валидация типов данных<br/>
+              - Кэширование запросов и оптимизация производительности
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Real-time соединения:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>WebSocket подключения:</strong> Для получения обновлений в реальном времени</p>
+            <p><strong>Каналы подписок:</strong> Отслеживание изменений в таблицах comments, ratings, games</p>
+            <p><strong>Автоматическое переподключение:</strong> При потере соединения или сетевых сбоях</p>
+            <p><strong>Фильтрация событий:</strong> Подписка только на релевантные изменения данных</p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Обработка ошибок API:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>HTTP коды состояния:</strong> Стандартные коды 200, 201, 400, 401, 403, 404, 500</p>
+            <p><strong>Структура ошибок:</strong> JSON объекты с полями error, message, details</p>
+            <p><strong>Повторные попытки:</strong> Автоматический retry для временных сбоев</p>
+            <p><strong>Пользовательские уведомления:</strong> Дружественные сообщения об ошибках в UI</p>
+          </div>
+        </div>
+        
+        <p>
+          API система обеспечивает надежное и эффективное взаимодействие между клиентской и серверной частями 
+          приложения, гарантируя быструю обработку запросов и высокую доступность сервисов.
+        </p>
+      </CardContent>
+    </Card>
+  );
+
+  const ApplicationTesting = () => (
+    <Card className="mb-8 print:shadow-none print:border-2">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold">2.8 Отладка приложения</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm leading-6">
+        <p>
+          Для тестирования будет применен метод тестирования с использованием тест-кейсов. Он позволяет проверить 
+          продукт без необходимости изучать всю документацию. Создание удобного и поддерживаемого тест-кейса, 
+          который написан единожды, поможет экономить время и усилия тестировщиков. Тест-кейс представляет собой 
+          документ, который описывает набор шагов, определенные условия и параметры, для проверки функциональности 
+          или ее части. Перед тестированием тест-кейсы передаются тестировщику, который должен последовательно 
+          выполнять каждый пункт и все описанные действия для достижения определенных результатов.
+        </p>
+        
+        <div className="mt-6">
+          <h4 className="font-semibold mb-4 text-center">Таблица 2.4. Тест-кейс свойств компонентов</h4>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-400 text-xs">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-gray-400 p-2 text-left font-semibold">Название свойства</th>
+                  <th className="border border-gray-400 p-2 text-left font-semibold">Управляющее воздействие</th>
+                  <th className="border border-gray-400 p-2 text-left font-semibold">Результат воздействия</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">theme</td>
+                  <td className="border border-gray-400 p-2">Переключить между светлой и темной темой через иконку</td>
+                  <td className="border border-gray-400 p-2">Цвет интерфейса изменится согласно выбранной теме, настройка сохранится в localStorage</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">searchQuery</td>
+                  <td className="border border-gray-400 p-2">Ввести текст в строку поиска игр</td>
+                  <td className="border border-gray-400 p-2">Список игр отфильтруется по введенному тексту в названии и описании</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">gameRating</td>
+                  <td className="border border-gray-400 p-2">Выставить оценку игре от 1 до 5 звезд</td>
+                  <td className="border border-gray-400 p-2">Рейтинг игры обновится, пересчитается средний балл</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">favoritesList</td>
+                  <td className="border border-gray-400 p-2">Добавить/удалить игру из избранного</td>
+                  <td className="border border-gray-400 p-2">Игра появится/исчезнет в списке избранного пользователя</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">user</td>
+                  <td className="border border-gray-400 p-2">Войти или выйти из аккаунта</td>
+                  <td className="border border-gray-400 p-2">Интерфейс переключит состояние пользователя, изменится доступный функционал</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">unityPlayer</td>
+                  <td className="border border-gray-400 p-2">Запустить Unity игру в браузере</td>
+                  <td className="border border-gray-400 p-2">Игра загрузится и запустится в встроенном плеере, отобразится прогресс загрузки</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">commentSection</td>
+                  <td className="border border-gray-400 p-2">Добавить комментарий к игре</td>
+                  <td className="border border-gray-400 p-2">Комментарий появится в списке, обновится счетчик комментариев</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div className="mt-6">
+          <h4 className="font-semibold mb-4 text-center">Таблица 2.5 – Тест-кейс для методов</h4>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-400 text-xs">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-gray-400 p-2 text-left font-semibold">Название метода</th>
+                  <th className="border border-gray-400 p-2 text-left font-semibold">Управляющее воздействие</th>
+                  <th className="border border-gray-400 p-2 text-left font-semibold">Результат воздействия</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">handleGameUpload</td>
+                  <td className="border border-gray-400 p-2">Загрузить Unity WebGL файлы через форму</td>
+                  <td className="border border-gray-400 p-2">Игра загрузится в систему, создастся запись в БД с метаданными</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">handleRating</td>
+                  <td className="border border-gray-400 p-2">Нажать на звездочки для оценки игры</td>
+                  <td className="border border-gray-400 p-2">Рейтинг сохранится в БД, обновится средняя оценка игры</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">handleComment</td>
+                  <td className="border border-gray-400 p-2">Написать и отправить комментарий</td>
+                  <td className="border border-gray-400 p-2">Комментарий сохранится и отобразится в списке комментариев</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">handleAuthClick</td>
+                  <td className="border border-gray-400 p-2">Нажать на кнопку входа/регистрации</td>
+                  <td className="border border-gray-400 p-2">Откроется форма аутентификации или профиль пользователя</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">handleFavoriteToggle</td>
+                  <td className="border border-gray-400 p-2">Нажать на иконку "избранное" у игры</td>
+                  <td className="border border-gray-400 p-2">Игра добавится/удалится из избранного, изменится иконка</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">handleThemeToggle</td>
+                  <td className="border border-gray-400 p-2">Нажать на переключатель темы</td>
+                  <td className="border border-gray-400 p-2">Интерфейс переключится между светлой и темной темой</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">handleSearch</td>
+                  <td className="border border-gray-400 p-2">Изменить поисковый запрос в строке поиска</td>
+                  <td className="border border-gray-400 p-2">Список игр отфильтруется согласно введенному запросу</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-400 p-2 font-medium">handleGamePlay</td>
+                  <td className="border border-gray-400 p-2">Нажать "Играть" на карточке игры</td>
+                  <td className="border border-gray-400 p-2">Откроется страница с Unity плеером, игра начнет загружаться</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div className="mt-6 space-y-3">
+          <h4 className="font-semibold">Дополнительные методы тестирования:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>Модульное тестирование:</strong> Тестирование отдельных компонентов React с использованием Jest</p>
+            <p><strong>Интеграционное тестирование:</strong> Проверка взаимодействия между компонентами и API</p>
+            <p><strong>E2E тестирование:</strong> Полнофункциональные тесты пользовательских сценариев</p>
+            <p><strong>Кроссбраузерное тестирование:</strong> Проверка совместимости в Chrome, Firefox, Safari, Edge</p>
+            <p><strong>Мобильное тестирование:</strong> Тестирование адаптивного дизайна на различных устройствах</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const InstallationGuide = () => (
+    <Card className="mb-8 print:shadow-none print:border-2">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold">2.9 Инструкция по установке приложения</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm leading-6">
+        <p>
+          Данная инструкция описывает процесс установки и настройки платформы демонстрации игр на локальной машине 
+          разработчика или производственном сервере. Приложение использует современные веб-технологии и требует 
+          предварительной установки необходимых зависимостей.
+        </p>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Системные требования:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>Операционная система:</strong> Windows 10+, macOS 10.15+, Ubuntu 18.04+ или другие Linux дистрибутивы</p>
+            <p><strong>Node.js:</strong> Версия 16.0 или выше</p>
+            <p><strong>Оперативная память:</strong> Минимум 4 GB, рекомендуется 8 GB</p>
+            <p><strong>Свободное место:</strong> 2 GB для установки и зависимостей</p>
+            <p><strong>Браузер:</strong> Chrome 90+, Firefox 88+, Safari 14+, Edge 90+</p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Шаг 1: Установка Node.js и npm</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p>1. Перейдите на официальный сайт Node.js: https://nodejs.org/</p>
+            <p>2. Скачайте LTS версию для вашей операционной системы</p>
+            <p>3. Запустите установщик и следуйте инструкциям</p>
+            <p>4. Проверьте установку командой в терминале:</p>
+            <div className="bg-gray-100 p-3 rounded text-xs font-mono">
+              <pre>{`node --version
+npm --version`}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Шаг 2: Клонирование репозитория</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p>1. Откройте терминал в папке для проектов</p>
+            <p>2. Выполните команду клонирования:</p>
+            <div className="bg-gray-100 p-3 rounded text-xs font-mono">
+              <pre>{`git clone https://github.com/username/games-platform.git
+cd games-platform`}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Шаг 3: Установка зависимостей</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p>1. Установите все необходимые пакеты:</p>
+            <div className="bg-gray-100 p-3 rounded text-xs font-mono">
+              <pre>{`npm install`}</pre>
+            </div>
+            <p>2. Дождитесь завершения установки (может занять несколько минут)</p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Шаг 4: Настройка Supabase</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p>1. Зарегистрируйтесь на https://supabase.com</p>
+            <p>2. Создайте новый проект</p>
+            <p>3. Скопируйте URL проекта и анонимный ключ из Settings → API</p>
+            <p>4. Обновите файл src/integrations/supabase/client.ts с вашими данными</p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Шаг 5: Запуск приложения</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p>1. Запустите сервер разработки:</p>
+            <div className="bg-gray-100 p-3 rounded text-xs font-mono">
+              <pre>{`npm run dev`}</pre>
+            </div>
+            <p>2. Откройте браузер и перейдите по адресу: http://localhost:5173</p>
+            <p>3. Убедитесь, что приложение загрузилось корректно</p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Шаг 6: Производственная сборка</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p>Для создания оптимизированной версии для продакшена:</p>
+            <div className="bg-gray-100 p-3 rounded text-xs font-mono">
+              <pre>{`npm run build
+npm run preview`}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Возможные проблемы и решения:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>Ошибка "Module not found":</strong> Удалите node_modules и выполните npm install заново</p>
+            <p><strong>Проблемы с портом:</strong> Измените порт в vite.config.ts или убейте процесс на порту 5173</p>
+            <p><strong>Ошибки Supabase:</strong> Проверьте правильность URL и ключей в конфигурации</p>
+            <p><strong>Медленная работа:</strong> Убедитесь, что установлена LTS версия Node.js</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const OperationGuide = () => (
+    <Card className="mb-8 print:shadow-none print:border-2">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold">2.10 Инструкция по эксплуатации приложения</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm leading-6">
+        <p>
+          Данная инструкция предназначена для конечных пользователей платформы демонстрации игр и описывает 
+          основные функции системы, способы навигации и рекомендации по эффективному использованию платформы.
+        </p>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Регистрация и вход в систему:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>1. Регистрация нового пользователя:</strong></p>
+            <p className="pl-4">
+              - Нажмите кнопку "Войти" в правом верхнем углу<br/>
+              - Выберите "Регистрация" в открывшемся окне<br/>
+              - Введите действующий email адрес и надежный пароль<br/>
+              - Подтвердите регистрацию через письмо на email<br/>
+              - Заполните профиль пользователя (имя, описание)
+            </p>
+            
+            <p><strong>2. Вход в систему:</strong></p>
+            <p className="pl-4">
+              - Нажмите кнопку "Войти"<br/>
+              - Введите email и пароль<br/>
+              - Система автоматически запомнит вас для последующих посещений
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Навигация по платформе:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>Главная страница:</strong> Отображает рекомендуемые и популярные игры</p>
+            <p><strong>Каталог игр:</strong> Полный список всех доступных игр с фильтрацией</p>
+            <p><strong>Поиск:</strong> Используйте строку поиска для нахождения конкретных игр</p>
+            <p><strong>Избранное:</strong> Ваши любимые игры (доступно после авторизации)</p>
+            <p><strong>Профиль:</strong> Управление личной информацией и настройками</p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Работа с играми:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>1. Просмотр информации об игре:</strong></p>
+            <p className="pl-4">
+              - Нажмите на карточку игры для просмотра деталей<br/>
+              - Изучите описание, скриншоты и системные требования<br/>
+              - Посмотрите рейтинг и отзывы других пользователей
+            </p>
+            
+            <p><strong>2. Запуск игры:</strong></p>
+            <p className="pl-4">
+              - Нажмите кнопку "Играть" на странице игры<br/>
+              - Дождитесь загрузки Unity WebGL плеера<br/>
+              - Используйте полноэкранный режим для лучшего игрового опыта<br/>
+              - При проблемах с загрузкой нажмите "Перезагрузить"
+            </p>
+            
+            <p><strong>3. Оценка и комментирование:</strong></p>
+            <p className="pl-4">
+              - Поставьте оценку от 1 до 5 звезд<br/>
+              - Напишите развернутый отзыв о игре<br/>
+              - Просматривайте комментарии других пользователей
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Загрузка собственных игр:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>1. Подготовка файлов Unity WebGL:</strong></p>
+            <p className="pl-4">
+              - Соберите проект в Unity с настройками WebGL<br/>
+              - Убедитесь, что все файлы (.wasm, .data, .framework.js, .loader.js) присутствуют<br/>
+              - Общий размер файлов не должен превышать 100MB
+            </p>
+            
+            <p><strong>2. Процесс загрузки:</strong></p>
+            <p className="pl-4">
+              - Перейдите в раздел "Загрузить игру" (требует авторизации)<br/>
+              - Заполните информацию: название, описание, теги<br/>
+              - Выберите файлы Unity WebGL сборки<br/>
+              - Загрузите обложку игры (рекомендуется 16:9, до 2MB)<br/>
+              - Нажмите "Опубликовать" и дождитесь обработки
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Персонализация:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>Темная/светлая тема:</strong> Переключайте через иконку в верхнем меню</p>
+            <p><strong>Избранные игры:</strong> Добавляйте игры в избранное нажатием на сердечко</p>
+            <p><strong>Профиль:</strong> Обновляйте информацию о себе, загружайте аватар</p>
+            <p><strong>Настройки:</strong> Управляйте уведомлениями и приватностью</p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Рекомендации по использованию:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>Производительность:</strong> Используйте современный браузер для лучшей совместимости</p>
+            <p><strong>Сеть:</strong> Стабильное интернет-соединение для загрузки игр</p>
+            <p><strong>Безопасность:</strong> Не передавайте данные аккаунта третьим лицам</p>
+            <p><strong>Сообщество:</strong> Оставляйте конструктивные отзывы и помогайте другим пользователям</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const DatabaseAdminGuide = () => (
+    <Card className="mb-8 print:shadow-none print:border-2">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold">2.11 Инструкция администратора базы данных</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm leading-6">
+        <p>
+          Данная инструкция предназначена для администраторов базы данных, ответственных за поддержку, 
+          мониторинг и администрирование Supabase PostgreSQL базы данных платформы демонстрации игр.
+        </p>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Доступ к административной панели Supabase:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>1. Вход в панель управления:</strong></p>
+            <p className="pl-4">
+              - Перейдите по адресу: https://supabase.com/dashboard<br/>
+              - Войдите используя учетные данные администратора<br/>
+              - Выберите проект платформы игр<br/>
+              - Используйте двухфакторную аутентификацию для повышения безопасности
+            </p>
+            
+            <p><strong>2. Навигация по разделам:</strong></p>
+            <p className="pl-4">
+              - Table Editor: Управление данными в таблицах<br/>
+              - SQL Editor: Выполнение SQL запросов<br/>
+              - Authentication: Управление пользователями<br/>
+              - Storage: Управление файловым хранилищем<br/>
+              - Logs: Просмотр логов системы
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Управление структурой базы данных:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>1. Создание и изменение таблиц:</strong></p>
+            <div className="bg-gray-100 p-3 rounded text-xs font-mono">
+              <pre>{`-- Создание новой таблицы
+CREATE TABLE new_table (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  name text NOT NULL,
+  created_at timestamp with time zone DEFAULT now()
+);
+
+-- Включение RLS
+ALTER TABLE new_table ENABLE ROW LEVEL SECURITY;`}</pre>
+            </div>
+            
+            <p><strong>2. Управление индексами:</strong></p>
+            <div className="bg-gray-100 p-3 rounded text-xs font-mono">
+              <pre>{`-- Создание индекса для оптимизации запросов
+CREATE INDEX idx_games_title ON games USING gin(to_tsvector('english', title));
+
+-- Проверка использования индексов
+EXPLAIN ANALYZE SELECT * FROM games WHERE title ILIKE '%action%';`}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Мониторинг и производительность:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>1. Просмотр активных соединений:</strong></p>
+            <div className="bg-gray-100 p-3 rounded text-xs font-mono">
+              <pre>{`-- Активные подключения
+SELECT count(*) FROM pg_stat_activity;
+
+-- Долгие запросы
+SELECT query, state, query_start 
+FROM pg_stat_activity 
+WHERE state = 'active' AND query_start < now() - interval '5 minutes';`}</pre>
+            </div>
+            
+            <p><strong>2. Анализ производительности таблиц:</strong></p>
+            <div className="bg-gray-100 p-3 rounded text-xs font-mono">
+              <pre>{`-- Размер таблиц
+SELECT schemaname, tablename, 
+  pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size
+FROM pg_tables WHERE schemaname = 'public'
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;`}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Резервное копирование и восстановление:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>Автоматические бэкапы Supabase:</strong></p>
+            <p className="pl-4">
+              - Ежедневные автоматические снимки базы данных<br/>
+              - Хранение бэкапов в течение 7 дней (бесплатный план)<br/>
+              - Возможность восстановления через панель управления<br/>
+              - Экспорт данных в SQL формате для локального хранения
+            </p>
+            
+            <p><strong>Ручное создание бэкапа:</strong></p>
+            <div className="bg-gray-100 p-3 rounded text-xs font-mono">
+              <pre>{`-- Экспорт структуры и данных
+pg_dump -h hostname -U username -d database_name > backup.sql
+
+-- Восстановление из бэкапа
+psql -h hostname -U username -d database_name < backup.sql`}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Управление пользователями и безопасностью:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>1. Просмотр пользователей:</strong></p>
+            <div className="bg-gray-100 p-3 rounded text-xs font-mono">
+              <pre>{`-- Статистика пользователей
+SELECT 
+  COUNT(*) as total_users,
+  COUNT(*) FILTER (WHERE created_at > now() - interval '7 days') as new_this_week
+FROM auth.users;`}</pre>
+            </div>
+            
+            <p><strong>2. Управление RLS политиками:</strong></p>
+            <div className="bg-gray-100 p-3 rounded text-xs font-mono">
+              <pre>{`-- Просмотр активных политик
+SELECT schemaname, tablename, policyname, permissive, cmd, qual 
+FROM pg_policies WHERE schemaname = 'public';
+
+-- Создание новой политики
+CREATE POLICY "Users can update own profile" 
+ON profiles FOR UPDATE 
+USING (auth.uid() = id);`}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Регулярные задачи администрирования:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>Ежедневно:</strong></p>
+            <p className="pl-4">
+              - Проверка логов на ошибки и предупреждения<br/>
+              - Мониторинг производительности запросов<br/>
+              - Контроль использования дискового пространства
+            </p>
+            
+            <p><strong>Еженедельно:</strong></p>
+            <p className="pl-4">
+              - Анализ медленных запросов и оптимизация<br/>
+              - Проверка состояния индексов<br/>
+              - Обновление статистики таблиц командой ANALYZE
+            </p>
+            
+            <p><strong>Ежемесячно:</strong></p>
+            <p className="pl-4">
+              - Полное резервное копирование<br/>
+              - Аудит безопасности и прав доступа<br/>
+              - Планирование масштабирования ресурсов
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <h4 className="font-semibold">Устранение типичных проблем:</h4>
+          
+          <div className="pl-4 space-y-2">
+            <p><strong>Медленные запросы:</strong> Создание дополнительных индексов, оптимизация JOIN операций</p>
+            <p><strong>Блокировки:</strong> Анализ pg_locks, завершение долгих транзакций</p>
+            <p><strong>Превышение лимитов:</strong> Очистка неактуальных данных, архивирование старых записей</p>
+            <p><strong>Проблемы RLS:</strong> Проверка политик безопасности, тестирование от имени пользователей</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   const ServerArchitecture = () => (
     <Card className="mb-8 print:shadow-none print:border-2">
       <CardHeader>
-        <CardTitle className="text-xl font-bold">2.5 Архитектура серверной части</CardTitle>
+        <CardTitle className="text-xl font-bold">2.12 Архитектура серверной части</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 text-sm leading-6">
         <p>
@@ -887,6 +1712,20 @@ const Documentation = () => {
 
         <AlgorithmDevelopment />
 
+        <DatabaseEntities />
+        
+        <SecuritySystem />
+        
+        <ApiConnections />
+        
+        <ApplicationTesting />
+        
+        <InstallationGuide />
+        
+        <OperationGuide />
+        
+        <DatabaseAdminGuide />
+        
         <ServerArchitecture />
       </div>
     </div>
